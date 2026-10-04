@@ -248,9 +248,13 @@ Cada fase termina con lo suyo probado y commiteado, igual que la tienda.
 
 ### Fase 0 — Decisiones y pruebas de concepto (corta)
 
-- [ ] `.exe` mínimo con PySide6 + PyInstaller: abre, se loguea contra Supabase y lista
-      productos. Medir tamaño, tiempo de arranque y si Windows Defender lo marca.
-- [ ] Decidir el enfoque de facturación (opción A o B) con una consulta a homologación.
+Hecha salvo la facturación, que se prueba en la fase 7 (ver [claude/pos](../claude/pos/INDICE.md)).
+
+- [x] `.exe` mínimo con PySide6 + PyInstaller: abre, se loguea contra Supabase y lista
+      productos. **58,5 MB, abre en 5,1 s (frío) / 2,6 s, Defender sin detecciones**;
+      funciona copiado a otra carpeta; `Caja.exe --diagnostico` verifica la conexión.
+- [ ] Decidir el enfoque de facturación (opción A o B) con una consulta a homologación
+      (pasa a la fase 7: necesita un certificado de prueba de ARCA).
 
 ### Fase 1 — Roles, historial de stock y seguridad
 

@@ -56,10 +56,23 @@ a compragamer.com, llevada a blanco y negro y pensada primero para el celular.
 
 Pendiente: el deploy en Vercel (ver [el plan](docs/plan-implementacion.md)).
 
+## Punto de venta (en construcción)
+
+Programa de escritorio para ventas presenciales sobre la misma base: un `Caja.exe`
+portable en Python + PySide6, con varias cajas, clientes compartidos con la web, caja y
+factura C. Plan en [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md).
+
+```bash
+cd pos
+uv run pos                               # abre la caja (lee la config pública de web/.env)
+uv run python empaquetado/construir.py   # arma dist/Caja.exe
+```
+
 ## Estructura
 
 ```
 web/          App Next.js (lo que se despliega en Vercel)
+pos/          Punto de venta de escritorio (Python + PySide6, Caja.exe)
 supabase/     Migraciones SQL, seed y configuración de la CLI
 claude/       Documentación técnica en notas (pensada para agentes, legible por humanos)
 docs/         Plan de implementación

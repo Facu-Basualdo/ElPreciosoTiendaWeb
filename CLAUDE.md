@@ -11,7 +11,8 @@ Next.js 16 + HeroUI v3 en Vercel, datos e imágenes en Supabase.
 rediseño estilo compragamer, el carrito con pedido por WhatsApp, el dashboard de
 completo (productos, pedidos, promociones, combos, cupones, banners, etiquetas y
 categorías). Falta la puesta en producción (SEO, Vercel): orden y diseño en
-[docs/plan-implementacion.md](docs/plan-implementacion.md). Las notas de `claude/`
+[docs/plan-implementacion.md](docs/plan-implementacion.md). En curso, el **punto de venta de
+escritorio** (`pos/`): fase 0 hecha, plan en [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md). Las notas de `claude/`
 describen lo construido; si el código se aparta, gana el código y la nota se corrige
 con `/docs`.
 
@@ -38,6 +39,7 @@ grep -rn "updateTag" web/             # después, el código
 |---|---|---|
 | `web/` | Next.js 16 (App Router, Cache Components) · HeroUI v3 · Tailwind v4 · `@supabase/ssr` · TipTap v3 · Embla | [claude/web/INDICE.md](claude/web/INDICE.md) |
 | `supabase/` | Postgres 17 · RLS · Storage · funciones RPC en SQL · Supabase CLI | [claude/supabase/INDICE.md](claude/supabase/INDICE.md) |
+| `pos/` | Python 3.12 · PySide6 (Qt) · supabase-py · PyInstaller (`Caja.exe` portable) | [claude/pos/INDICE.md](claude/pos/INDICE.md) |
 
 ## Notas transversales
 
