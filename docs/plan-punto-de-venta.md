@@ -258,11 +258,19 @@ Hecha salvo la facturación, que se prueba en la fase 7 (ver [claude/pos](../cla
 
 ### Fase 1 — Roles, historial de stock y seguridad
 
-- [ ] `staff` con roles (migra los admins actuales); helpers `es_staff` y `tiene_rol`.
-- [ ] **Auditoría de policies y grants** antes de habilitar registros: nada puede quedar
-      abierto "para cualquier usuario logueado".
-- [ ] `movimientos_stock` + `codigo_barras`; `cambiar_estado_pedido` registra movimientos.
-- [ ] Panel web: gestión de usuarios del staff y sus roles; alta de cajas.
+Hecha (migración `staff_cajas_y_stock`; ver [seguridad-rls](../claude/supabase/seguridad-rls.md#staff-y-roles)).
+
+- [x] `staff` con roles (migra los admins actuales); helpers `es_staff` y `rol_staff`
+      (en lugar de `tiene_rol`: devuelve el rol y cada policy compara), `mi_rol`,
+      `asignar_staff`; un trigger impide quedarse sin admin activo.
+- [x] **Auditoría de policies y grants** antes de habilitar registros: nada puede quedar
+      abierto "para cualquier usuario logueado". Queda como script repetible:
+      `web/scripts/auditar-permisos.mjs` (38 chequeos, todos bloqueados).
+- [x] `movimientos_stock` (por trigger, con motivo) + `codigo_barras`; `cambiar_estado_pedido`
+      registra movimientos. Además: `guardar_variantes` ya no pisa ventas hechas mientras
+      el panel estaba abierto (`stock_original`).
+- [x] Panel web: Usuarios (personal y roles) y Cajas; código de barras e historial de
+      stock en el producto. El POS entra con cualquier rol activo.
 
 ### Fase 2 — Clientes y login en la web
 

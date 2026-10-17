@@ -9,7 +9,8 @@ layout con barra, navegación y guardia.
 
 - **La guardia es UX, la seguridad es RLS.** `Guardia` (en `(panel)/layout.tsx`) llama a
   `requerirAdmin()`, que redirige a `/admin/login` sin sesión y a
-  `/admin/login?error=sin-permiso` si el usuario no está en `admins`. Aunque alguien la
+  `/admin/login?error=sin-permiso` si no es staff activo con rol `admin` (encargados y
+  vendedores usan sólo la caja). Aunque alguien la
   saltee, grants + RLS rechazan cualquier escritura (ver
   [seguridad-rls](../supabase/seguridad-rls.md)).
 - **La guardia y todo lo que lea cookies va dentro de un `<Suspense>`**: con Cache
@@ -52,10 +53,11 @@ Referencia: `app/admin/(panel)/page.tsx` (`Resumen` + `EsqueletoResumen`).
 ### Crear un admin
 
 `cd web && node scripts/crear-admin.mjs email@dominio.com` crea el usuario (o reusa uno
-existente) y lo agrega a `admins`. La contraseña es aleatoria y **se escribe en
-`web/.env` como `ADMIN_EMAIL` / `ADMIN_PASSWORD`, nunca en la terminal**. Usa la secret
-key (sólo local). Alternativa manual en
-[seguridad-rls](../supabase/seguridad-rls.md#alta-de-un-admin).
+existente) y le da rol `admin` en `staff`; con `--rol encargado|vendedor`, ese rol. La
+contraseña es aleatoria y **se escribe en `web/.env` como `<ROL>_EMAIL` /
+`<ROL>_PASSWORD` (`ADMIN_*`, `VENDEDOR_*`), nunca en la terminal**. Usa la secret key
+(sólo local). Es para el primer admin y usuarios de prueba: el resto del personal se da
+de alta desde Usuarios (ver [seguridad-rls](../supabase/seguridad-rls.md#alta-de-personal)).
 
 ## Patrón de Server Action
 
@@ -197,6 +199,8 @@ estar lista. La lista que lee `usePathname` va en `Suspense` (ver la tabla de ar
 | Cupones | [cupones](cupones.md#dashboard) |
 | Banners | [banners](banners.md) |
 | Etiquetas | [etiquetas](etiquetas.md#en-el-dashboard) |
+| Usuarios | `/admin/usuarios`: alta por email de una cuenta existente (`asignar_staff`), rol y "Puede entrar" por fila, quitar (borra el permiso, no la cuenta). Los errores de la base (sin cuenta, último admin) se muestran tal cual. Lista y no `Table`: cada fila tiene un `Select` |
+| Cajas | `/admin/cajas`: nombre y punto de venta de ARCA (únicos; el alta propone el siguiente libre), "En uso", borrar. Una caja con ventas no se borra: se apaga. Las elige el vendedor al abrir el POS |
 | Categorías | `/admin/categorias`: árbol de dos niveles, alta y edición en un `Modal`, flechas entre hermanas. Una categoría con hijas no puede ir dentro de otra (lo impide un trigger). Borrarla deja sus productos sin categoría |
 
 Reordenar en todo el panel es con flechas (accesible con teclado y en touch), nunca

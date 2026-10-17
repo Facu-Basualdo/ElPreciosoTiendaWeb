@@ -12,7 +12,7 @@ rediseño estilo compragamer, el carrito con pedido por WhatsApp, el dashboard d
 completo (productos, pedidos, promociones, combos, cupones, banners, etiquetas y
 categorías). Falta la puesta en producción (SEO, Vercel): orden y diseño en
 [docs/plan-implementacion.md](docs/plan-implementacion.md). En curso, el **punto de venta de
-escritorio** (`pos/`): fase 0 hecha, plan en [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md). Las notas de `claude/`
+escritorio** (`pos/`): fases 0 y 1 hechas (roles de staff, cajas, historial de stock), plan en [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md). Las notas de `claude/`
 describen lo construido; si el código se aparta, gana el código y la nota se corrige
 con `/docs`.
 

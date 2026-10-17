@@ -17,6 +17,6 @@ falta está en [docs/plan-punto-de-venta.md](../../docs/plan-punto-de-venta.md).
 
 | Nota | De qué trata |
 |---|---|
-| [Conexión con la base](conexion.md) | Sólo la publishable key, nunca la secret (el `.exe` es público) · config: archivo inyectado al empaquetar → `POS_SUPABASE_*` → las dos variables públicas de `web/.env` · escritura sólo por RPC · hasta la fase 1 entran sólo los admins (`es_admin`) · errores ya redactados para el cajero |
+| [Conexión con la base](conexion.md) | Sólo la publishable key, nunca la secret (el `.exe` es público) · config: archivo inyectado al empaquetar → `POS_SUPABASE_*` → las dos variables públicas de `web/.env` · escritura sólo por RPC · entra el staff activo de cualquier rol (lee su fila de `staff`); un cliente de la tienda no pasa · errores ya redactados para el cajero |
 | [Interfaz](interfaz.md) | supabase-py es sincrónico: toda llamada va por `en_segundo_plano` o la ventana se congela · sólo el hilo de Qt toca widgets · métodos de modelos con los nombres de Qt (`role`, `section`) o no se sobrescriben · blanco y negro como la tienda · pruebas `offscreen` necesitan `QT_QPA_FONTDIR` |
 | [Empaquetado](empaquetado.md) | `construir.py` inyecta la config pública, corre PyInstaller `--onefile --windowed` y borra lo generado · 58,5 MB, abre en 5 s en frío y 2,6 s después, Defender limpio · `Caja.exe --diagnostico` prueba config y SSL sin ventana · Python del Store rompe PyInstaller |

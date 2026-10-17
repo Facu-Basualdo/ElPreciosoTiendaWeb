@@ -3,10 +3,12 @@
 import {
   Bars,
   Box,
+  CreditCard,
   Folder,
   House,
   LayoutHeaderCells,
   Percent,
+  Persons,
   Picture,
   Receipt,
   Tag,
@@ -29,6 +31,8 @@ const SECCIONES = [
   { href: "/admin/banners", titulo: "Banners", icono: Picture, listo: true },
   { href: "/admin/etiquetas", titulo: "Etiquetas", icono: Tags, listo: true },
   { href: "/admin/categorias", titulo: "Categorías", icono: Folder, listo: true },
+  { href: "/admin/usuarios", titulo: "Usuarios", icono: Persons, listo: true },
+  { href: "/admin/cajas", titulo: "Cajas", icono: CreditCard, listo: true },
 ] as const;
 
 // usePathname es dato de la URL: en rutas dinámicas (/admin/productos/[id]) tiene que

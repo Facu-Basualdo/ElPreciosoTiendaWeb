@@ -19,6 +19,7 @@ export type VarianteAdmin = {
   id: string;
   clave: string;
   sku: string | null;
+  codigoBarras: string | null;
   precio: number | null;
   stock: number;
   activa: boolean;
@@ -48,7 +49,7 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
       `id, slug, nombre, precio, precio_anterior, categoria_id, destacado, publicado, descripcion,
        etiquetas:producto_etiquetas(etiqueta_id),
        imagenes:producto_imagenes(id, path, alt, orden),
-       variantes:producto_variantes(id, clave, sku, precio, stock, activa, orden, etiquetas:variante_etiquetas(etiqueta_id))`,
+       variantes:producto_variantes(id, clave, sku, codigo_barras, precio, stock, activa, orden, etiquetas:variante_etiquetas(etiqueta_id))`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -72,6 +73,7 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
         id: v.id,
         clave: v.clave,
         sku: v.sku,
+        codigoBarras: v.codigo_barras,
         precio: v.precio === null ? null : Number(v.precio),
         stock: v.stock,
         activa: v.activa,

@@ -25,9 +25,12 @@ policy o una RPC en la base (ver [seguridad-rls](../supabase/seguridad-rls.md)).
   `cotizar`; desde la fase 4, `registrar_venta`). Si Python recalculara precios, el
   ticket y la tienda dejarían de coincidir.
 - Login con la Auth de Supabase (`sign_in_with_password`), el mismo usuario que el panel
-  web. **Hasta la fase 1 sólo entran admins** (`es_admin`); un usuario sin permiso queda
-  deslogueado con "Tu usuario no tiene permiso para usar la caja". La fase 1 cambia eso por
-  roles de staff (vendedor, encargado, admin).
+  web. Después lee **su propia fila de `staff`** (RLS sólo le deja ver la suya): entra
+  cualquier rol activo (vendedor, encargado, admin) y `Usuario` guarda `nombre` y `rol`.
+  Sin fila activa (un cliente de la tienda, o alguien apagado en Usuarios) queda
+  deslogueado con "Tu usuario no tiene permiso para usar la caja". Qué puede hacer cada rol
+  dentro del POS lo vuelve a exigir la base en cada RPC, no la interfaz (ver
+  [seguridad-rls](../supabase/seguridad-rls.md#staff-y-roles)).
 - `Base` (`servicios/base.py`) lanza `ErrorBase` con un mensaje ya redactado para el
   cajero ("Email o contraseña incorrectos."). Cualquier otra excepción (red, timeout) se
   muestra como "No hay conexión con el servidor": ver [interfaz](interfaz.md).

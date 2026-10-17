@@ -11,6 +11,7 @@ import { EditorDescripcion } from "@/components/admin/editor-descripcion";
 import { EditorEtiquetas } from "@/components/admin/productos/editor-etiquetas";
 import { EditorVariantes } from "@/components/admin/productos/editor-variantes";
 import { FormularioDatos } from "@/components/admin/productos/formulario-datos";
+import { HistorialStock } from "@/components/admin/productos/historial-stock";
 import { GaleriaAdmin } from "@/components/admin/galeria-admin";
 import { requerirAdmin } from "@/lib/auth";
 import {
@@ -68,6 +69,15 @@ async function Edicion({
     obtenerCatalogosAdmin(supabase),
   ]);
   if (!producto) notFound();
+
+  // "M / Negro" por variante, en el orden de los grupos (para el historial de stock).
+  const etiquetas = new Map(catalogos.grupos.flatMap((g) => g.etiquetas.map((e) => [e.id, { valor: e.valor, orden: g.orden }] as const)));
+  const nombres = new Map(
+    producto.variantes.map((v) => {
+      const valores = v.etiquetas.flatMap((id) => etiquetas.get(id) ?? []).sort((a, b) => a.orden - b.orden);
+      return [v.id, valores.length ? valores.map((e) => e.valor).join(" / ") : "Variante única"];
+    }),
+  );
 
   return (
     <>
@@ -135,6 +145,9 @@ async function Edicion({
           guardar={guardarDescripcion.bind(null, producto.id)}
         />
       </ProveedorCategoria>
+      <Suspense fallback={<Skeleton className="h-40 rounded-tarjeta" />}>
+        <HistorialStock supabase={supabase} productoId={producto.id} nombres={nombres} />
+      </Suspense>
       <BorrarProducto id={producto.id} nombre={producto.nombre} />
     </>
   );

@@ -105,7 +105,7 @@ Para el dashboard: en Supabase deshabilitá los sign-ups, creá un usuario en
 Authentication → Users y agregalo como admin:
 
 ```sql
-insert into admins (user_id) values ('<uuid del usuario>');
+insert into staff (user_id, email, nombre, rol) values ('<uuid del usuario>', '<email>', '<nombre>', 'admin');
 ```
 
 ### Tipos de la base

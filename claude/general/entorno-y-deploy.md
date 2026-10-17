@@ -15,6 +15,7 @@ Todas en `web/.env` (ignorado por git; el molde es `web/.env.example`).
 | `DATABASE_URL` | **No** | Sólo la CLI de Supabase en local (migraciones, tipos, advisors). Session pooler, puerto 5432 |
 | `SUPABASE_SECRET_KEY` | **No** | Sólo los scripts locales (`sembrar-imagenes.mjs`, `crear-admin.mjs`). **La app no la importa** |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | **No** | Credenciales del admin de prueba que escribe `crear-admin.mjs`. Sólo referencia local |
+| `VENDEDOR_EMAIL`, `VENDEDOR_PASSWORD` | **No** | Usuario de prueba con rol vendedor (`crear-admin.mjs … --rol vendedor`). Lo usan `auditar-permisos.mjs` y las pruebas del POS |
 
 **Si alguien necesita `SUPABASE_SECRET_KEY` en código de la app "para que funcione",
 está tapando un grant o una policy faltante** — ver
@@ -40,8 +41,10 @@ está tapando un grant o una policy faltante** — ver
   los previews de Vercel ahí: si no, **un admin probando en un preview escribe en prod**.
 - **Auth → URL Configuration**: agregar el dominio de producción y el patrón de los
   previews en Redirect URLs, si no el login desde un preview redirige mal.
-- **Auth → Sign-ups deshabilitados.** Los admins se crean a mano (ver
-  [seguridad-rls](../supabase/seguridad-rls.md#alta-de-un-admin)).
+- **Auth → Sign-ups deshabilitados** hasta la fase 2 del POS (registro de clientes), y
+  recién después de correr `auditar-permisos.mjs`. Mientras tanto las cuentas del
+  personal se crean con el script (ver
+  [seguridad-rls](../supabase/seguridad-rls.md#alta-de-personal)).
 - Plan gratuito: el proyecto se pausa tras una semana sin actividad. Para una demo
   pública, entrar al dashboard de vez en cuando o usar un plan pago.
 

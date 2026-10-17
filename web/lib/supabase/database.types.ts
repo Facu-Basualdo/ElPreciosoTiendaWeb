@@ -9,21 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admins: {
-        Row: {
-          creado_en: string;
-          user_id: string;
-        };
-        Insert: {
-          creado_en?: string;
-          user_id: string;
-        };
-        Update: {
-          creado_en?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
       banners: {
         Row: {
           activo: boolean;
@@ -40,6 +25,7 @@ export type Database = {
           texto_claro: boolean;
           titulo: string | null;
         };
+        ComputedFields: never;
         Insert: {
           activo?: boolean;
           creado_en?: string;
@@ -72,11 +58,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      cajas: {
+        Row: {
+          activa: boolean;
+          creado_en: string;
+          id: string;
+          nombre: string;
+          punto_venta: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          activa?: boolean;
+          creado_en?: string;
+          id?: string;
+          nombre: string;
+          punto_venta: number;
+        };
+        Update: {
+          activa?: boolean;
+          creado_en?: string;
+          id?: string;
+          nombre?: string;
+          punto_venta?: number;
+        };
+        Relationships: [];
+      };
       categoria_grupos: {
         Row: {
           categoria_id: string;
           grupo_id: string;
         };
+        ComputedFields: never;
         Insert: {
           categoria_id: string;
           grupo_id: string;
@@ -107,6 +119,7 @@ export type Database = {
           categoria_id: string;
           plantilla_id: string;
         };
+        ComputedFields: never;
         Insert: {
           categoria_id: string;
           plantilla_id: string;
@@ -141,6 +154,7 @@ export type Database = {
           padre_id: string | null;
           slug: string;
         };
+        ComputedFields: never;
         Insert: {
           creado_en?: string;
           id?: string;
@@ -178,6 +192,7 @@ export type Database = {
           orden: number;
           path: string;
         };
+        ComputedFields: never;
         Insert: {
           alt?: string;
           alto?: number | null;
@@ -216,6 +231,7 @@ export type Database = {
           orden: number;
           producto_id: string;
         };
+        ComputedFields: never;
         Insert: {
           cantidad?: number;
           combo_id: string;
@@ -260,6 +276,7 @@ export type Database = {
           publicado: boolean;
           slug: string;
         };
+        ComputedFields: never;
         Insert: {
           actualizado_en?: string;
           creado_en?: string;
@@ -300,6 +317,7 @@ export type Database = {
           usos_maximos: number | null;
           valor: number;
         };
+        ComputedFields: never;
         Insert: {
           activo?: boolean;
           codigo: string;
@@ -338,6 +356,7 @@ export type Database = {
           slug: string | null;
           valor: string;
         };
+        ComputedFields: never;
         Insert: {
           color_hex?: string | null;
           creado_en?: string;
@@ -380,6 +399,7 @@ export type Database = {
           visible_en_ficha: boolean;
           visible_en_filtros: boolean;
         };
+        ComputedFields: never;
         Insert: {
           con_color?: boolean;
           creado_en?: string;
@@ -408,6 +428,61 @@ export type Database = {
         };
         Relationships: [];
       };
+      movimientos_stock: {
+        Row: {
+          cantidad: number;
+          creado_en: string;
+          detalle: string | null;
+          id: number;
+          motivo: Database["public"]["Enums"]["motivo_stock"];
+          producto_id: string | null;
+          referencia: string | null;
+          stock_resultante: number;
+          usuario_id: string | null;
+          variante_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad: number;
+          creado_en?: string;
+          detalle?: string | null;
+          id?: never;
+          motivo: Database["public"]["Enums"]["motivo_stock"];
+          producto_id?: string | null;
+          referencia?: string | null;
+          stock_resultante: number;
+          usuario_id?: string | null;
+          variante_id?: string | null;
+        };
+        Update: {
+          cantidad?: number;
+          creado_en?: string;
+          detalle?: string | null;
+          id?: never;
+          motivo?: Database["public"]["Enums"]["motivo_stock"];
+          producto_id?: string | null;
+          referencia?: string | null;
+          stock_resultante?: number;
+          usuario_id?: string | null;
+          variante_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_stock_producto_id_fkey";
+            columns: ["producto_id"];
+            isOneToOne: false;
+            referencedRelation: "productos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "movimientos_stock_variante_id_fkey";
+            columns: ["variante_id"];
+            isOneToOne: false;
+            referencedRelation: "producto_variantes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pedido_items: {
         Row: {
           cantidad: number;
@@ -426,6 +501,7 @@ export type Database = {
           subtotal: number;
           variante_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           cantidad: number;
           combo_id?: string | null;
@@ -514,6 +590,7 @@ export type Database = {
           subtotal: number;
           total: number;
         };
+        ComputedFields: never;
         Insert: {
           actualizado_en?: string;
           creado_en?: string;
@@ -559,6 +636,7 @@ export type Database = {
           grupo_id: string;
           plantilla_id: string;
         };
+        ComputedFields: never;
         Insert: {
           grupo_id: string;
           plantilla_id: string;
@@ -590,6 +668,7 @@ export type Database = {
           id: string;
           nombre: string;
         };
+        ComputedFields: never;
         Insert: {
           creado_en?: string;
           id?: string;
@@ -607,6 +686,7 @@ export type Database = {
           etiqueta_id: string;
           producto_id: string;
         };
+        ComputedFields: never;
         Insert: {
           etiqueta_id: string;
           producto_id: string;
@@ -643,6 +723,7 @@ export type Database = {
           path: string;
           producto_id: string;
         };
+        ComputedFields: never;
         Insert: {
           alt?: string;
           alto?: number | null;
@@ -677,6 +758,7 @@ export type Database = {
         Row: {
           activa: boolean;
           clave: string;
+          codigo_barras: string | null;
           id: string;
           orden: number;
           precio: number | null;
@@ -684,9 +766,11 @@ export type Database = {
           sku: string | null;
           stock: number;
         };
+        ComputedFields: never;
         Insert: {
           activa?: boolean;
           clave: string;
+          codigo_barras?: string | null;
           id?: string;
           orden?: number;
           precio?: number | null;
@@ -697,6 +781,7 @@ export type Database = {
         Update: {
           activa?: boolean;
           clave?: string;
+          codigo_barras?: string | null;
           id?: string;
           orden?: number;
           precio?: number | null;
@@ -730,6 +815,7 @@ export type Database = {
           publicado: boolean;
           slug: string;
         };
+        ComputedFields: never;
         Insert: {
           actualizado_en?: string;
           busqueda?: never;
@@ -778,6 +864,7 @@ export type Database = {
           producto_id: string | null;
           promocion_id: string;
         };
+        ComputedFields: never;
         Insert: {
           categoria_id?: string | null;
           etiqueta_id?: string | null;
@@ -837,6 +924,7 @@ export type Database = {
           tipo: Database["public"]["Enums"]["tipo_promocion"];
           valor: number | null;
         };
+        ComputedFields: never;
         Insert: {
           activa?: boolean;
           alcance_todo?: boolean;
@@ -865,12 +953,41 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff: {
+        Row: {
+          activo: boolean;
+          creado_en: string;
+          email: string;
+          nombre: string;
+          rol: Database["public"]["Enums"]["rol_staff"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          creado_en?: string;
+          email: string;
+          nombre: string;
+          rol: Database["public"]["Enums"]["rol_staff"];
+          user_id: string;
+        };
+        Update: {
+          activo?: boolean;
+          creado_en?: string;
+          email?: string;
+          nombre?: string;
+          rol?: Database["public"]["Enums"]["rol_staff"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       variante_etiquetas: {
         Row: {
           etiqueta_id: string;
           grupo_id: string;
           variante_id: string;
         };
+        ComputedFields: never;
         Insert: {
           etiqueta_id: string;
           grupo_id: string;
@@ -903,6 +1020,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      asignar_staff: {
+        Args: {
+          p_activo?: boolean;
+          p_email: string;
+          p_nombre: string;
+          p_rol: Database["public"]["Enums"]["rol_staff"];
+        };
+        Returns: string;
+      };
       banners_vigentes: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1034,6 +1160,7 @@ export type Database = {
         Args: { p_producto_id: string; p_variantes: Json };
         Returns: undefined;
       };
+      mi_rol: { Args: Record<PropertyKey, never>; Returns: string };
       precios_producto: {
         Args: { p_producto_id: string };
         Returns: {
@@ -1063,6 +1190,14 @@ export type Database = {
     };
     Enums: {
       estado_pedido: "pendiente" | "confirmado" | "entregado" | "cancelado";
+      motivo_stock:
+        | "alta"
+        | "ajuste"
+        | "ingreso"
+        | "pedido_web"
+        | "venta_local"
+        | "devolucion";
+      rol_staff: "admin" | "encargado" | "vendedor";
       tipo_cupon: "porcentaje" | "monto_fijo";
       tipo_promocion: "porcentaje" | "monto_fijo" | "nxm" | "segunda_unidad";
     };
@@ -1193,6 +1328,15 @@ export const Constants = {
   public: {
     Enums: {
       estado_pedido: ["pendiente", "confirmado", "entregado", "cancelado"],
+      motivo_stock: [
+        "alta",
+        "ajuste",
+        "ingreso",
+        "pedido_web",
+        "venta_local",
+        "devolucion",
+      ],
+      rol_staff: ["admin", "encargado", "vendedor"],
       tipo_cupon: ["porcentaje", "monto_fijo"],
       tipo_promocion: ["porcentaje", "monto_fijo", "nxm", "segunda_unidad"],
     },

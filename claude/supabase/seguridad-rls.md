@@ -28,22 +28,32 @@ Regla para tablas nuevas: `grant select … to anon, authenticated` y
 Funciones: Postgres le da `execute` a `PUBLIC` por defecto. Cada función se crea con
 `revoke execute … from public` y `grant execute` explícito al rol que corresponde.
 
-## Admins
+## Staff y roles
 
-`public.admins (user_id)` sin grants para la API y con RLS sin policies: nadie la lee
-por HTTP.
+**Estar logueado no da ningún permiso**: desde la fase 2 los clientes de la tienda también
+son usuarios de Auth. Lo que da permisos es una fila **activa** en `public.staff`
+(`user_id`, `email`, `nombre`, `rol`, `activo`), con `rol` = `admin` · `encargado` ·
+`vendedor`. Reemplazó a la vieja tabla `admins` (migración `staff_cajas_y_stock`).
 
-```sql
-create function private.es_admin() returns boolean
-language sql stable security definer set search_path = ''
-as $$ select exists (select 1 from public.admins where user_id = (select auth.uid())) $$;
-```
+| Función | Devuelve | Para |
+|---|---|---|
+| `private.es_admin()` | rol `admin` y activo | Las ~70 policies del panel (mantuvo el nombre) |
+| `private.rol_staff()` | el rol, o `null` si no es staff activo | Policies que distinguen roles (`movimientos_stock`) |
+| `private.es_staff()` | cualquier rol activo | Lo que ve todo el personal (`cajas`) |
+| `public.mi_rol()` | el rol como texto | Preguntar desde la web o el POS |
+| `public.asignar_staff(email, nombre, rol, activo)` | el `user_id` | Alta y cambios desde el panel (Usuarios) |
 
-- **Vive en el schema `private`**, que la Data API no expone. Una función
-  `security definer` en `public` es un endpoint RPC que cualquiera puede llamar.
-- **`security definer` es obligatorio**: si corriera como el usuario, chocaría con el RLS
-  de `admins` y daría siempre `false`.
-- `execute` sólo para `authenticated`. `anon` no la puede llamar, por eso **las policies
+- **Las `private.*` son `security definer`**: si corrieran como el usuario, chocarían con el
+  RLS de `staff`. Viven en `private`, que la Data API no expone: una definer en `public`
+  es un endpoint RPC que cualquiera puede llamar.
+- `asignar_staff` es **invoker**: chequea `es_admin` y escribe a través del RLS. Para
+  encontrar al usuario por email usa `private.usuario_por_email` (definer, lee
+  `auth.users`), que la API no expone. **La persona tiene que tener cuenta**: si no,
+  `No hay ningún usuario con el email …`.
+- **Trigger `staff_ultimo_admin`**: rechaza quitar, apagar o bajar de rol al último admin
+  activo (`Tiene que quedar al menos un admin activo`). Sin él, nadie volvería a entrar al
+  panel.
+- `execute` sólo para `authenticated`. `anon` no las puede llamar, por eso **las policies
   van separadas por rol** (`to anon` nunca menciona `es_admin`): una policy de `anon`
   que la llame da *permission denied for function*.
 - La web pregunta con `rpc('es_admin')`: `public.es_admin()` es un wrapper
@@ -62,7 +72,9 @@ as $$ select exists (select 1 from public.admins where user_id = (select auth.ui
 | `categorias`, `grupos_etiqueta`, `etiquetas` | todo | todo | admin |
 | `banners` | `activo` | `activo or es_admin` | admin |
 | `pedidos`, `pedido_items` | — (sin grants) | admin | sólo `crear_pedido` (definer) crea; admin actualiza y borra |
-| `admins` | — | — | sólo SQL |
+| `staff` | — | la propia fila, o todas si es admin | admin (+ trigger del último admin) |
+| `cajas` | — | staff activo | admin |
+| `movimientos_stock` | — | admin y encargado | nadie por la API: sólo el trigger (ver [variantes-y-stock](variantes-y-stock.md#historial-de-stock)) |
 | `storage.objects` bucket `catalogo` | URL pública, sin policy | admin (listar/borrar) | admin |
 
 - **Las tablas hijas miran al padre.** Si `producto_imagenes` tuviera select libre, un
@@ -87,10 +99,22 @@ Después de cada migración: `supabase db advisors --db-url …` tiene que dar
 
 ```
 POST /rest/v1/productos              → 42501 permission denied
-GET  /rest/v1/admins                 → 42501 permission denied
+GET  /rest/v1/staff                  → []
 POST /rest/v1/rpc/guardar_variantes  → 42501 permission denied
 GET  /rest/v1/productos?slug=eq.<borrador> → []
 ```
+
+## Auditoría
+
+`cd web && node scripts/auditar-permisos.mjs` entra como **vendedor** (logueado, sin ser
+admin) y como **visitante**, e intenta lo que no deberían poder: escribir productos,
+stock, cupones, promociones, banners y cajas; confirmar pedidos; subir al bucket; leer
+cupones, pedidos e historial; darse rol admin. Cada intento tiene que fallar; si alguno
+pasa, termina con código 1. Usa sólo la publishable key y las credenciales `VENDEDOR_*`
+de `web/.env` (las crea `crear-admin.mjs … --rol vendedor`).
+
+**Correrla después de toda migración que toque grants o policies, y antes de habilitar
+los registros de clientes** (fase 2 del POS).
 
 ## Auth
 
@@ -100,15 +124,14 @@ GET  /rest/v1/productos?slug=eq.<borrador> → []
 - En el servidor, identidad con `getClaims()`, nunca `getSession()` (ver
   [clientes-supabase](../web/clientes-supabase.md#identidad-en-el-servidor)).
 
-### Alta de un admin
+### Alta de personal
 
-Con script: `cd web && node scripts/crear-admin.mjs email@dominio.com` (ver
-[dashboard](../web/dashboard.md#crear-un-admin)). A mano:
-
-1. Supabase → Authentication → Users → *Add user* (con contraseña, auto-confirmado).
-2. SQL editor: `insert into admins (user_id) values ('<uuid del usuario>');`
-
-No hay pantalla para esto a propósito.
+- **Desde el panel** (Usuarios): email de una cuenta que ya existe, nombre y rol
+  (`asignar_staff`). Hasta que la tienda tenga registro de clientes (fase 2), las cuentas
+  se crean con el script.
+- **Con script** (el primer admin, usuarios de prueba): `cd web && node
+  scripts/crear-admin.mjs email@dominio.com [--rol vendedor]` (ver
+  [dashboard](../web/dashboard.md#crear-un-admin)).
 
 ## Ver también
 

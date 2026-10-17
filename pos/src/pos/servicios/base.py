@@ -20,10 +20,19 @@ class ErrorBase(RuntimeError):
     """Error con un mensaje listo para mostrar al usuario."""
 
 
+ROLES = {"admin": "Administrador", "encargado": "Encargado", "vendedor": "Vendedor"}
+
+
 @dataclass(frozen=True)
 class Usuario:
     id: str
     email: str
+    nombre: str
+    rol: str  # admin · encargado · vendedor (tabla staff)
+
+    @property
+    def rol_visible(self) -> str:
+        return ROLES.get(self.rol, self.rol)
 
 
 @dataclass(frozen=True)
@@ -51,11 +60,16 @@ class Base:
             raise ErrorBase("No se pudo iniciar sesión. Probá de nuevo.") from e
         if not r.user:
             raise ErrorBase("No se pudo iniciar sesión. Probá de nuevo.")
-        # Hasta la fase 1 (roles de staff) sólo entran los admins del panel web.
-        if not self._cliente.rpc("es_admin").execute().data:
+        # Entra el staff activo, con cualquier rol. Un cliente de la tienda también es un
+        # usuario de Auth: sin fila activa en `staff` no pasa (RLS: cada uno ve sólo la suya).
+        respuesta = (
+            self._cliente.table("staff").select("nombre, rol, activo").eq("user_id", r.user.id).maybe_single().execute()
+        )
+        fila = cast(dict[str, Any], (respuesta.data if respuesta else None) or {})
+        if not fila.get("activo") or fila.get("rol") not in ROLES:
             self._cliente.auth.sign_out()
-            raise ErrorBase("Tu usuario no tiene permiso para usar la caja.")
-        self.usuario = Usuario(r.user.id, r.user.email or email)
+            raise ErrorBase("Tu usuario no tiene permiso para usar la caja. Pedíselo a un administrador.")
+        self.usuario = Usuario(r.user.id, r.user.email or email, fila["nombre"], fila["rol"])
         return self.usuario
 
     def cerrar_sesion(self) -> None:

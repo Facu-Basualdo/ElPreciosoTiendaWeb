@@ -61,12 +61,12 @@ class ModeloProductos(QAbstractTableModel):
 
 
 class VentanaPrincipal(QMainWindow):
-    """Fase 0: buscador y lista de productos. La venta llega en las fases 3 y 4."""
+    """Buscador y lista de productos. La venta llega en las fases 3 y 4."""
 
     def __init__(self, base: Base, usuario: Usuario) -> None:
         super().__init__()
         self.base = base
-        self.setWindowTitle(f"Caja — {usuario.email}")
+        self.setWindowTitle(f"Caja — {usuario.nombre}")
         self.resize(1100, 700)
 
         self.buscador = QLineEdit(placeholderText="Buscar por nombre…  (o escaneá el código)")
@@ -96,7 +96,9 @@ class VentanaPrincipal(QMainWindow):
         caja.addWidget(self.tabla, 1)
         caja.addWidget(self.estado)
         self.setCentralWidget(centro)
-        self.statusBar().showMessage(f"Conectado como {usuario.email} · versión {__version__}")
+        self.statusBar().showMessage(
+            f"{usuario.nombre} ({usuario.rol_visible}) · {usuario.email} · versión {__version__}"
+        )
 
         # Buscar mientras se escribe, sin una consulta por tecla.
         self._espera = QTimer(self, singleShot=True, interval=300)
