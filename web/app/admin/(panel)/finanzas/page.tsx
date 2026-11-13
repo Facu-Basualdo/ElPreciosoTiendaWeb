@@ -98,7 +98,7 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/admin/fin
         )}
       </nav>
 
-      <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="grid gap-3 sm:grid-cols-3">
         <Cifra
           titulo="Ingresos"
           valor={ingresos}
@@ -106,15 +106,6 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/admin/fin
         />
         <Cifra titulo="Gastos" valor={actual.gastos} detalle="Cargados a mano" />
         <Cifra titulo="Resultado" valor={resultado} detalle="Ingresos menos gastos" destacada />
-        <Cifra
-          titulo="Ganancia estimada"
-          valor={actual.costo ? resultado - actual.costo : null}
-          detalle={
-            actual.costo
-              ? `Descontando ${formatearPrecio(actual.costo)} de costo de lo vendido${actual.sinCosto ? ` (${actual.sinCosto} sin costo cargado)` : ""}`
-              : "Cargá el costo de cada base para verla"
-          }
-        />
       </dl>
 
       <Seccion titulo="Últimos 12 meses" descripcion="Pasá el dedo o el mouse por cada mes para ver el detalle.">

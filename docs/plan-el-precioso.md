@@ -167,7 +167,8 @@ Migración nueva con grants, RLS y policies sólo admin en la misma migración.
   `categoria` (materiales, packaging, envíos, publicidad, otros · venta en mano,
   feria), `medio` (efectivo · transferencia), `nota`, `pedido_id` opcional.
 - **Costo por variante** opcional, con snapshot en `pedido_items.costo_unitario` →
-  ganancia estimada por pedido y por modelo.
+  ganancia estimada por pedido y por modelo. (Después se sacó del panel: la dueña no
+  carga costos. La base lo sigue soportando.)
 - Pantalla: resumen del mes (ingresos, gastos, ganancia), barras por mes (pico en
   Mayo), modelos más vendidos, alta rápida de gasto, exportar CSV.
 

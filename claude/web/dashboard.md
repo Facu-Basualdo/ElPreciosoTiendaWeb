@@ -118,8 +118,9 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
   `remera-e2-e` (separa número de letra). Si se cambia uno, cambiar el otro.
 - `guardarEtiquetas` **agrega antes de quitar**: si algo falla a mitad, sobra una
   etiqueta en vez de faltar la marca.
-- Listado: la búsqueda por SKU se filtra en el servidor de Next sobre hasta 1000
-  productos (el SKU vive en las variantes). Con catálogos más grandes, pasar a un RPC.
+- Listado: la búsqueda por nombre (y por SKU, aunque el panel ya no lo muestre) se filtra
+  en el servidor de Next sobre hasta 1000 productos. Con catálogos más grandes, pasar a
+  un RPC.
 - **El panel no habla de stock**: El Precioso hace todo a pedido. Sin columna ni filtro
   "Sin stock" en el listado, sin tarjeta "Sin stock" en el inicio (ahora cuenta
   borradores) y sin switch "Hecho a pedido" en Datos: `guardarDatos` conserva el

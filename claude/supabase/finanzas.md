@@ -22,6 +22,9 @@ admin**: tablas con grants a `authenticated` y RLS `es_admin()`, funciones que c
 
 ## Costo por variante
 
+**Hoy el panel no lo edita ni lo muestra** (la dueña no lo usa). El editor no manda la
+clave `costo`, así que guardar las bases no borra un costo que ya exista.
+
 - **Tabla aparte, `costos_variante`** (`variante_id` pk → `producto_variantes`, cascade),
   y no una columna de `producto_variantes`: **anon puede leer `producto_variantes` entera**
   (grant de tabla), así que una columna `costo` saldría por la API pública.

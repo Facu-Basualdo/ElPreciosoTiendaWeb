@@ -5,13 +5,11 @@ import {
   Alert,
   AlertDialog,
   Button,
-  Input,
   Label,
   ListBox,
   NumberField,
   Select,
   Switch,
-  TextField,
   toast,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
@@ -35,11 +33,13 @@ const MAX_GRUPOS = 3;
 const MAX_COMBINACIONES = 100;
 const formatoPrecio = { style: "currency", currency: SITIO.moneda, maximumFractionDigits: 0 } as const;
 
-type Valores = { sku: string; precio: number | null; costo: number | null; stock: number; activa: boolean };
-const VACIO: Valores = { sku: "", precio: null, costo: null, stock: 0, activa: true };
+type Valores = { sku: string; precio: number | null; stock: number; activa: boolean };
+const VACIO: Valores = { sku: "", precio: null, stock: 0, activa: true };
 const claveDe = (ids: string[]) => [...ids].sort().join("|");
-const COLUMNAS = "grid grid-cols-[1.4fr_0.9fr_1fr_1fr_0.7fr_auto] gap-3";
-const COLUMNAS_A_PEDIDO = "grid grid-cols-[1.4fr_0.9fr_1fr_1fr_auto] gap-3";
+// Sin SKU ni costo a la vista (El Precioso no los usa): el SKU que ya tenga una variante
+// se reenvía tal cual y el costo no se manda, así guardar no borra ninguno de los dos.
+const COLUMNAS = "grid grid-cols-[1.6fr_1fr_0.7fr_auto] gap-3";
+const COLUMNAS_A_PEDIDO = "grid grid-cols-[1.6fr_1fr_auto] gap-3";
 
 export function EditorVariantes({
   productoId,
@@ -72,7 +72,7 @@ export function EditorVariantes({
     Object.fromEntries(
       variantes.map((v) => [
         claveDe(v.etiquetas),
-        { sku: v.sku ?? "", precio: v.precio, costo: v.costo, stock: v.stock, activa: v.activa },
+        { sku: v.sku ?? "", precio: v.precio, stock: v.stock, activa: v.activa },
       ]),
     ),
   );
@@ -111,7 +111,6 @@ export function EditorVariantes({
         etiquetas: ids,
         sku: v.sku.trim() || null,
         precio: v.precio,
-        costo: v.costo,
         stock: v.stock,
         stock_original: stockLeido.get(claveDe(ids)) ?? null,
         activa: v.activa,
@@ -226,12 +225,10 @@ export function EditorVariantes({
           {/* Grilla y no Table: la Table de HeroUI es un grid de React Aria que captura
               flechas y espacio, y pelea con los campos editables de adentro. */}
           <div className="overflow-x-auto scrollbar-thin">
-            <div role="list" className="flex min-w-[760px] flex-col divide-y divide-separator rounded-xl border border-border">
+            <div role="list" className="flex min-w-[420px] flex-col divide-y divide-separator rounded-xl border border-border">
               <div className={`${aPedido ? COLUMNAS_A_PEDIDO : COLUMNAS} bg-surface-secondary px-3 py-2 text-xs font-medium text-muted`}>
                 <span>Combinación</span>
-                <span>SKU</span>
                 <span>Precio (vacío = base)</span>
-                <span>Costo (opcional)</span>
                 {!aPedido && <span>Stock</span>}
                 <span>Activa</span>
               </div>
@@ -241,9 +238,6 @@ export function EditorVariantes({
                 return (
                   <div role="listitem" key={claveDe(ids) || "unica"} className={`${aPedido ? COLUMNAS_A_PEDIDO : COLUMNAS} items-center px-3 py-2`}>
                     <span className="text-sm font-medium">{nombre}</span>
-                    <TextField aria-label={`SKU de ${nombre}`} value={v.sku} onChange={(sku) => fijar(ids, { sku })}>
-                      <Input className="font-mono text-xs" />
-                    </TextField>
                     <NumberField
                       aria-label={`Precio de ${nombre}`}
                       value={v.precio ?? Number.NaN}
@@ -253,18 +247,6 @@ export function EditorVariantes({
                     >
                       <NumberField.Group>
                         <NumberField.Input placeholder={new Intl.NumberFormat(SITIO.locale, formatoPrecio).format(precioBase)} />
-                      </NumberField.Group>
-                    </NumberField>
-                    {/* Lo que cuesta hacerla: Finanzas lo usa para estimar la ganancia. Sólo lo ve el panel. */}
-                    <NumberField
-                      aria-label={`Costo de ${nombre}`}
-                      value={v.costo ?? Number.NaN}
-                      onChange={(c) => fijar(ids, { costo: c === undefined || Number.isNaN(c) ? null : Math.round(c) })}
-                      minValue={0}
-                      formatOptions={formatoPrecio}
-                    >
-                      <NumberField.Group>
-                        <NumberField.Input />
                       </NumberField.Group>
                     </NumberField>
                     {!aPedido && (

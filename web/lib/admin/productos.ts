@@ -20,8 +20,6 @@ export type VarianteAdmin = {
   clave: string;
   sku: string | null;
   precio: number | null;
-  /** Costo opcional (tabla costos_variante, sólo admin): para estimar la ganancia. */
-  costo: number | null;
   stock: number;
   activa: boolean;
   etiquetas: string[];
@@ -52,7 +50,7 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
       `id, slug, nombre, precio, precio_anterior, categoria_id, destacado, publicado, a_pedido, descripcion,
        etiquetas:producto_etiquetas(etiqueta_id),
        imagenes:producto_imagenes(id, path, alt, orden),
-       variantes:producto_variantes(id, clave, sku, precio, stock, activa, orden, costo:costos_variante(costo), etiquetas:variante_etiquetas(etiqueta_id))`,
+       variantes:producto_variantes(id, clave, sku, precio, stock, activa, orden, etiquetas:variante_etiquetas(etiqueta_id))`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -78,7 +76,6 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
         clave: v.clave,
         sku: v.sku,
         precio: v.precio === null ? null : Number(v.precio),
-        costo: v.costo ? Number(v.costo.costo) : null,
         stock: v.stock,
         activa: v.activa,
         etiquetas: v.etiquetas.map((e) => e.etiqueta_id),

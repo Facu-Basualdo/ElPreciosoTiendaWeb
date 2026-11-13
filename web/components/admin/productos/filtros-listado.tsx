@@ -42,7 +42,7 @@ export function FiltrosListado() {
         <SearchField aria-label="Buscar productos" value={q} onChange={setQ} onClear={() => ir({ q: null })}>
           <SearchField.Group>
             <SearchField.SearchIcon />
-            <SearchField.Input placeholder="Buscar por nombre o SKU" />
+            <SearchField.Input placeholder="Buscar por nombre" />
             <SearchField.ClearButton />
           </SearchField.Group>
         </SearchField>

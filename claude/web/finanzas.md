@@ -13,7 +13,7 @@ las cifras de arriba.
 | Parte | Detalle |
 |---|---|
 | Mes | `?mes=YYYY-MM` (por defecto el actual en Argentina), flechas anterior/siguiente. `lib/admin/finanzas.ts` arma rangos y nombres |
-| Cifras | Ingresos (pedidos entregados + fuera de la web), gastos, resultado y **ganancia estimada** (resultado − costo de lo vendido; "—" si no hay costos cargados, y avisa cuántos ítems vendidos no tienen costo) |
+| Cifras | Ingresos (pedidos entregados + fuera de la web), gastos y resultado (ingresos − gastos) |
 | Últimos 12 meses | `GraficoMeses`: barras de ingresos y gastos, un solo eje en pesos, tooltip con hover o foco, tabla con los mismos números en un `Disclosure` |
 | Cargar gasto o ingreso | `AltaMovimiento`: tipo, monto, fecha, categoría (cambia según el tipo), medio, nota |
 | Más vendidos | `finanzas_mas_vendidos` de los últimos 12 meses |
@@ -31,8 +31,9 @@ las cifras de arriba.
   client component rompe el prerender con Cache Components ("unstable value").
 - **El CSV es para el Excel en español**: separador `;` y BOM UTF-8. Se arma en el
   navegador con los datos que ya trajo la página: no hay route handler.
-- El costo por base se carga en la ficha del producto, columna "Costo (opcional)" de
-  Bases y precios. Sólo lo ve el panel.
+- **El costo por base no se carga desde el panel** (la dueña no lo usa): la columna y la
+  cifra "Ganancia estimada" se sacaron. La base sigue guardando el costo si existe
+  (`costos_variante`, `costo_vendido` en `finanzas_por_mes`): volver a mostrarlo es sólo UI.
 
 ## Ver también
 

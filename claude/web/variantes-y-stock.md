@@ -67,8 +67,10 @@ combinaciones y sin historial (ver
    etiquetas (`Autocomplete` con "Crear «…»").
 2. Las combinaciones se generan solas (producto cartesiano, `editor-variantes.tsx`) en
    una grilla editable (no `Table`: ver [heroui](heroui.md#rsc)) y conservan los valores ya
-   cargados de cada combinación: SKU, precio (vacío = precio base), stock (`NumberField`),
-   activa (`Switch`). Tope de 100 combinaciones.
+   cargados de cada combinación: precio (vacío = precio base), stock (`NumberField`, sólo
+   si no es a pedido), activa (`Switch`). Tope de 100 combinaciones. **SKU y costo no se
+   muestran**: el SKU que ya tenga una variante se reenvía tal cual y el costo no se manda,
+   así guardar no borra ninguno.
 3. "Aplicar stock a todas" para cargas masivas.
 4. Guardar manda la lista completa a `guardar_variantes` (un solo RPC, nunca updates
    sueltos), **con el `stock_original` de cada combinación** (el que se leyó al abrir).
