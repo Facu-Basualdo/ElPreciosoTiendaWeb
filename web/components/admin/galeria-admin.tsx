@@ -63,7 +63,7 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
     <Seccion
       id="imagenes"
       titulo="Imágenes"
-      descripcion="Relación 4:5. La primera es la principal: es la que se ve en el catálogo."
+      descripcion="Relación 9:16, como las fotos del celular. La primera es la principal: es la que se ve en el catálogo."
     >
       {orden.length > 0 && (
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">

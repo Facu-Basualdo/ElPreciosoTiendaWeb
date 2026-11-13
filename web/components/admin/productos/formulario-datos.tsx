@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Description, Form, Input, Label, ListBox, NumberField, Select, Switch, TextField, toast } from "@heroui/react";
+import { Button, Description, Disclosure, Form, Input, Label, ListBox, NumberField, Select, Switch, TextField, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { guardarDatos } from "@/app/admin/(panel)/productos/acciones";
-import type { ProductoAdmin } from "@/lib/admin/productos";
+import { guardarDatos, guardarEtiquetas } from "@/app/admin/(panel)/productos/acciones";
+import type { GrupoAdmin, ProductoAdmin } from "@/lib/admin/productos";
 import { SITIO } from "@/lib/sitio";
 import { Seccion } from "../seccion";
+import { CamposCaracteristicas } from "./campos-caracteristicas";
 import { useCategoriaProducto } from "./categoria-producto";
 
 const SIN_CATEGORIA = "sin-categoria";
@@ -15,9 +16,11 @@ const formatoPrecio = { style: "currency", currency: SITIO.moneda, maximumFracti
 export function FormularioDatos({
   producto,
   categorias,
+  grupos,
 }: {
   producto: ProductoAdmin;
   categorias: { id: string; nombre: string }[];
+  grupos: GrupoAdmin[];
 }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
@@ -27,6 +30,8 @@ export function FormularioDatos({
   const [categoriaId, setCategoriaId] = useState<string | null>(producto.categoriaId);
   const { setCategoriaId: avisarCategoria } = useCategoriaProducto();
   const [publicado, setPublicado] = useState(producto.publicado);
+  const [etiquetas, setEtiquetas] = useState(producto.etiquetas);
+  const etiquetasCambiaron = [...etiquetas].sort().join() !== [...producto.etiquetas].sort().join();
 
   function guardar() {
     iniciar(async () => {
@@ -44,6 +49,14 @@ export function FormularioDatos({
       if (!r.ok) {
         toast.danger(r.error);
         return;
+      }
+      // Las características se guardan con el mismo botón (su propia acción, sólo si cambiaron).
+      if (etiquetasCambiaron) {
+        const e = await guardarEtiquetas(producto.id, etiquetas);
+        if (!e.ok) {
+          toast.danger(e.error);
+          return;
+        }
       }
       toast("Datos guardados");
       router.refresh();
@@ -139,6 +152,23 @@ export function FormularioDatos({
             </Switch.Content>
           </Switch>
         </div>
+
+        {/* Opcional y plegado: abierto si el producto ya tiene alguna característica. */}
+        <Disclosure defaultExpanded={producto.etiquetas.length > 0} className="rounded-xl border border-border md:col-span-2">
+          <Disclosure.Heading>
+            <Disclosure.Trigger className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium">
+              <span>
+                Características <span className="font-normal text-muted">(opcional): fecha patria, dije, colores</span>
+              </span>
+              <Disclosure.Indicator />
+            </Disclosure.Trigger>
+          </Disclosure.Heading>
+          <Disclosure.Content>
+            <Disclosure.Body className="px-4 pb-4">
+              <CamposCaracteristicas grupos={grupos} seleccionadas={etiquetas} onChange={setEtiquetas} />
+            </Disclosure.Body>
+          </Disclosure.Content>
+        </Disclosure>
 
         <div className="flex justify-end md:col-span-2">
           <Button type="submit" isPending={pendiente}>

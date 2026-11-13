@@ -59,7 +59,7 @@ export function AvisoCategoria({ que }: { que: string }) {
   return (
     <p className="text-xs text-muted">
       {!categoriaId ? (
-        <>Elegí la categoría en «Datos» para ver sólo {que} que le corresponden.</>
+        <>Elegí la categoría del producto para ver sólo {que} que le corresponden.</>
       ) : permitidos ? (
         <>
           Se muestran {que} de «{nombres[categoriaId]}». Para cambiarlas, andá a {enlace}.

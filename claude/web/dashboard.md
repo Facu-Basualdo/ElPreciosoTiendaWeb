@@ -121,10 +121,12 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 - **"Cargar fotos"** (`carga-rapida.tsx`): varias fotos → un borrador por foto,
   con la foto como principal. Las que no son 9:16 se recortan al centro sin preguntar
   (`recorteCentrado`); para elegir el recorte, subir desde la ficha.
-- **Ficha corta**: Datos (nombre, precio, categoría, visible, hecho a pedido) → Fotos
-  (con el [editor de fotos](editor-de-fotos.md)) → Bases y precios. Características y
-  descripción quedan plegadas en "Más detalles" (`Disclosure`, abierto si ya tienen
-  algo). Precio anterior sólo con `SITIO.ventasAvanzadas`; "Destacado" ya no se edita
+- **Ficha corta**: Datos (nombre, precio, categoría, visible y, plegadas, las
+  **características opcionales**) → Fotos (con el [editor de fotos](editor-de-fotos.md))
+  → Bases y precios → Descripción (opcional, plegada). Las características
+  (`campos-caracteristicas.tsx`) **se guardan con "Guardar datos"**: un solo botón;
+  `guardarDatos` y después `guardarEtiquetas` sólo si cambiaron. Cada desplegable
+  arranca abierto si ya tiene algo. Precio anterior sólo con `SITIO.ventasAvanzadas`; "Destacado" ya no se edita
   (la home muestra los más nuevos) y `guardarDatos` conserva el valor que tenía.
 - **"Nuevo producto" crea el borrador y abre su edición** (`crearBorrador`): slug
   `borrador-xxxxxxxx`, oculto, con su variante única (la crea el trigger). El slug real
@@ -199,7 +201,7 @@ una remera pide talle, color y material; un monitor, refresco, panel y resoluci�
 
 - La categoría se elige en "Datos" y **las secciones de abajo cambian al instante, sin
   guardar**: `ProveedorCategoria` (`components/admin/productos/categoria-producto.tsx`)
-  comparte la categoría elegida; `EditorEtiquetas` y `EditorVariantes` filtran con
+  comparte la categoría elegida; `CamposCaracteristicas` y `EditorVariantes` filtran con
   `useGruposPermitidos()`.
 - Los grupos permitidos son los sueltos de la categoría, **los de sus plantillas** y lo
   mismo de su categoría principal (`gruposPorCategoria` en `obtenerCatalogosAdmin`).

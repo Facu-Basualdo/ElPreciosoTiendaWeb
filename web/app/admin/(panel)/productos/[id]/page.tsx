@@ -8,7 +8,6 @@ import { Suspense } from "react";
 import { BorrarProducto } from "@/components/admin/productos/borrar-producto";
 import { ProveedorCategoria } from "@/components/admin/productos/categoria-producto";
 import { EditorDescripcion } from "@/components/admin/editor-descripcion";
-import { EditorEtiquetas } from "@/components/admin/productos/editor-etiquetas";
 import { EditorVariantes } from "@/components/admin/productos/editor-variantes";
 import { FormularioDatos } from "@/components/admin/productos/formulario-datos";
 import { HistorialStock } from "@/components/admin/productos/historial-stock";
@@ -113,9 +112,10 @@ async function Edicion({
       >
         {/* key: al guardar, router.refresh() trae datos nuevos y cada sección se reinicia con ellos. */}
         <FormularioDatos
-          key={`datos-${producto.slug}-${producto.publicado}-${producto.aPedido}`}
+          key={`datos-${producto.slug}-${producto.publicado}-${producto.aPedido}-${producto.etiquetas.join()}`}
           producto={producto}
           categorias={catalogos.categorias}
+          grupos={catalogos.grupos}
         />
         <GaleriaAdmin
           carpeta={`productos/${producto.id}`}
@@ -135,22 +135,18 @@ async function Edicion({
           grupos={catalogos.grupos}
           variantes={producto.variantes}
         />
-        {/* Lo opcional, plegado: la ficha corta es nombre, fotos, bases con precio y publicar. */}
-        <Disclosure defaultExpanded={producto.etiquetas.length > 0 || !!producto.descripcion}>
+        {/* Lo opcional, plegado: la ficha corta es datos (con características opcionales), fotos, bases con precio. */}
+        <Disclosure defaultExpanded={!!producto.descripcion}>
           <Disclosure.Heading>
             <Disclosure.Trigger className="flex w-full items-center justify-between rounded-tarjeta border border-border bg-surface px-5 py-4 font-medium">
-              Más detalles: fecha patria, dije, colores y descripción
+              <span>
+                Descripción <span className="font-normal text-muted">(opcional)</span>
+              </span>
               <Disclosure.Indicator />
             </Disclosure.Trigger>
           </Disclosure.Heading>
           <Disclosure.Content>
             <Disclosure.Body className="flex flex-col gap-5 pt-5">
-              <EditorEtiquetas
-                key={`et-${producto.etiquetas.join()}`}
-                productoId={producto.id}
-                grupos={catalogos.grupos}
-                seleccionadas={producto.etiquetas}
-              />
               <EditorDescripcion inicial={producto.descripcion} guardar={guardarDescripcion.bind(null, producto.id)} />
             </Disclosure.Body>
           </Disclosure.Content>
