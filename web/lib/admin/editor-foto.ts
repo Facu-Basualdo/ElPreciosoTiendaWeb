@@ -96,6 +96,35 @@ export function recortarTransparencia(img: HTMLImageElement): HTMLCanvasElement 
   return salida;
 }
 
+/** Refuerzo con el que arranca el editor: rescata organza y cintas claras sin halo. */
+export const REFUERZO_INICIAL = 0.35;
+
+/**
+ * Vuelve opaco lo que el modelo dejó semitransparente. Con telas translúcidas (organza)
+ * o cintas claras sobre fondo claro, el modelo no decide y les pone transparencia a
+ * medias: se ven lavadas o desaparecen. Subir el alfa recupera su color real (el PNG
+ * guarda el color original del píxel). Lo casi invisible se descarta para no dejar halo
+ * de fondo. `fuerza` 0 = como lo dejó el modelo; 1 = casi todo lo visible, opaco.
+ */
+export function reforzarRecorte(origen: HTMLCanvasElement, fuerza: number): HTMLCanvasElement {
+  if (fuerza <= 0) return origen;
+  const ganancia = 1 + fuerza * 9;
+  const piso = 6 + fuerza * 20;
+  const salida = document.createElement("canvas");
+  salida.width = origen.width;
+  salida.height = origen.height;
+  const ctx = salida.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return origen;
+  ctx.drawImage(origen, 0, 0);
+  const imagen = ctx.getImageData(0, 0, salida.width, salida.height);
+  const d = imagen.data;
+  for (let i = 3; i < d.length; i += 4) {
+    d[i] = d[i] < piso ? 0 : Math.min(255, d[i] * ganancia);
+  }
+  ctx.putImageData(imagen, 0, 0);
+  return salida;
+}
+
 /**
  * Brillo, contraste y saturación píxel por píxel. No usa `ctx.filter`: Safari no lo
  * soporta en canvas y la foto saldría distinta en el iPhone.

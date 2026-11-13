@@ -30,10 +30,15 @@ del producto (`components/admin/editor-foto.tsx`, funciones en `lib/admin/editor
   `useDeferredValue`.
 - **El slider de tamaño es relativo** a "entra justo en la zona libre" (100 %). Si fuera
   la escala absoluta, su máximo cambiaría mientras se arrastra.
-- **Las telas translúcidas (organza) sobre fondo blanco se pierden** en parte: el modelo
-  las toma como fondo. Probado con fotos reales: cintas opacas, alfileres y dijes metálicos
-  salen bien; la organza celeste, no. Por eso la pantalla sugiere un fondo oscuro, y queda
-  el switch para usar la foto con fondo.
+- **Telas translúcidas y cintas claras sobre fondo claro**: el modelo no decide y las deja
+  semitransparentes (se ven lavadas). **"Rellenar transparencias"** (`reforzarRecorte`,
+  arranca en 35 %) multiplica el alfa y descarta lo casi invisible para no dejar halo:
+  como el PNG guarda el color original del píxel, la cinta recupera su color. Probado
+  con fotos reales: en 0 % las cintas azules se ven lavadas, en 35 % quedan sólidas.
+- **Lo que el modelo marcó como fondo del todo no se recupera** (la organza celeste muy
+  clara sobre blanco): no hay alfa que reforzar. Para eso: foto sobre fondo oscuro, o
+  apagar "Quitar el fondo". **El modelo `isnet` completo no es la salida**: tarda minutos
+  hasta en una computadora; en el celular sería inviable. Se queda `isnet_fp16`.
 - Si quitar el fondo falla (sin conexión, celular sin memoria), se sigue con la foto
   entera: el switch "Quitar el fondo" queda deshabilitado.
 - La vista previa es el lienzo real de 1080×1920 escalado por CSS: lo que se ve es lo

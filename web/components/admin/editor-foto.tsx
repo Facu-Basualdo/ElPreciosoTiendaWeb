@@ -13,6 +13,8 @@ import {
   PLANTILLA,
   quitarFondo,
   recortarTransparencia,
+  REFUERZO_INICIAL,
+  reforzarRecorte,
   SIN_AJUSTES,
   transformacionInicial,
   type Ajustes,
@@ -57,6 +59,7 @@ function Dialogo({
   const [bases, setBases] = useState<Bases | null>(null);
   const [usarSinFondo, setUsarSinFondo] = useState(true);
   const [ajustes, setAjustes] = useState<Ajustes>(SIN_AJUSTES);
+  const [refuerzo, setRefuerzo] = useState(REFUERZO_INICIAL);
   const [t, setT] = useState<Transformacion | null>(null);
   const [sombra, setSombra] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -65,10 +68,13 @@ function Dialogo({
     cargarImagenUrl(PLANTILLA).then(setPlantilla, () => toast.danger("No se pudo cargar la plantilla."));
   }, []);
 
-  const base = bases ? (usarSinFondo && bases.sinFondo ? bases.sinFondo : bases.conFondo) : null;
-  // Los ajustes recorren cada píxel: se calculan con el valor diferido para no trabar el slider.
+  const sinFondo = !!(usarSinFondo && bases?.sinFondo);
+  const base = bases ? (sinFondo && bases.sinFondo ? bases.sinFondo : bases.conFondo) : null;
+  // Refuerzo y ajustes recorren cada píxel: se calculan con el valor diferido para no trabar el slider.
   const ajustesDiferidos = useDeferredValue(ajustes);
-  const objeto = useMemo(() => (base ? aplicarAjustes(base, ajustesDiferidos) : null), [base, ajustesDiferidos]);
+  const refuerzoDiferido = useDeferredValue(refuerzo);
+  const reforzada = useMemo(() => (base && sinFondo ? reforzarRecorte(base, refuerzoDiferido) : base), [base, sinFondo, refuerzoDiferido]);
+  const objeto = useMemo(() => (reforzada ? aplicarAjustes(reforzada, ajustesDiferidos) : null), [reforzada, ajustesDiferidos]);
   // El slider de tamaño es relativo a "entra justo en la zona libre" (100%).
   const escalaBase = useMemo(() => (base ? transformacionInicial(base).escala : 1), [base]);
 
@@ -92,6 +98,7 @@ function Dialogo({
       setBases({ sinFondo, conFondo });
       setUsarSinFondo(!!sinFondo);
       setAjustes(SIN_AJUSTES);
+      setRefuerzo(REFUERZO_INICIAL);
       setT(transformacionInicial(sinFondo ?? conFondo));
     } catch {
       toast.danger("Esa imagen no se pudo abrir. Probá con una foto JPG o PNG.");
@@ -158,6 +165,16 @@ function Dialogo({
                       <Label>Quitar el fondo</Label>
                     </Switch.Content>
                   </Switch>
+                  {sinFondo && (
+                    <Control
+                      etiqueta="Rellenar transparencias"
+                      valor={refuerzo}
+                      min={0}
+                      max={1}
+                      paso={0.01}
+                      onCambiar={setRefuerzo}
+                    />
+                  )}
 
                   {t && (
                     <>
@@ -219,6 +236,7 @@ function Dialogo({
                       size="sm"
                       onPress={() => {
                         setAjustes(SIN_AJUSTES);
+                        setRefuerzo(REFUERZO_INICIAL);
                         if (base) setT(transformacionInicial(base));
                       }}
                     >
@@ -279,7 +297,8 @@ function PasoElegir({
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-12 text-center">
       <p className="text-muted">
         Sacale una foto al prendedor sobre una superficie lisa y con buena luz. El fondo se quita solo y queda sobre la
-        plantilla de la marca. Si tiene organza o cintas transparentes, mejor sobre un fondo oscuro: sobre blanco se pierden.
+        plantilla de la marca. Si tiene organza o cintas claras, mejor sobre un fondo oscuro; si igual se ven lavadas, subí
+        «Rellenar transparencias».
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <FileTrigger acceptedFileTypes={TIPOS} defaultCamera="environment" onSelect={onElegir}>
