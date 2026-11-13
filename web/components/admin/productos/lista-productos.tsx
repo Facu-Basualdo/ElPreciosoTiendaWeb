@@ -52,7 +52,12 @@ export function ListaProductos({ productos }: { productos: FilaProducto[] }) {
             </NextLink>
             <span className="truncate text-xs text-muted">{p.categoria ?? "Sin categoría"}</span>
             <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-              <span className="text-sm font-semibold tabular-nums">{formatearPrecio(p.precio)}</span>
+              {p.precio > 0 ? (
+                <span className="text-sm font-semibold tabular-nums">{formatearPrecio(p.precio)}</span>
+              ) : (
+                // Sin precio la tienda muestra "Precio a consultar" y no deja sumarlo al carrito.
+                <span className="rounded-full bg-dorado/30 px-2 py-0.5 text-xs font-medium">Sin precio</span>
+              )}
               {/* relative + z-10: por encima del link estirado, así tocar el switch no abre el producto. */}
               <div className="relative z-10">
                 <SwitchVisible id={p.id} publicado={p.publicado} nombre={p.nombre} />

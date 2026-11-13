@@ -46,6 +46,19 @@ contra la cantidad del ítem, ver [combos](combos.md#tienda)).
   El número exacto no se muestra por encima de ese umbral.
 - El botón de contacto incluye la variante en el mensaje ("Remera básica — M / Negro").
 
+## Sin precio
+
+**Precio 0 es "a consultar", nunca "$ 0"**: la dueña a veces publica sin cargar el precio. `sinPrecio()` (`components/tienda/precio.tsx`) lo decide en un solo lugar:
+
+| Dónde | Qué pasa |
+|---|---|
+| `Precio` (tarjetas, carruseles, ficha) | Muestra "Precio a consultar" |
+| Tarjeta con variante única | "Consultar precio" abre WhatsApp con el nombre y el link, en vez de "Sumar al carrito" |
+| Ficha | Si la base elegida no tiene precio, no hay cantidad ni "Sumar al carrito": WhatsApp pasa a ser el botón dorado |
+| Panel (grilla de productos) | Chip "Sin precio" en lugar del monto |
+
+**Es sólo la interfaz**: `crear_pedido` no rechaza un precio 0. No hace falta mientras ningún botón lo sume al carrito.
+
 ## Filtros
 
 El usuario filtra por talle igual que por material: la URL y `leerFiltros` no

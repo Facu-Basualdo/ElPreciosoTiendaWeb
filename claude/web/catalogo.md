@@ -30,11 +30,17 @@ quedaba en `localStorage` y seguía mostrando la lista a quien la había elegido
 
 ## Ficha
 
-Dos paneles: galería + compra (breadcrumb, marca, título, caja de precio, selector de
-variantes, cantidad, características principales con íconos) y pestañas
-**Especificaciones** (grilla con el ícono de cada grupo, `lib/iconos.tsx`) /
-**Descripción** (TipTap). Los grupos de variante aparecen en especificaciones con todas
-sus opciones ("Talle: S, M, L, XL").
+Galería + compra (breadcrumb "Catálogo", marca, título, caja de precio, selector de
+variantes, cantidad y **Características**: grilla con el ícono de cada grupo,
+`lib/iconos.tsx`, y links al filtro). **Las características van una sola vez, junto al
+precio**: antes había un resumen ahí y la misma lista en una pestaña abajo. Los grupos de
+variante aparecen con todas sus opciones ("Base: Gancho, Alfiler…"). Debajo, la
+**Descripción** (TipTap) sólo si hay, y "Más modelos".
+
+| Pieza | Regla |
+|---|---|
+| Barra fija del celular (`components/tienda/barra-compra.tsx`) | Precio + "Sumar al carrito" (o "Consultar" sin precio). **Aparece sólo cuando los botones de la ficha no se ven** y se esconde al llegar al `footer` (dos `IntersectionObserver` sobre el bloque de acciones y el pie). `inert` cuando está oculta. No existe desde `lg` |
+| "Más modelos" (`obtenerRelacionados`) | Los que comparten la primera característica que no es variante (la fecha patria), completados con los más nuevos si no alcanzan; nunca el actual. **Antetítulo neutro ("Seguí mirando")**: no se puede prometer "también para 20 de Junio" si la lista se completó con otros |
 
 ## Patrón de página con Cache Components
 

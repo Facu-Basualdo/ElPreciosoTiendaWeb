@@ -4,8 +4,10 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { BotonAgregar } from "@/components/carrito/boton-agregar";
 import type { TarjetaProducto as Datos } from "@/lib/catalogo/lecturas";
+import { SITIO } from "@/lib/sitio";
 import { urlPublica } from "@/lib/supabase/storage";
-import { Precio } from "./precio";
+import { enlaceWhatsapp } from "@/lib/whatsapp";
+import { Precio, sinPrecio } from "./precio";
 
 // Una sola variante de `sizes` para las grillas: cada combinación distinta consume
 // cupo de optimización de Vercel. Ver claude/web/imagenes.md
@@ -72,14 +74,26 @@ export function TarjetaProducto({ producto, prioridad = false }: { producto: Dat
   );
 }
 
-// Variante única con stock → al carrito directo. Con varias bases → a la ficha a
-// elegir. Sin stock → deshabilitado.
+// Variante única con stock → al carrito directo (sin precio cargado → consultar por
+// WhatsApp). Con varias bases → a la ficha a elegir. Sin stock → deshabilitado.
 function AccionTarjeta({ producto }: { producto: Datos }) {
   if (!producto.disponible) {
     return (
       <span aria-disabled className={`${buttonVariants({ variant: "secondary", size: "sm", fullWidth: true })} pointer-events-none opacity-60`}>
         Sin stock
       </span>
+    );
+  }
+  if (producto.varianteId && sinPrecio(producto.precioDesde)) {
+    return (
+      <a
+        href={enlaceWhatsapp(`Hola, quiero consultar el precio de ${producto.nombre}\n${SITIO.url}/p/${producto.slug}`)}
+        target="_blank"
+        rel="noopener"
+        className={buttonVariants({ variant: "outline", size: "sm", fullWidth: true })}
+      >
+        Consultar precio
+      </a>
     );
   }
   if (producto.varianteId) {

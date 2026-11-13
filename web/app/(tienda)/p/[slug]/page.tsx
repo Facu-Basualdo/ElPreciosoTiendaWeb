@@ -7,9 +7,16 @@ import { JsonLd } from "@/components/json-ld";
 import { Descripcion } from "@/components/tienda/descripcion";
 import { EsqueletoFicha } from "@/components/tienda/esqueletos";
 import { Galeria } from "@/components/tienda/galeria";
-import { PestanasFicha } from "@/components/tienda/pestanas-ficha";
+import { CarruselProductos } from "@/components/tienda/carrusel-productos";
 import { SelectorVariantes } from "@/components/tienda/selector-variantes";
-import { obtenerProducto, obtenerSlugsPublicados, paramsDeSlugs, type Caracteristica } from "@/lib/catalogo/lecturas";
+import { TarjetaProducto } from "@/components/tienda/tarjeta-producto";
+import {
+  obtenerProducto,
+  obtenerRelacionados,
+  obtenerSlugsPublicados,
+  paramsDeSlugs,
+  type Caracteristica,
+} from "@/lib/catalogo/lecturas";
 import { IconoGrupo } from "@/lib/iconos";
 import { SITIO } from "@/lib/sitio";
 import { urlPublica } from "@/lib/supabase/storage";
@@ -70,8 +77,13 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
         : { "@type": "Offer", priceCurrency: SITIO.moneda, price: precios[0], availability: disponibilidad, url: `${SITIO.url}/p/${p.slug}` },
   };
 
-  // Las 4 primeras especificaciones no-variante van como resumen con íconos junto al precio.
-  const principales = p.caracteristicas.filter((c) => !c.esVariante).slice(0, 4);
+  // "Más modelos": los de la primera característica que no es variante (en El Precioso,
+  // la fecha patria); si no tiene ninguna, los más nuevos.
+  const base = p.caracteristicas.find((c) => !c.esVariante);
+  const relacionados = await obtenerRelacionados(
+    p.slug,
+    base ? { [base.grupoSlug]: base.valores.map((v) => v.slug).sort() } : {},
+  );
 
   return (
     <article className="contenedor flex flex-col gap-4 py-4 sm:py-6">
@@ -81,7 +93,7 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
 
         <div className="flex flex-col gap-5">
           <Breadcrumbs>
-            <Breadcrumbs.Item href="/">Productos</Breadcrumbs.Item>
+            <Breadcrumbs.Item href="/">Catálogo</Breadcrumbs.Item>
             {p.categoria?.padre && (
               <Breadcrumbs.Item href={`/?cat=${p.categoria.padre.slug}`}>{p.categoria.padre.nombre}</Breadcrumbs.Item>
             )}
@@ -114,38 +126,46 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
             />
           </Suspense>
 
-          {principales.length > 0 && (
-            <div className="flex flex-col gap-2 border-t border-border pt-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Características principales</p>
-              <ul className="flex flex-wrap gap-x-6 gap-y-3">
-                {principales.map((c) => (
-                  <li key={c.grupoSlug} className="flex items-center gap-2 text-sm">
-                    <IconoGrupo nombre={c.icono} className="size-4 text-muted" />
-                    {c.valores.map((v) => v.valor).join(", ")}
-                  </li>
-                ))}
-              </ul>
+          {/* Una sola lista de características, junto al precio (antes había un resumen
+              acá y la misma lista repetida en una pestaña de abajo). */}
+          {p.caracteristicas.length > 0 && (
+            <div className="flex flex-col gap-4 border-t border-border pt-5">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">Características</h2>
+              <Especificaciones caracteristicas={p.caracteristicas} />
             </div>
           )}
         </div>
       </section>
 
-      <section className="rounded-tarjeta border border-border bg-surface p-4 sm:p-8">
-        <PestanasFicha
-          descripcion={p.descripcion ? <Descripcion contenido={p.descripcion} /> : null}
-          especificaciones={p.caracteristicas.length ? <Especificaciones caracteristicas={p.caracteristicas} /> : null}
-        />
-      </section>
+      {p.descripcion != null && (
+        <section aria-labelledby="titulo-descripcion" className="flex flex-col gap-4 rounded-tarjeta border border-border bg-surface p-4 sm:p-8">
+          <h2 id="titulo-descripcion" className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Descripción
+          </h2>
+          <Descripcion contenido={p.descripcion} />
+        </section>
+      )}
+
+      {relacionados.length > 0 && (
+        <div className="mt-8 sm:mt-12">
+          {/* Antetítulo neutro: si faltan parecidos, la lista se completa con los más nuevos. */}
+          <CarruselProductos titulo="Más modelos" antetitulo="Seguí mirando">
+            {relacionados.map((r) => (
+              <TarjetaProducto key={r.id} producto={r} />
+            ))}
+          </CarruselProductos>
+        </div>
+      )}
     </article>
   );
 }
 
 function Especificaciones({ caracteristicas }: { caracteristicas: Caracteristica[] }) {
   return (
-    <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+    <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
       {caracteristicas.map((c) => (
         <div key={c.grupoSlug} className="flex gap-3">
-          <IconoGrupo nombre={c.icono} className="mt-0.5 size-6 shrink-0" />
+          <IconoGrupo nombre={c.icono} className="mt-0.5 size-5 shrink-0 text-muted" />
           <div className="flex min-w-0 flex-col border-l border-border pl-3">
             <dt className="text-xs text-muted">{c.grupo}</dt>
             <dd className="text-sm font-semibold">

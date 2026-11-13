@@ -132,6 +132,33 @@ export async function obtenerFotosPortada(slugs: readonly string[]): Promise<Fot
   });
 }
 
+/**
+ * "Más modelos" de la ficha: los que comparten la etiqueta pedida (la fecha patria, el
+ * dije…), y si no alcanzan, los más nuevos. Nunca el producto actual.
+ */
+export async function obtenerRelacionados(slug: string, filtro: Record<string, string[]>, limite = 8): Promise<TarjetaProducto[]> {
+  "use cache";
+  cacheLife(VIDA_PRECIOS);
+  cacheTag(TAGS.productos, TAGS.promociones);
+
+  async function pedir(f?: Record<string, string[]>) {
+    const { data, error } = await supabasePublico().rpc("buscar_productos", {
+      p_filtros: f,
+      p_orden: "recientes",
+      p_limite: limite + 1,
+    });
+    if (error) throw new Error(`relacionados: ${error.message}`);
+    return ((data ?? []) as FilaBusqueda[]).map(aTarjeta).filter((p) => p.slug !== slug);
+  }
+
+  const lista = Object.keys(filtro).length ? await pedir(filtro) : [];
+  if (lista.length < limite) {
+    const ya = new Set(lista.map((p) => p.slug));
+    lista.push(...(await pedir()).filter((p) => !ya.has(p.slug)));
+  }
+  return lista.slice(0, limite);
+}
+
 /** Valores de un grupo de etiquetas en su orden (las bases en "Personalizá el tuyo"). */
 export async function obtenerValoresGrupo(slugGrupo: string): Promise<string[]> {
   "use cache";

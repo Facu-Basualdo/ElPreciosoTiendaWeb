@@ -4,12 +4,13 @@ import { CircleCheck, CircleXmark, Comment } from "@gravity-ui/icons";
 import { Label, NumberField, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BotonAgregar } from "@/components/carrito/boton-agregar";
 import type { GrupoVariante, VarianteFicha } from "@/lib/catalogo/lecturas";
 import { estadoOpcion, varianteAlElegir, varianteInicial } from "@/lib/catalogo/variantes";
 import { SITIO } from "@/lib/sitio";
-import { Precio } from "./precio";
+import { BarraCompra } from "./barra-compra";
+import { Precio, sinPrecio } from "./precio";
 
 // Reglas del selector en lib/catalogo/variantes.ts. Acá, además, la variante elegida
 // vive en la URL (?variante=<id>).
@@ -30,6 +31,7 @@ export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoU
   const pathname = usePathname();
   const actual = varianteInicial(variantes, useSearchParams().get("variante"));
   const [cantidad, setCantidad] = useState(1);
+  const refAcciones = useRef<HTMLDivElement>(null);
 
   function elegir(grupo: string, slug: string) {
     const destino = varianteAlElegir(variantes, grupos, actual, grupo, slug);
@@ -40,6 +42,8 @@ export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoU
   }
 
   const disponible = actual.stock > 0;
+  // Sin precio cargado no se vende desde la tienda: se consulta por WhatsApp.
+  const consultar = sinPrecio(actual.precio);
   // Tachado: el precio de lista si una promo lo bajó (o el anterior manual si es mayor).
   const conPromo = actual.precioLista > actual.precio;
   const tachado = conPromo ? Math.max(actual.precioLista, precioAnterior ?? 0) : precioAnterior;
@@ -47,6 +51,7 @@ export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoU
   const mensaje = encodeURIComponent(
     `Hola, tengo una consulta sobre: ${nombre}${actual.etiquetas ? ` — ${actual.etiquetas}` : ""}\n${url}`,
   );
+  const enlaceConsulta = `https://wa.me/${SITIO.whatsapp}?text=${mensaje}`;
 
   return (
     <div className="flex flex-col gap-5">
@@ -80,7 +85,7 @@ export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoU
               const [clave] = [...claves];
               if (typeof clave === "string") elegir(g.slug, clave);
             }}
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap justify-start gap-2"
           >
             {g.opciones.map((o) => {
               const estado = estadoOpcion(variantes, grupos, actual, g.slug, o.slug);
@@ -126,50 +131,71 @@ export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoU
         )}
       </p>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        {disponible && maximo > 1 && (
-          <NumberField
-            aria-label="Cantidad"
-            value={Math.min(cantidad, maximo)}
-            onChange={(v) => setCantidad(v && v > 0 ? v : 1)}
-            minValue={1}
-            maxValue={maximo}
-            className="w-full sm:w-36"
-          >
-            <Label className="text-xs text-muted">Cantidad</Label>
-            <NumberField.Group>
-              <NumberField.DecrementButton />
-              <NumberField.Input />
-              <NumberField.IncrementButton />
-            </NumberField.Group>
-          </NumberField>
+      {/* La barra fija del celular aparece cuando este bloque sale de pantalla. */}
+      <div ref={refAcciones} className="flex flex-col gap-5">
+        {!consultar && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            {disponible && maximo > 1 && (
+              <NumberField
+                aria-label="Cantidad"
+                value={Math.min(cantidad, maximo)}
+                onChange={(v) => setCantidad(v && v > 0 ? v : 1)}
+                minValue={1}
+                maxValue={maximo}
+                className="w-full sm:w-36"
+              >
+                <Label className="text-xs text-muted">Cantidad</Label>
+                <NumberField.Group>
+                  <NumberField.DecrementButton />
+                  <NumberField.Input />
+                  <NumberField.IncrementButton />
+                </NumberField.Group>
+              </NumberField>
+            )}
+            <div className="flex-1">
+              <BotonAgregar
+                varianteId={actual.id}
+                nombre={nombre}
+                cantidad={Math.min(cantidad, maximo)}
+                isDisabled={!disponible}
+                size="lg"
+              />
+            </div>
+          </div>
         )}
-        <div className="flex-1">
-          <BotonAgregar
-            varianteId={actual.id}
-            nombre={nombre}
-            cantidad={Math.min(cantidad, maximo)}
-            isDisabled={!disponible}
-            size="lg"
-          />
-        </div>
+
+        {SITIO.whatsapp && (
+          <a
+            href={enlaceConsulta}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: consultar ? "primary" : "outline", size: consultar ? "lg" : "md", fullWidth: true })}
+          >
+            <Comment />
+            {consultar ? "Consultar precio por WhatsApp" : disponible ? "Consultar por WhatsApp" : "Consultar disponibilidad"}
+          </a>
+        )}
       </div>
 
-      {SITIO.whatsapp && (
-        <a
-          href={`https://wa.me/${SITIO.whatsapp}?text=${mensaje}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonVariants({ variant: "outline", fullWidth: true })}
-        >
-          <Comment />
-          {disponible ? "Consultar por WhatsApp" : "Consultar disponibilidad"}
-        </a>
-      )}
-
-      {actual.sku && (
-        <p className="self-start rounded-full bg-surface-secondary px-3 py-1 font-mono text-xs text-muted">SKU {actual.sku}</p>
-      )}
+      <BarraCompra objetivo={refAcciones}>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-xs text-muted">
+            {nombre}
+            {actual.etiquetas ? ` · ${actual.etiquetas}` : ""}
+          </span>
+          <Precio valor={actual.precio} />
+        </div>
+        <div className="w-40 shrink-0">
+          {consultar ? (
+            <a href={enlaceConsulta} target="_blank" rel="noopener noreferrer" className={buttonVariants({ fullWidth: true })}>
+              <Comment />
+              Consultar
+            </a>
+          ) : (
+            <BotonAgregar varianteId={actual.id} nombre={nombre} cantidad={Math.min(cantidad, maximo)} isDisabled={!disponible} />
+          )}
+        </div>
+      </BarraCompra>
     </div>
   );
 }

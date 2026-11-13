@@ -11,6 +11,9 @@ export function ChipAhorro({ monto, className }: { monto: number; className?: st
   );
 }
 
+/** Precio 0 = la dueña no lo cargó: la tienda no muestra "$ 0" ni deja comprarlo a ese precio. */
+export const sinPrecio = (valor: number) => valor <= 0;
+
 // Precio anterior tachado en gris + ahorro en celeste. Ver claude/web/tema-y-marca.md
 export function Precio({
   valor,
@@ -25,6 +28,11 @@ export function Precio({
   tamano?: "md" | "lg";
   className?: string;
 }) {
+  if (sinPrecio(valor)) {
+    return (
+      <p className={`font-medium ${tamano === "lg" ? "text-xl" : "text-base"} ${className ?? ""}`}>Precio a consultar</p>
+    );
+  }
   const oferta = anterior != null && anterior > valor;
   return (
     <div className={`flex flex-col gap-1 ${className ?? ""}`}>
