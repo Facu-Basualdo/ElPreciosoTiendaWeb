@@ -1,15 +1,19 @@
 "use client";
 
-import { ComboBox, Input, Label, ListBox, Tag, TagGroup, toast } from "@heroui/react";
+import { ComboBox, Input, Label, ListBox, Tag, TagGroup, ToggleButton, ToggleButtonGroup, toast } from "@heroui/react";
 import { useMemo, useState, useTransition } from "react";
 import { crearEtiqueta } from "@/app/admin/(panel)/productos/acciones";
 import type { EtiquetaAdmin, GrupoAdmin } from "@/lib/admin/productos";
 import { slugify } from "@/lib/slug";
 
 const CREAR = "__crear__";
+// Con pocas opciones (las bases, las fechas patrias) se ven todas como botones para tocar:
+// más fácil que buscar en una lista. Con muchas, chips + buscador.
+const POCAS = 20;
 
 /**
- * Chips de las etiquetas elegidas + ComboBox para agregar. Si el texto no coincide con
+ * Con hasta POCAS opciones, todas como botones (tocar = elegir). Si no, chips de las
+ * elegidas + ComboBox para agregar. En los dos casos el ComboBox permite crear una nueva. Si el texto no coincide con
  * ninguna (comparando por slug: "144hz" = "144 Hz"), ofrece "Crear «…»".
  * Ver claude/web/etiquetas.md#en-el-dashboard
  */
@@ -39,6 +43,7 @@ export function SelectorEtiquetas({
   const puedeCrear = texto.trim().length > 0 && slugTexto.length > 0 && !existeExacta;
 
   const agregar = (id: string) => onChange(unica ? [id] : [...seleccionadas, id]);
+  const pocas = grupo.etiquetas.length <= POCAS;
 
   function elegir(clave: string | number | null) {
     if (clave === null) return;
@@ -64,7 +69,27 @@ export function SelectorEtiquetas({
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-sm font-medium">{grupo.nombre}</Label>
-      {seleccionadas.length > 0 && (
+      {pocas ? (
+        <ToggleButtonGroup
+          aria-label={grupo.nombre}
+          selectionMode={unica ? "single" : "multiple"}
+          isDetached
+          selectedKeys={seleccionadas}
+          // En el orden de los botones (y de las filas de bases), no en el que se tocaron.
+          onSelectionChange={(claves) => {
+            const ids = new Set([...claves].map(String));
+            onChange(grupo.etiquetas.filter((e) => ids.has(e.id)).map((e) => e.id));
+          }}
+          className="flex flex-wrap justify-start gap-2"
+        >
+          {grupo.etiquetas.map((e) => (
+            <ToggleButton key={e.id} id={e.id} size="sm">
+              {e.colorHex && <span aria-hidden className="size-3 rounded-full ring-1 ring-muted/60" style={{ backgroundColor: e.colorHex }} />}
+              {e.valor}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      ) : seleccionadas.length > 0 && (
         <TagGroup
           aria-label={`${grupo.nombre} elegidas`}
           onRemove={(claves) => onChange(seleccionadas.filter((id) => !claves.has(id)))}
@@ -95,7 +120,7 @@ export function SelectorEtiquetas({
         allowsEmptyCollection
       >
         <ComboBox.InputGroup>
-          <Input placeholder={unica && seleccionadas.length ? "Cambiar…" : "Buscar o crear…"} />
+          <Input placeholder={pocas ? "¿Falta una? Escribila para crearla…" : unica && seleccionadas.length ? "Cambiar…" : "Buscar o crear…"} />
           <ComboBox.Trigger />
         </ComboBox.InputGroup>
         <ComboBox.Popover>

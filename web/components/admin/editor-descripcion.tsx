@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Resultado } from "@/lib/admin/accion";
 import { extensionesDescripcion } from "@/lib/descripcion/extensiones";
+import { useSeccionGuardable } from "./productos/guardado";
 import { Seccion } from "./seccion";
 
 // Editor de la descripción: MISMA lista de extensiones que el renderer de la tienda
@@ -24,7 +25,13 @@ import { Seccion } from "./seccion";
 export function EditorDescripcion({ inicial, guardar }: { inicial: unknown; guardar: (contenido: string) => Promise<Resultado> }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
+  // Para el guardado único: lo que hay en la base (tomado del editor al crearse, así la
+  // normalización de TipTap no cuenta como cambio) contra lo que hay ahora.
+  const [base, setBase] = useState<string | null>(null);
+  const [actual, setActual] = useState<string | null>(null);
   const editor = useEditor({
+    onCreate: ({ editor: e }) => setBase(JSON.stringify(e.getJSON())),
+    onUpdate: ({ editor: e }) => setActual(JSON.stringify(e.getJSON())),
     extensions: extensionesDescripcion,
     content: (inicial as JSONContent) ?? "",
     // Sin esto, hydration mismatch en Next: TipTap renderiza en el server un DOM distinto.
@@ -58,6 +65,21 @@ export function EditorDescripcion({ inicial, guardar }: { inicial: unknown; guar
 
   const c = () => editor!.chain().focus();
 
+  async function guardarContenido() {
+    if (!editor) return false;
+    // Como string: los attrs de ProseMirror no son objetos planos (ver la acción).
+    const json = JSON.stringify(editor.getJSON());
+    const r = await guardar(json);
+    if (!r.ok) {
+      toast.danger(r.error);
+      return false;
+    }
+    setBase(json);
+    return true;
+  }
+  const sucio = base !== null && actual !== null && actual !== base;
+  const conGuardadoUnico = useSeccionGuardable("descripcion", 3, sucio, guardarContenido);
+
   // Link: sin window.prompt (diálogo nativo); un Modal de HeroUI. "www.x.com" se completa con https://.
   const [pidiendoLink, setPidiendoLink] = useState(false);
   const [link, setLink] = useState("");
@@ -77,23 +99,23 @@ export function EditorDescripcion({ inicial, guardar }: { inicial: unknown; guar
     <Seccion
       id="descripcion"
       titulo="Descripción"
-      descripcion="Títulos, listas, links y tablas (de talles, especificaciones, comparativas)."
+      descripcion="Contá cómo es, de qué está hecho o para qué acto sirve. Podés usar títulos, listas y links."
       acciones={
-        <Button
-          isPending={pendiente}
-          isDisabled={!editor}
-          onPress={() =>
-            iniciar(async () => {
-              // Como string: los attrs de ProseMirror no son objetos planos (ver la acción).
-              const r = await guardar(JSON.stringify(editor!.getJSON()));
-              if (!r.ok) return void toast.danger(r.error);
-              toast("Descripción guardada");
-              router.refresh();
-            })
-          }
-        >
-          Guardar descripción
-        </Button>
+        conGuardadoUnico ? undefined : (
+          <Button
+            isPending={pendiente}
+            isDisabled={!editor}
+            onPress={() =>
+              iniciar(async () => {
+                if (!(await guardarContenido())) return;
+                toast("Descripción guardada");
+                router.refresh();
+              })
+            }
+          >
+            Guardar descripción
+          </Button>
+        )
       }
     >
       <div className="overflow-hidden rounded-xl border border-border">

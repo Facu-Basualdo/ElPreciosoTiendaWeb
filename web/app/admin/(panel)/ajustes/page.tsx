@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Ajustes" };
 const OPCIONES = [
   { href: "/admin/categorias", titulo: "Categorías", texto: "Escarapelas, prendedores, packs… y su orden en la tienda.", icono: Folder },
   { href: "/admin/etiquetas", titulo: "Etiquetas", texto: "Bases, fechas patrias, dijes y colores: los filtros del catálogo.", icono: Tags },
-  { href: "/admin/banners", titulo: "Banners", texto: "Imágenes con título y botón debajo del video de la portada.", icono: Picture },
+  { href: "/admin/banners", titulo: "Banners", texto: "Imágenes con título y botón arriba del catálogo (por ejemplo, para una fecha patria).", icono: Picture },
   { href: "/admin/usuarios", titulo: "Usuarios", texto: "Quiénes pueden entrar a este panel.", icono: Persons },
   { href: "/admin/ajustes/contrasena", titulo: "Mi contraseña", texto: "Cambiá la contraseña con la que entrás al panel.", icono: Key },
   ...(SITIO.ventasAvanzadas

@@ -13,7 +13,7 @@ export function SwitchVisible({ id, publicado, nombre }: { id: string; publicado
     <Switch
       size="sm"
       isSelected={valor}
-      aria-label={`Visible en la tienda: ${nombre}`}
+      aria-label={`Mostrar en la tienda: ${nombre}`}
       onChange={(nuevo) =>
         iniciar(async () => {
           setValor(nuevo);

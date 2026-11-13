@@ -29,11 +29,20 @@ const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/hei
  * Foto del celular → sin fondo → sobre la plantilla de marca, como las del catálogo.
  * Guarda un WebP 1080×1920 en la galería del producto. Ver claude/web/editor-de-fotos.md
  */
-export function EditorFoto({ carpeta, onGuardada }: { carpeta: string; onGuardada: (imagen: ImagenSubida) => Promise<void> }) {
+export function EditorFoto({
+  carpeta,
+  onGuardada,
+  destacado = false,
+}: {
+  carpeta: string;
+  onGuardada: (imagen: ImagenSubida) => Promise<void>;
+  /** Botón principal (dorado y ancho): cuando el producto todavía no tiene fotos. */
+  destacado?: boolean;
+}) {
   const [abierto, setAbierto] = useState(false);
   return (
     <>
-      <Button variant="secondary" onPress={() => setAbierto(true)}>
+      <Button variant={destacado ? "primary" : "secondary"} size={destacado ? "lg" : "md"} fullWidth={destacado} onPress={() => setAbierto(true)}>
         <Picture />
         Foto con la plantilla
       </Button>

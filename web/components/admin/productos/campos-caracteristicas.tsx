@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import type { EtiquetaAdmin, GrupoAdmin } from "@/lib/admin/productos";
-import { AvisoCategoria, useGruposPermitidos } from "./categoria-producto";
+import { useGruposPermitidos } from "./categoria-producto";
 import { SelectorEtiquetas } from "./selector-etiquetas";
 
 // Características (fecha patria, dije, colores…) dentro del formulario de Datos: se
-// guardan con "Guardar datos". La base va en Bases y precios: la base rechaza etiquetas de
+// guardan con "Guardar cambios" (guardado único). La base va en Bases: la base rechaza etiquetas de
 // grupos de variante en producto_etiquetas. Ver claude/web/dashboard.md#productos
 export function CamposCaracteristicas({
   grupos: iniciales,
@@ -28,7 +28,6 @@ export function CamposCaracteristicas({
 
   return (
     <div className="flex flex-col gap-4">
-      <AvisoCategoria que="las características" />
       <div className="grid gap-5 md:grid-cols-2">
         {/* La marca va siempre; un grupo con valores ya cargados se muestra aunque no sea de
             la categoría, para no esconder datos. */}

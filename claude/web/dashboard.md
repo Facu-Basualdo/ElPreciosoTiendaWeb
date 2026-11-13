@@ -114,27 +114,38 @@ guarda en 1080×1920).
 las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 
 - **El listado es una grilla de tarjetas** (`lista-productos.tsx`), no `Table`: foto
-  9:16, nombre, categoría, precio y el switch "Visible" (los ocultos con borde punteado y
-  la marca "Oculto"). Toda la tarjeta abre el producto (link estirado) y el switch va por
+  9:16 (o "Sin foto"), nombre, categoría, precio y el switch "Mostrar en la tienda" (los
+  ocultos con borde punteado y la marca "Oculto"). **El precio es el que ve la gente**: el
+  más bajo de las bases activas (vacío = el del producto). Si no, un producto en 0 con
+  bases con precio salía "Sin precio". Toda la tarjeta abre el producto (link estirado) y el switch va por
   encima. En el celular la tabla no entraba; en la computadora dejaba vacío.
   `POR_PAGINA = 48`: parejo en 2, 3, 4, 6 u 8 columnas.
 - **"Cargar fotos"** (`carga-rapida.tsx`): varias fotos → un borrador por foto,
   con la foto como principal. Las que no son 9:16 se recortan al centro sin preguntar
   (`recorteCentrado`); para elegir el recorte, subir desde la ficha.
-- **Ficha corta**: Datos (nombre, precio, categoría, visible y, plegadas, las
-  **características opcionales**) → Fotos (con el [editor de fotos](editor-de-fotos.md))
-  → Bases y precios → Descripción (opcional, plegada). Las características
-  (`campos-caracteristicas.tsx`) **se guardan con "Guardar datos"**: un solo botón;
-  `guardarDatos` y después `guardarEtiquetas` sólo si cambiaron. Cada desplegable
-  arranca abierto si ya tiene algo. Precio anterior sólo con `SITIO.ventasAvanzadas`; "Destacado" ya no se edita
+- **Ficha corta, fotos primero**: en la computadora las fotos a la izquierda (quietas al
+  bajar) y lo demás a la derecha; en el celular, una columna (`grid-cols-1`: sin eso la
+  tabla de bases estira la grilla y la página se desborda). Fotos ("Foto con la
+  plantilla" dorado y ancho mientras no hay ninguna, abajo la subida de una foto ya lista;
+  sin campo de texto alternativo: se guarda el nombre) → Nombre y precio (categoría,
+  características plegadas, "Mostrar en la tienda" con lo que le falta: nombre, foto,
+  precio) → Bases (opcional) → Descripción (plegada). Producto nuevo: guía de 3 pasos
+  arriba. Las características (`campos-caracteristicas.tsx`) van con los datos:
+  `guardarDatos` y después `guardarEtiquetas` sólo si cambiaron.
+- **Grupos con hasta 20 valores se eligen tocando botones** (`SelectorEtiquetas`,
+  `POCAS`): bases, fechas patrias, dijes, colores. Con más, chips + buscador. En los dos
+  casos el buscador crea valores nuevos. Las bases quedan en el orden de los botones.
+- **Bases**: con un solo grupo de variante ("Base") el selector aparece directo, sin
+  "Agregar grupo" ni botón de quitar. **Sin bases elegidas no hay tabla**: la "variante
+  única" vale el precio de arriba (ninguna tiene precio propio en la base, se verificó).
+  El precio vacío de cada base muestra el de arriba **mientras se escribe**
+  (`usePrecioEnVivo`). Precio anterior sólo con `SITIO.ventasAvanzadas`; "Destacado" ya no se edita
   (la home muestra los más nuevos) y `guardarDatos` conserva el valor que tenía.
 - **"Nuevo producto" crea el borrador y abre su edición** (`crearBorrador`): slug
   `borrador-xxxxxxxx`, oculto, con su variante única (la crea el trigger). El slug real
   lo pone `guardarDatos` con el nombre (ver [slugs](#slugs)).
-- La edición son secciones independientes, **cada una con su propio Guardar** y su
-  acción: datos, imágenes, marca y características, variantes, descripción, borrar.
-  Después de guardar, `router.refresh()`; las secciones con estado propio llevan un
-  `key` derivado de los datos para reiniciarse con lo nuevo.
+- Ver [guardado único](#guardado-único): un solo botón para datos, bases y descripción.
+  Las fotos y borrar siguen siendo inmediatas.
 - **El slugify de la web (`lib/slug.ts`) replica el de la base**: "Remera e2e" da
   `remera-e2-e` (separa número de letra). Si se cambia uno, cambiar el otro.
 - `guardarEtiquetas` **agrega antes de quitar**: si algo falla a mitad, sobra una
@@ -150,6 +161,18 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 - Reordenar imágenes con flechas y "Hacer principal", no drag and drop: funciona con
   teclado y en touch sin otra dependencia.
 
+### Guardado único
+
+**Un solo "Guardar cambios", en una barra fija abajo** (`components/admin/productos/guardado.tsx`).
+Antes había cuatro botones y la dueña tenía que acordarse de tocar cada uno.
+
+| Pieza | Regla |
+|---|---|
+| `ProveedorGuardado` | Envuelve la edición. Guarda en orden (datos 1 → bases 2 → descripción 3) **sólo las secciones con cambios** y frena en la primera que falla (cada una ya mostró su error). Después, un `toast` y `router.refresh()`. Con cambios pendientes, `beforeunload` pide confirmar al salir |
+| `useSeccionGuardable(id, orden, sucio, guardar)` | Cada sección se registra y avisa si está sucia; devuelve `true` si hay proveedor y entonces **esconde su botón propio**. Sin proveedor (otras pantallas que reusan el editor de descripción o de variantes) sigue el botón de siempre |
+| "Sucio" | **Contra las props, no contra el primer render**: después del refresh las props traen lo guardado y la sección queda limpia aunque no se remonte. Descripción: contra el JSON que da TipTap al crearse (su normalización no cuenta como cambio). Bases: huella ordenada de combinación, precio, activa (y stock si no es a pedido) |
+| Valor del contexto | **`useMemo`, estable**. Si cambia en cada render, los efectos de las secciones se re-ejecutan (marcar → render → valor nuevo → marcar…) y la página entra en un bucle (*Maximum update depth*). Ya pasó. Por lo mismo, el precio en vivo va en **otro** contexto |
+
 ### Errores que ya pasaron acá
 
 | Síntoma | Causa | Regla |
@@ -157,7 +180,7 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 | `/admin/productos` en blanco, log: *Functions cannot be passed directly to Client Components* | `renderEmptyState={() => …}` en `Table.Body` desde un server component | Desde server components, sólo props serializables a HeroUI. El estado vacío va afuera de la tabla |
 | El build falla en `/admin/productos/[id]`: *usePathname() … outside of Suspense* | La navegación lateral (client) lee la ruta, y en una ruta dinámica eso es dato de URL | `usePathname`/`useSearchParams` dentro de un `Suspense` con fallback; ver `navegacion-admin.tsx` |
 | Guardar una descripción con tabla o título: "contenido no soportado" | ProseMirror crea `attrs` con `Object.create(null)`; React los manda al action como referencias opacas | El JSON del editor viaja como **string** (`JSON.stringify`) y se parsea en el action. Ver [descripcion-rica](descripcion-rica.md#guardado) |
-| El switch "Visible" del listado no hacía nada al tocarlo | `Switch.Control` fuera de `Switch.Content`: se dibuja sin input | Anatomía de 3.2 en [heroui](heroui.md#cómo-es-la-v3) |
+| El switch "Mostrar en la tienda" del listado no hacía nada al tocarlo | `Switch.Control` fuera de `Switch.Content`: se dibuja sin input | Anatomía de 3.2 en [heroui](heroui.md#cómo-es-la-v3) |
 | Campos dentro de una `Table` de HeroUI no aceptan flechas ni espacio | `Table` es un grid de React Aria que captura el teclado | Filas editables (variantes) en una grilla de `div`, no en `Table` |
 
 ## Pedidos

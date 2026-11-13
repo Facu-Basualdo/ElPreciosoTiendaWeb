@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 
 export const ESTADOS = {
   todos: "Todos",
-  visibles: "Visibles",
+  visibles: "En la tienda",
   ocultos: "Ocultos (borradores)",
 } as const;
 export type Estado = keyof typeof ESTADOS;

@@ -19,6 +19,7 @@ import type { EtiquetaAdmin, GrupoAdmin, VarianteAdmin } from "@/lib/admin/produ
 import { SITIO } from "@/lib/sitio";
 import { Seccion } from "../seccion";
 import { AvisoCategoria, useGruposPermitidos } from "./categoria-producto";
+import { usePrecioEnVivo, useSeccionGuardable } from "./guardado";
 import { SelectorEtiquetas } from "./selector-etiquetas";
 
 // Reglas: claude/web/variantes-y-stock.md#dashboard
@@ -39,7 +40,8 @@ const claveDe = (ids: string[]) => [...ids].sort().join("|");
 // Sin SKU ni costo a la vista (El Precioso no los usa): el SKU que ya tenga una variante
 // se reenvía tal cual y el costo no se manda, así guardar no borra ninguno de los dos.
 const COLUMNAS = "grid grid-cols-[1.6fr_1fr_0.7fr_auto] gap-3";
-const COLUMNAS_A_PEDIDO = "grid grid-cols-[1.6fr_1fr_auto] gap-3";
+// A pedido son tres columnas angostas: entran en el celular sin deslizar.
+const COLUMNAS_A_PEDIDO = "grid grid-cols-[minmax(0,1fr)_7.5rem_auto] items-center gap-3";
 
 export function EditorVariantes({
   productoId,
@@ -57,15 +59,22 @@ export function EditorVariantes({
 }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
+  const precioDeArriba = usePrecioEnVivo().precio ?? precioBase;
   const [grupos, setGrupos] = useState(todos.filter((g) => g.esVariante));
+
+  // Con un solo grupo de variante (El Precioso: "Base") no hay nada que "agregar": el
+  // selector aparece directo y no se puede quitar.
+  const deVariante = todos.filter((g) => g.esVariante);
+  const grupoUnico = deVariante.length === 1 ? deVariante[0] : null;
 
   // Valores elegidos por grupo, reconstruidos desde las variantes existentes.
   const [elegidos, setElegidos] = useState<Record<string, string[]>>(() => {
     const r: Record<string, string[]> = {};
-    for (const g of todos.filter((x) => x.esVariante)) {
+    for (const g of deVariante) {
       const usados = g.etiquetas.filter((e) => variantes.some((v) => v.etiquetas.includes(e.id))).map((e) => e.id);
       if (usados.length) r[g.id] = usados;
     }
+    if (grupoUnico && !(grupoUnico.id in r)) r[grupoUnico.id] = [];
     return r;
   });
   const [valores, setValores] = useState<Record<string, Valores>>(() =>
@@ -98,32 +107,53 @@ export function EditorVariantes({
   const fijar = (ids: string[], cambio: Partial<Valores>) =>
     setValores((v) => ({ ...v, [claveDe(ids)]: { ...(v[claveDe(ids)] ?? VACIO), ...cambio } }));
 
-  function guardar(forzar = false) {
+  const filas: FilaVariante[] = combinaciones.map((ids) => {
+    const v = valoresDe(ids);
+    return {
+      etiquetas: ids,
+      sku: v.sku.trim() || null,
+      precio: v.precio,
+      stock: v.stock,
+      stock_original: stockLeido.get(claveDe(ids)) ?? null,
+      activa: v.activa,
+    };
+  });
+
+  // Cambios contra lo guardado (las props): qué combinaciones hay y su precio, stock y si se ofrecen.
+  const huella = (xs: { clave: string; precio: number | null; stock: number; activa: boolean }[]) =>
+    JSON.stringify(xs.map((x) => [x.clave, x.precio, aPedido ? 0 : x.stock, x.activa]).sort());
+  const guardadas = variantes.length
+    ? variantes.map((v) => ({ clave: claveDe(v.etiquetas), precio: v.precio, stock: v.stock, activa: v.activa }))
+    : [{ clave: "", ...VACIO }];
+  const sucio = !demasiadas && huella(filas.map((f) => ({ ...f, clave: claveDe(f.etiquetas) }))) !== huella(guardadas);
+
+  /** Devuelve si guardó. Si se pierden combinaciones con stock, pide confirmación y devuelve false. */
+  async function guardar(forzar = false): Promise<boolean> {
+    if (demasiadas) return false;
     const actuales = new Set(combinaciones.map(claveDe));
     const perdidas = aPedido ? [] : variantes.filter((v) => !actuales.has(claveDe(v.etiquetas)) && v.stock > 0);
     if (perdidas.length && !forzar) {
       setConfirmar({ perdidas: perdidas.map((v) => `${nombreDe(v.etiquetas)} (${v.stock} u.)`) });
-      return;
+      return false;
     }
-    const filas: FilaVariante[] = combinaciones.map((ids) => {
-      const v = valoresDe(ids);
-      return {
-        etiquetas: ids,
-        sku: v.sku.trim() || null,
-        precio: v.precio,
-        stock: v.stock,
-        stock_original: stockLeido.get(claveDe(ids)) ?? null,
-        activa: v.activa,
-      };
-    });
-    iniciar(async () => {
-      const r = await guardarVariantes(productoId, filas);
-      if (!r.ok) return void toast.danger(r.error);
-      setConfirmar(null);
-      toast("Variantes y stock guardados");
-      router.refresh();
-    });
+    const r = await guardarVariantes(productoId, filas);
+    if (!r.ok) {
+      toast.danger(r.error);
+      return false;
+    }
+    setConfirmar(null);
+    return true;
   }
+  const conGuardadoUnico = useSeccionGuardable("bases", 2, sucio, () => guardar());
+  // Sin guardado único (pantallas que no lo tienen), el botón propio de siempre.
+  const guardarConBoton = (forzar = false) =>
+    iniciar(async () => {
+      if (await guardar(forzar)) {
+        toast(aPedido ? "Bases guardadas" : "Variantes y stock guardados");
+        router.refresh();
+      }
+    });
+  const sinBases = combinaciones.length === 1 && combinaciones[0].length === 0;
 
   const permitidos = useGruposPermitidos();
   // Para agregar, sólo los grupos de variante de la categoría; los ya usados siguen arriba.
@@ -134,16 +164,22 @@ export function EditorVariantes({
   return (
     <Seccion
       id="variantes"
-      titulo={aPedido ? "Bases y precios" : "Variantes y stock"}
-      descripcion="Sin grupos, el producto tiene una variante única. Elegí las bases que se ofrecen: se genera una fila por cada una, con su precio."
+      titulo={aPedido ? "Bases (opcional)" : "Variantes y stock"}
+      descripcion={
+        aPedido
+          ? "Si se ofrece con distintas bases (gancho, alfiler…), elegilas. Cada una puede tener su precio; vacío = el precio de arriba."
+          : "Sin grupos, el producto tiene una variante única. Elegí talles, colores… y se genera una fila por combinación."
+      }
       acciones={
-        <Button isPending={pendiente} isDisabled={demasiadas} onPress={() => guardar()}>
-          Guardar variantes
-        </Button>
+        conGuardadoUnico ? undefined : (
+          <Button isPending={pendiente} isDisabled={demasiadas} onPress={() => guardarConBoton()}>
+            Guardar variantes
+          </Button>
+        )
       }
     >
       <div className="flex flex-col gap-4">
-        <AvisoCategoria que="las opciones" />
+        {!aPedido && <AvisoCategoria que="las opciones" />}
         {activos.map((g) => (
           <div key={g.id} className="flex items-start gap-2">
             <div className="flex-1">
@@ -154,15 +190,17 @@ export function EditorVariantes({
                 onEtiquetaCreada={agregarEtiqueta}
               />
             </div>
-            <Button
-              isIconOnly
-              size="sm"
-              variant="ghost"
-              aria-label={`Quitar ${g.nombre}`}
-              onPress={() => setElegidos((e) => Object.fromEntries(Object.entries(e).filter(([id]) => id !== g.id)))}
-            >
-              <Xmark />
-            </Button>
+            {!grupoUnico && (
+              <Button
+                isIconOnly
+                size="sm"
+                variant="ghost"
+                aria-label={`Quitar ${g.nombre}`}
+                onPress={() => setElegidos((e) => Object.fromEntries(Object.entries(e).filter(([id]) => id !== g.id)))}
+              >
+                <Xmark />
+              </Button>
+            )}
           </div>
         ))}
 
@@ -202,7 +240,7 @@ export function EditorVariantes({
             </Alert.Description>
           </Alert.Content>
         </Alert>
-      ) : (
+      ) : aPedido && sinBases ? null : (
         <>
           {!aPedido && combinaciones.length > 1 && (
             <div className="flex flex-wrap items-end gap-2">
@@ -225,12 +263,12 @@ export function EditorVariantes({
           {/* Grilla y no Table: la Table de HeroUI es un grid de React Aria que captura
               flechas y espacio, y pelea con los campos editables de adentro. */}
           <div className="overflow-x-auto scrollbar-thin">
-            <div role="list" className="flex min-w-[420px] flex-col divide-y divide-separator rounded-xl border border-border">
+            <div role="list" className={`flex flex-col divide-y divide-separator rounded-xl border border-border ${aPedido ? "" : "min-w-[420px]"}`}>
               <div className={`${aPedido ? COLUMNAS_A_PEDIDO : COLUMNAS} bg-surface-secondary px-3 py-2 text-xs font-medium text-muted`}>
-                <span>Combinación</span>
-                <span>Precio (vacío = base)</span>
+                <span>{activos.length === 1 ? activos[0].nombre : "Combinación"}</span>
+                <span>Precio</span>
                 {!aPedido && <span>Stock</span>}
-                <span>Activa</span>
+                <span>{aPedido ? "Se ofrece" : "Activa"}</span>
               </div>
               {combinaciones.map((ids) => {
                 const v = valoresDe(ids);
@@ -246,7 +284,7 @@ export function EditorVariantes({
                       formatOptions={formatoPrecio}
                     >
                       <NumberField.Group>
-                        <NumberField.Input placeholder={new Intl.NumberFormat(SITIO.locale, formatoPrecio).format(precioBase)} />
+                        <NumberField.Input placeholder={new Intl.NumberFormat(SITIO.locale, formatoPrecio).format(precioDeArriba)} />
                       </NumberField.Group>
                     </NumberField>
                     {!aPedido && (
@@ -295,7 +333,7 @@ export function EditorVariantes({
               <Button variant="ghost" onPress={() => setConfirmar(null)}>
                 Cancelar
               </Button>
-              <Button variant="danger" isPending={pendiente} onPress={() => guardar(true)}>
+              <Button variant="danger" isPending={pendiente} onPress={() => guardarConBoton(true)}>
                 Guardar igual
               </Button>
             </AlertDialog.Footer>

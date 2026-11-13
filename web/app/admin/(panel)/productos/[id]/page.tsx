@@ -10,6 +10,7 @@ import { ProveedorCategoria } from "@/components/admin/productos/categoria-produ
 import { EditorDescripcion } from "@/components/admin/editor-descripcion";
 import { EditorVariantes } from "@/components/admin/productos/editor-variantes";
 import { FormularioDatos } from "@/components/admin/productos/formulario-datos";
+import { ProveedorGuardado } from "@/components/admin/productos/guardado";
 import { HistorialStock } from "@/components/admin/productos/historial-stock";
 import { GaleriaAdmin } from "@/components/admin/galeria-admin";
 import { requerirAdmin } from "@/lib/auth";
@@ -78,86 +79,114 @@ async function Edicion({
     }),
   );
 
-  return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {producto.nombre}
-          </h1>
-          <Chip
-            size="sm"
-            variant={producto.publicado ? "primary" : "secondary"}
-          >
-            {producto.publicado ? "Visible" : "Oculto"}
-          </Chip>
-        </div>
-        {producto.publicado && (
-          <NextLink
-            href={`/p/${producto.slug}`}
-            target="_blank"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            Ver en la tienda <ArrowUpRightFromSquare />
-          </NextLink>
-        )}
-      </div>
+  const esNuevo = !producto.publicado && producto.nombre === "Producto nuevo" && producto.imagenes.length === 0;
+  const precioEnBases = producto.variantes.some((v) => v.activa && (v.precio ?? 0) > 0);
 
-      {/* La categoría elegida en Datos filtra los grupos de características y variantes. */}
-      <ProveedorCategoria
-        key={`cat-${producto.categoriaId}`}
-        inicial={producto.categoriaId}
-        gruposPorCategoria={catalogos.gruposPorCategoria}
-        categorias={catalogos.categorias}
-      >
-        {/* key: al guardar, router.refresh() trae datos nuevos y cada sección se reinicia con ellos. */}
-        <FormularioDatos
-          key={`datos-${producto.slug}-${producto.publicado}-${producto.aPedido}-${producto.etiquetas.join()}`}
-          producto={producto}
+  return (
+    <ProveedorGuardado>
+      {/* pb: que la barra fija de "Guardar cambios" no tape lo último. */}
+      <div className="flex flex-col gap-5 pb-24">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{esNuevo ? "Nuevo producto" : producto.nombre}</h1>
+            <Chip size="sm" variant={producto.publicado ? "primary" : "secondary"}>
+              {producto.publicado ? "En la tienda" : "Oculto"}
+            </Chip>
+          </div>
+          {producto.publicado && (
+            <NextLink href={`/p/${producto.slug}`} target="_blank" className={buttonVariants({ variant: "outline", size: "sm" })}>
+              Ver en la tienda <ArrowUpRightFromSquare />
+            </NextLink>
+          )}
+        </div>
+
+        {esNuevo && (
+          <ol className="grid gap-3 rounded-tarjeta border border-celeste/40 bg-celeste/10 p-4 text-sm sm:grid-cols-3">
+            {[
+              ["Sacá la foto", "Con «Foto con la plantilla»: el fondo se quita solo."],
+              ["Poné nombre y precio", "Si tiene varias bases, elegilas abajo con su precio."],
+              ["Mostralo y guardá", "Activá «Mostrar en la tienda» y tocá «Guardar cambios»."],
+            ].map(([titulo, texto], n) => (
+              <li key={titulo} className="flex gap-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-noche text-xs font-semibold text-marfil">
+                  {n + 1}
+                </span>
+                <span>
+                  <span className="font-medium">{titulo}</span>
+                  <br />
+                  <span className="text-muted">{texto}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+
+        {/* La categoría elegida en Datos filtra los grupos de características y variantes. */}
+        <ProveedorCategoria
+          key={`cat-${producto.categoriaId}`}
+          inicial={producto.categoriaId}
+          gruposPorCategoria={catalogos.gruposPorCategoria}
           categorias={catalogos.categorias}
-          grupos={catalogos.grupos}
-        />
-        <GaleriaAdmin
-          carpeta={`productos/${producto.id}`}
-          imagenes={producto.imagenes}
-          acciones={{
-            registrar: registrarImagen.bind(null, producto.id),
-            reordenar: reordenarImagenes.bind(null, producto.id),
-            actualizarAlt,
-            borrar: borrarImagen,
-          }}
-        />
-        <EditorVariantes
-          key={`var-${producto.aPedido}-${producto.variantes.map((v) => `${v.clave}:${v.stock}`).join()}`}
-          productoId={producto.id}
-          precioBase={producto.precio}
-          aPedido={producto.aPedido}
-          grupos={catalogos.grupos}
-          variantes={producto.variantes}
-        />
-        {/* Lo opcional, plegado: la ficha corta es datos (con características opcionales), fotos, bases con precio. */}
-        <Disclosure defaultExpanded={!!producto.descripcion}>
-          <Disclosure.Heading>
-            <Disclosure.Trigger className="flex w-full items-center justify-between rounded-tarjeta border border-border bg-surface px-5 py-4 font-medium">
-              <span>
-                Descripción <span className="font-normal text-muted">(opcional)</span>
-              </span>
-              <Disclosure.Indicator />
-            </Disclosure.Trigger>
-          </Disclosure.Heading>
-          <Disclosure.Content>
-            <Disclosure.Body className="flex flex-col gap-5 pt-5">
-              <EditorDescripcion inicial={producto.descripcion} guardar={guardarDescripcion.bind(null, producto.id)} />
-            </Disclosure.Body>
-          </Disclosure.Content>
-        </Disclosure>
-      </ProveedorCategoria>
-      {!producto.aPedido && (
-        <Suspense fallback={<Skeleton className="h-40 rounded-tarjeta" />}>
-          <HistorialStock supabase={supabase} productoId={producto.id} nombres={nombres} />
-        </Suspense>
-      )}
-      <BorrarProducto id={producto.id} nombre={producto.nombre} />
-    </>
+        >
+          {/* Computadora: fotos a la izquierda (quietas al bajar), lo demás a la derecha. Celular: fotos primero. */}
+          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <div className="lg:sticky lg:top-4">
+              <GaleriaAdmin
+                compacta
+                carpeta={`productos/${producto.id}`}
+                imagenes={producto.imagenes}
+                acciones={{
+                  registrar: registrarImagen.bind(null, producto.id),
+                  reordenar: reordenarImagenes.bind(null, producto.id),
+                  actualizarAlt,
+                  borrar: borrarImagen,
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-5">
+              {/* Sin botones propios: todo se guarda con la barra de abajo (ProveedorGuardado).
+                  key: al guardar, router.refresh() trae datos nuevos; lo que cambia de forma se reinicia. */}
+              <FormularioDatos
+                key={`datos-${producto.slug}-${producto.aPedido}`}
+                producto={producto}
+                categorias={catalogos.categorias}
+                grupos={catalogos.grupos}
+                cantidadFotos={producto.imagenes.length}
+                precioEnBases={precioEnBases}
+              />
+              <EditorVariantes
+                key={`var-${producto.aPedido}-${producto.variantes.map((v) => `${v.clave}:${v.stock}`).join()}`}
+                productoId={producto.id}
+                precioBase={producto.precio}
+                aPedido={producto.aPedido}
+                grupos={catalogos.grupos}
+                variantes={producto.variantes}
+              />
+              <Disclosure defaultExpanded={!!producto.descripcion}>
+                <Disclosure.Heading>
+                  <Disclosure.Trigger className="flex w-full items-center justify-between rounded-tarjeta border border-border bg-surface px-5 py-4 font-medium">
+                    <span>
+                      Descripción <span className="font-normal text-muted">(opcional)</span>
+                    </span>
+                    <Disclosure.Indicator />
+                  </Disclosure.Trigger>
+                </Disclosure.Heading>
+                <Disclosure.Content>
+                  <Disclosure.Body className="flex flex-col gap-5 pt-5">
+                    <EditorDescripcion inicial={producto.descripcion} guardar={guardarDescripcion.bind(null, producto.id)} />
+                  </Disclosure.Body>
+                </Disclosure.Content>
+              </Disclosure>
+              {!producto.aPedido && (
+                <Suspense fallback={<Skeleton className="h-40 rounded-tarjeta" />}>
+                  <HistorialStock supabase={supabase} productoId={producto.id} nombres={nombres} />
+                </Suspense>
+              )}
+              <BorrarProducto id={producto.id} nombre={producto.nombre} />
+            </div>
+          </div>
+        </ProveedorCategoria>
+      </div>
+    </ProveedorGuardado>
   );
 }

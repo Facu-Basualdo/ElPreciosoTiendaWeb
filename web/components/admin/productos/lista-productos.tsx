@@ -1,3 +1,4 @@
+import { Picture } from "@gravity-ui/icons";
 import Image from "next/image";
 import NextLink from "next/link";
 import { formatearPrecio } from "@/lib/formato";
@@ -30,7 +31,7 @@ export function ListaProductos({ productos }: { productos: FilaProducto[] }) {
           }`}
         >
           <div className="relative aspect-[9/16] bg-surface-secondary">
-            {p.imagen && (
+            {p.imagen ? (
               <Image
                 src={urlPublica(p.imagen)}
                 alt=""
@@ -38,6 +39,11 @@ export function ListaProductos({ productos }: { productos: FilaProducto[] }) {
                 sizes="(max-width: 640px) 50vw, 12rem"
                 className={`object-cover ${p.publicado ? "" : "opacity-70"}`}
               />
+            ) : (
+              <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs text-muted">
+                <Picture aria-hidden className="size-6" />
+                Sin foto
+              </span>
             )}
             {!p.publicado && (
               <span className="absolute left-2 top-2 rounded-full bg-noche/80 px-2 py-0.5 text-[11px] font-medium text-marfil">Oculto</span>

@@ -28,8 +28,8 @@ export default function PaginaProductos(props: PageProps<"/admin/productos">) {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Productos</h1>
           <p className="text-sm text-muted">
-            El switch &quot;Visible&quot; muestra u oculta el producto en la
-            tienda. Con &quot;Cargar fotos&quot; cada foto se vuelve un borrador.
+            Tocá un producto para editarlo. El interruptor lo muestra u oculta
+            en la tienda. «Cargar fotos» crea un borrador por cada foto.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -45,6 +45,13 @@ export default function PaginaProductos(props: PageProps<"/admin/productos">) {
       </Suspense>
     </div>
   );
+}
+
+// El que ve la gente: el más bajo de las bases que se ofrecen (vacío = el del producto).
+// Un producto en 0 con bases con precio NO está "sin precio".
+function precioEfectivo(base: number, variantes: { precio: number | null; activa: boolean }[]) {
+  const activas = variantes.filter((v) => v.activa);
+  return activas.length ? Math.min(...activas.map((v) => Number(v.precio ?? base))) : base;
 }
 
 async function Listado({
@@ -66,7 +73,7 @@ async function Listado({
       `id, slug, nombre, precio, publicado, actualizado_en,
        categoria:categorias(nombre),
        imagenes:producto_imagenes(path, orden),
-       variantes:producto_variantes(sku)`,
+       variantes:producto_variantes(sku, precio, activa)`,
     )
     .order("actualizado_en", { ascending: false })
     .limit(1000);
@@ -119,7 +126,7 @@ async function Listado({
             nombre: p.nombre,
             imagen: p.imagen,
             categoria: p.categoria?.nombre ?? null,
-            precio: Number(p.precio),
+            precio: precioEfectivo(Number(p.precio), p.variantes),
             publicado: p.publicado,
           }))}
         />

@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, TrashBin } from "@gravity-ui/icons";
-import { AlertDialog, Button, Chip, Input, TextField, toast } from "@heroui/react";
+import { AlertDialog, Button, Chip, toast } from "@heroui/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -26,7 +26,20 @@ export type AccionesGaleria = {
 
 // La principal es la primera (menor `orden`). Reordenar manda la lista completa a
 // reordenar_imagenes. Flechas en vez de drag and drop: accesible con teclado y en touch.
-export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string; imagenes: Imagen[]; acciones: AccionesGaleria }) {
+// El texto alternativo no se edita acá: al subir se guarda el nombre del producto, que
+// es lo que necesita un lector de pantalla para una foto de catálogo.
+export function GaleriaAdmin({
+  carpeta,
+  imagenes,
+  acciones,
+  compacta = false,
+}: {
+  carpeta: string;
+  imagenes: Imagen[];
+  acciones: AccionesGaleria;
+  /** En una columna angosta (la edición de producto): menos fotos por fila. */
+  compacta?: boolean;
+}) {
   const router = useRouter();
   const [orden, setOrden] = useState(imagenes.map((i) => i.id));
   const [ordenPrevio, setOrdenPrevio] = useState(imagenes);
@@ -62,11 +75,16 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
   return (
     <Seccion
       id="imagenes"
-      titulo="Imágenes"
-      descripcion="Relación 9:16, como las fotos del celular. La primera es la principal: es la que se ve en el catálogo."
+      titulo="Fotos"
+      descripcion="La primera es la principal: es la que se ve en el catálogo."
     >
+      {/* Lo principal primero: sacar la foto con el celular y que quede sobre la plantilla. */}
+      <div className="flex flex-col gap-2">
+        <EditorFoto carpeta={carpeta} onGuardada={registrar} destacado={orden.length === 0} />
+        <p className="text-xs text-muted">Sacá la foto con el celular: el fondo se quita solo y queda sobre la plantilla.</p>
+      </div>
       {orden.length > 0 && (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+        <ul className={`grid grid-cols-2 gap-4 sm:grid-cols-3 ${compacta ? "lg:grid-cols-2 2xl:grid-cols-3" : "lg:grid-cols-4 2xl:grid-cols-5"}`}>
           {orden.map((id, i) => {
             const img = porId.get(id);
             if (!img) return null;
@@ -101,40 +119,14 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
                   )}
                   <BorrarImagen id={id} borrar={acciones.borrar} />
                 </div>
-                <TextoAlternativo id={id} inicial={img.alt} actualizar={acciones.actualizarAlt} />
               </li>
             );
           })}
         </ul>
       )}
 
-      <SubidaImagen formato="producto" carpeta={carpeta} multiple onSubida={registrar} />
-      <div className="flex flex-wrap items-center gap-3">
-        <EditorFoto carpeta={carpeta} onGuardada={registrar} />
-        <p className="text-xs text-muted">Sacá la foto con el celular: el fondo se quita solo y queda sobre la plantilla.</p>
-      </div>
+      <SubidaImagen formato="producto" carpeta={carpeta} multiple onSubida={registrar} etiqueta="¿Ya tenés la foto lista? Arrastrala o tocá para elegirla" />
     </Seccion>
-  );
-}
-
-function TextoAlternativo({ id, inicial, actualizar }: { id: string; inicial: string; actualizar: AccionesGaleria["actualizarAlt"] }) {
-  const [alt, setAlt] = useState(inicial);
-  const [, iniciar] = useTransition();
-  return (
-    <TextField
-      aria-label="Texto alternativo"
-      value={alt}
-      onChange={setAlt}
-      onBlur={() => {
-        if (alt.trim() === inicial) return;
-        iniciar(async () => {
-          const r = await actualizar(id, alt);
-          if (!r.ok) toast.danger(r.error);
-        });
-      }}
-    >
-      <Input placeholder="Texto alternativo" className="text-xs" />
-    </TextField>
   );
 }
 

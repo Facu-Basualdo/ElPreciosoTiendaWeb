@@ -72,7 +72,7 @@ producto viene en M".
 
 ## En el dashboard
 
-En la edición de un producto: `Autocomplete` por grupo con opción "Crear «…»".
+En la edición de un producto (`SelectorEtiquetas`): **con hasta 20 valores, todos como botones para tocar**; con más, chips de los elegidos + buscador. En los dos casos el buscador ofrece "Crear «…»". Ver [dashboard](dashboard.md#productos).
 **Buscar antes de crear**: el autocompletar compara contra el slug normalizado, así
 "144hz" sugiere "144 Hz" existente en vez de crear un duplicado.
 

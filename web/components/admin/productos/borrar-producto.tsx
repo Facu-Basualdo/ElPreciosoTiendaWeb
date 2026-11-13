@@ -16,7 +16,7 @@ export function BorrarProducto({ id, nombre }: { id: string; nombre: string }) {
     <Seccion
       id="borrar"
       titulo="Borrar producto"
-      descripcion="Para sacarlo de la tienda sin perderlo, apagá «Visible en la tienda». Borrar elimina también sus imágenes y variantes."
+      descripcion="Para sacarlo de la tienda sin perderlo, apagá «Mostrar en la tienda». Borrar elimina también sus imágenes y variantes."
       acciones={
         <Button variant="danger-soft" onPress={() => setAbierto(true)}>
           <TrashBin />
