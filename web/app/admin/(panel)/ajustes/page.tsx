@@ -1,4 +1,4 @@
-import { ChevronRight, Folder, LayoutHeaderCells, Percent, Persons, Picture, Tag, Tags } from "@gravity-ui/icons";
+import { ChevronRight, Folder, Key, LayoutHeaderCells, Percent, Persons, Picture, Tag, Tags } from "@gravity-ui/icons";
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { SITIO } from "@/lib/sitio";
@@ -11,6 +11,7 @@ const OPCIONES = [
   { href: "/admin/etiquetas", titulo: "Etiquetas", texto: "Bases, fechas patrias, dijes y colores: los filtros del catálogo.", icono: Tags },
   { href: "/admin/banners", titulo: "Banners", texto: "Imágenes con título y botón debajo del video de la portada.", icono: Picture },
   { href: "/admin/usuarios", titulo: "Usuarios", texto: "Quiénes pueden entrar a este panel.", icono: Persons },
+  { href: "/admin/ajustes/contrasena", titulo: "Mi contraseña", texto: "Cambiá la contraseña con la que entrás al panel.", icono: Key },
   ...(SITIO.ventasAvanzadas
     ? [
         { href: "/admin/promociones", titulo: "Promociones", texto: "Descuentos automáticos, 3x2, 2da unidad.", icono: Percent },

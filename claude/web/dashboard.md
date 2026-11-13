@@ -159,6 +159,20 @@ los botones de estado de `components/admin/pedidos/acciones-pedido.tsx`.
 - No hay teléfono del cliente ni botón de chat: el contacto sigue en el chat de WhatsApp
   donde el cliente mandó el pedido (con su número).
 
+## Mi contraseña
+
+`/admin/ajustes/contrasena` (tarjeta en Ajustes): cada admin cambia la suya sin entrar
+a Supabase. Supabase no deja escribir una contraseña desde su lista de usuarios, y el
+"recovery" por mail necesita una página que la tienda no tiene.
+
+- **Pide la contraseña actual**: con el panel abierto en un celular ajeno no alcanza para
+  cambiarla. Se verifica con `supabasePublico()` (sin cookies, no toca la sesión del
+  panel) y esa sesión de verificación se cierra enseguida con `signOut({ scope: "local" })`.
+- Después `supabase.auth.updateUser({ password })` con el cliente de la sesión. La sesión
+  abierta sigue andando; la contraseña nueva vale para el próximo ingreso.
+- Mínimo 8 caracteres, distinta de la actual; `weak_password` y `same_password` de
+  Supabase se traducen a mensajes para la dueña.
+
 ## Características por categoría
 
 **Al cargar un producto se ven sólo los grupos de etiquetas de su categoría**, no todos:
