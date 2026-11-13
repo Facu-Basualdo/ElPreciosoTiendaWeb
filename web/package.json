@@ -25,6 +25,7 @@
     "@tiptap/react": "^3.31.4",
     "@tiptap/starter-kit": "^3.31.4",
     "@tiptap/static-renderer": "^3.31.4",
+    "@vercel/analytics": "^2.0.1",
     "embla-carousel-react": "^8.6.0",
     "next": "16.4.6",
     "onnxruntime-web": "1.21.0",

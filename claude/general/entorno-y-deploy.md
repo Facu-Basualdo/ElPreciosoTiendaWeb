@@ -33,6 +33,17 @@ está tapando un grant o una policy faltante** — ver
   suben ya en tamaño final y hay pocas variantes de `sizes` (ver
   [imagenes](../web/imagenes.md)).
 
+## Analíticas
+
+Vercel Web Analytics (`@vercel/analytics`): `components/analiticas.tsx` en el layout raíz.
+
+- **Hay que activarlo en el proyecto de Vercel** (pestaña Analytics → Enable). Sin eso el
+  script carga pero no se registra nada. No usa cookies: no hace falta aviso.
+- **Las rutas `/admin` no se cuentan** (`beforeSend` devuelve `null`): son visitas de la
+  dueña. Por ser una función, el componente es client y el layout lo usa como hoja.
+- En local no manda nada; sólo cuenta en los deploys de Vercel.
+- Trae su propio `Suspense` (lee `useSearchParams`): no vuelve dinámico el layout.
+
 ## Supabase
 
 - **Un solo proyecto, que es el de producción** (datos reales de la tienda). Tiene

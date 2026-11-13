@@ -48,7 +48,7 @@ grep -rn "updateTag" web/             # después, el código
 | Nota | De qué trata |
 |---|---|
 | [Arquitectura](claude/general/arquitectura.md) | Tres caminos de datos (catálogo cacheado sin cookies · dashboard con sesión · subida directa a Storage) · sin secret key en la app ni API propia · la seguridad es grants + RLS, no el proxy |
-| [Entorno y deploy](claude/general/entorno-y-deploy.md) | Qué variable va a Vercel y cuál es sólo local (`DATABASE_URL`, secret key) · Root Directory `web` · las migraciones NO las aplica el build: `db push` antes del deploy · un solo proyecto Supabase, el de producción |
+| [Entorno y deploy](claude/general/entorno-y-deploy.md) | Qué variable va a Vercel y cuál es sólo local (`DATABASE_URL`, secret key) · Root Directory `web` · las migraciones NO las aplica el build: `db push` antes del deploy · un solo proyecto Supabase, el de producción · Vercel Analytics sin `/admin` (activarlo en el proyecto) |
 
 ## Features que cruzan áreas
 
