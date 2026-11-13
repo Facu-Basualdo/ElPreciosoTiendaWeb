@@ -38,9 +38,6 @@ export function MenuMovil({ enlaces }: { enlaces: { href: string; texto: string 
                 <a href={enlaceWhatsapp()} target="_blank" rel="noopener" className="font-medium text-foreground">
                   Escribinos por WhatsApp
                 </a>
-                <a href={`https://instagram.com/${SITIO.instagram}`} target="_blank" rel="noopener">
-                  @{SITIO.instagram}
-                </a>
                 <p>{SITIO.horario}</p>
               </div>
             </Drawer.Body>

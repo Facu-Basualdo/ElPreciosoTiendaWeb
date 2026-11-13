@@ -55,6 +55,8 @@ producto también. El panel de admin sigue en Inter.
 
 ## Reglas
 
+- **La tienda no enlaza a Instagram** (ni Contacto, ni pie, ni menú): se sacó a pedido. `SITIO.instagram` queda cargado pero sin usar.
+
 - **Un botón dorado por vista**: "Agregar" en la tarjeta, "Ver catálogo" en el hero,
   "Enviar pedido" en el carrito. Lo demás `outline`, `ghost` o `secondary`.
 - **Seleccionado = dorado.** HeroUI pinta el `ToggleButton` seleccionado con
@@ -72,17 +74,39 @@ producto también. El panel de admin sigue en Inter.
 
 `/nosotros` ("Quiénes somos") es la landing de El Precioso pasada a Next
 (`app/(tienda)/nosotros/page.tsx`, componentes en `components/tienda/inicio/`). La
-portada es el catálogo. Cada sección tiene `id` (`sobre`, `personaliza`, `como-comprar`,
-`contacto`) con `scroll-mt` para el encabezado fijo: el encabezado enlaza ahí.
+portada es el catálogo. Cada sección tiene `id` (`sobre`, `trabajos`, `personaliza`,
+`como-comprar`, `preguntas`, `contacto`) con `scroll-mt` para el encabezado fijo: el encabezado enlaza ahí.
 
 | Sección | Datos |
 |---|---|
-| Hero con la bandera flameando | Estático. **El LCP es el poster** (`bandera-poster.webp` con `priority`); el video (`bandera.webm`/`.mp4`, `preload="metadata"`) lo tapa cuando arranca |
+| Hero con la bandera flameando | Estático, ~72svh (deja ver que sigue contenido). **El LCP es el poster** (`bandera-poster.webp` con `priority`); el video (`bandera.webm`/`.mp4`, `preload="metadata"`) lo tapa cuando arranca |
 | Problema y beneficios | Textos fijos de la landing |
-| Sobre nosotros · Personalizá · Cómo comprar · Contacto | Fijos. Las **bases** de "Personalizá" salen del grupo `base` (`obtenerValoresGrupo`) |
+| Sobre nosotros | Historia, tres datos clave con ícono (hecho a mano, envíos y retiro, personalizados y por cantidad) y el porqué del nombre |
+| Trabajos | Fotos de los últimos publicados (`obtenerRecientes`, `components/tienda/inicio/mas-secciones.tsx`), link a cada ficha y al catálogo. Sin productos con foto, no aparece |
+| Personalizá · Cómo comprar | Fijos. Las **bases** de "Personalizá" salen del grupo `base` (`obtenerValoresGrupo`) |
+| Preguntas frecuentes | `Disclosure` por pregunta. **Sólo lo que la tienda ya sabe**: no nombra medios de pago ni plazos (la demora usa `SITIO.demoraDias` si está cargada) |
+| Contacto | Botón de WhatsApp, horario, retiro y envíos |
 
 **Las reseñas de la landing no se publican**: no eran reales. Vuelven cuando haya
 reseñas de clientes de verdad.
+
+## Encabezado
+
+`components/tienda/encabezado.tsx`, en dos pisos:
+
+| Piso | Qué tiene |
+|---|---|
+| Franja `bg-encabezado` (h-9, **no fija**: se va al bajar) | Hecho a mano en `SITIO.ciudad` · envíos y retiro · "Pedidos por WhatsApp" en dorado. En el celular, una sola línea corta |
+| Encabezado fijo marfil (h-16) | Celular: menú · logo · lupa · carrito. `lg+`: secciones de `ENLACES` (`nav-principal.tsx`). `md+`: buscador. `xl+`: botón WhatsApp. El carrito suma el texto "Carrito" desde `md` |
+
+**`ENLACES` es la única lista de secciones**: la usan la barra (`NavPrincipal`) y el
+menú del celular (`MenuMovil`). Combos y Ofertas entran sólo con
+`SITIO.ventasAvanzadas`. Las categorías no van acá: están en los filtros del catálogo.
+
+**La sección actual se marca sólo por ruta** (subrayado dorado + `aria-current`): los
+enlaces con `#` de `/nosotros` no se marcan nunca. `usePathname` va en `Suspense` con la
+lista sin marcar de fallback, igual que el buscador con `searchParams`: si no, el layout
+de la tienda deja de ser estático.
 
 ## Ver también
 

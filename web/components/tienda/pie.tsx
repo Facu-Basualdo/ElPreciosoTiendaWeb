@@ -16,9 +16,6 @@ export function Pie() {
           <a href={enlaceWhatsapp()} target="_blank" rel="noopener" className="hover:text-dorado">
             WhatsApp
           </a>
-          <a href={`https://instagram.com/${SITIO.instagram}`} target="_blank" rel="noopener" className="hover:text-dorado">
-            Instagram @{SITIO.instagram}
-          </a>
           <p className="text-white/65">{SITIO.horario}</p>
         </div>
         <div className="flex flex-col gap-2 text-sm">

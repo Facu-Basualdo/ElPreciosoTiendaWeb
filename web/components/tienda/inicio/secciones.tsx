@@ -1,3 +1,4 @@
+import { Car, Hand, Persons } from "@gravity-ui/icons";
 import { buttonVariants } from "@heroui/styles";
 import Image from "next/image";
 import { Huella } from "@/components/huella";
@@ -195,6 +196,18 @@ export function Sobre() {
         <p className="text-muted">
           {SITIO.nombre} nació en {SITIO.ciudad}, en una mesa de comedor, cortando cintas para los actos de la escuela.
         </p>
+        <ul className="grid gap-3 sm:grid-cols-3">
+          {[
+            { icono: Hand, texto: `Hecho a mano en ${SITIO.ciudad}` },
+            { icono: Car, texto: `Envíos a todo el país y retiro en ${SITIO.ciudad.split(",")[0]}` },
+            { icono: Persons, texto: "Personalizados y por cantidad para colegios" },
+          ].map(({ icono: Icono, texto }) => (
+            <li key={texto} className="flex items-start gap-3 rounded-tarjeta border border-border bg-surface p-4 text-sm">
+              <Icono aria-hidden className="mt-0.5 size-5 shrink-0 text-celeste-oscuro" />
+              {texto}
+            </li>
+          ))}
+        </ul>
         <div className="flex gap-4 rounded-tarjeta bg-celeste/15 p-5">
           <Huella className="size-8 shrink-0 text-celeste-oscuro" />
           <div className="flex flex-col gap-1">
@@ -222,16 +235,20 @@ export function Contacto() {
             ¿Te gustó algún modelo?
           </h2>
           <p className="text-muted">Escribinos por WhatsApp y coordinamos. Hacemos envíos a todo el país.</p>
-          <a
-            href={enlaceWhatsapp(`¡Hola! Vi el catálogo de ${SITIO.nombre} y me gustaría hacer un pedido.`)}
-            target="_blank"
-            rel="noopener"
-            className={buttonVariants({ size: "lg" })}
-          >
-            <IconoWhatsapp className="size-5" />
-            Escribinos por WhatsApp
-          </a>
-          <p className="text-xs text-muted">Respondemos de {SITIO.horario.toLowerCase()}.</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a
+              href={enlaceWhatsapp(`¡Hola! Vi el catálogo de ${SITIO.nombre} y me gustaría hacer un pedido.`)}
+              target="_blank"
+              rel="noopener"
+              className={buttonVariants({ size: "lg" })}
+            >
+              <IconoWhatsapp className="size-5" />
+              Escribinos por WhatsApp
+            </a>
+          </div>
+          <p className="text-xs text-muted">
+            Respondemos de {SITIO.horario.toLowerCase()} · Retiro en {SITIO.ciudad} · Envíos a todo el país
+          </p>
         </div>
       </div>
     </section>

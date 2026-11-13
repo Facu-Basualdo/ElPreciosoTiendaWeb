@@ -8,7 +8,7 @@ import poster from "@/public/marca/bandera-poster.webp";
 // lo tapa cuando arranca. Con "reducir movimiento" el video no se muestra.
 export function Hero() {
   return (
-    <section className="relative isolate flex min-h-[540px] items-center overflow-hidden bg-encabezado text-marfil h-[calc(88svh-4rem)] max-h-[860px]">
+    <section className="relative isolate flex min-h-[480px] items-center overflow-hidden bg-encabezado text-marfil h-[calc(72svh-4rem)] max-h-[720px]">
       <Image src={poster} alt="" fill priority sizes="100vw" placeholder="blur" className="-z-20 object-cover" />
       <video
         autoPlay
