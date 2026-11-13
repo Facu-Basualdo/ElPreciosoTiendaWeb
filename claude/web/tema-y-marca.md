@@ -41,7 +41,7 @@ se exponen a Tailwind en `@theme inline`.
 | `--muted` | `#5b6675` | Texto secundario. **El gris niebla `#9CA3AF` de la marca no llega a 4.5:1 sobre marfil**: no lo uses para texto |
 | `--surface` → `bg-surface` | blanco | Tarjetas, paneles, filtros, carrito |
 | `--encabezado` → `bg-encabezado` | azul noche | Pie, "Personalizá", encabezado del panel. Texto encima: `text-encabezado-foreground` (marfil) |
-| `contenedor` (utilidad) | hasta 1440 px | Ancho de la tienda con margen `clamp()`. Encabezado, contenido y pie usan el mismo; el panel de admin usa `max-w-7xl` |
+| `contenedor` (utilidad) | hasta 1800 px | Ancho de la tienda con margen `clamp()` (1440 dejaba mucho vacío en un monitor ancho). Encabezado, contenido y pie usan el mismo; el panel de admin usa `max-w-7xl`. La grilla del catálogo es `repeat(auto-fill, minmax(15rem, 1fr))` desde `sm`: suma columnas con el ancho en vez de cortar en 5 |
 | `antetitulo` (utilidad) | | Etiqueta en versalitas espaciadas sobre los títulos ("ÚLTIMOS INGRESOS") |
 | `--radio-tarjeta` → `rounded-tarjeta` | 1.25rem | Todo contenedor de página. Los controles usan `--radius` (0.75rem) |
 | `--danger` | rojo | **Sólo errores** y acciones destructivas |

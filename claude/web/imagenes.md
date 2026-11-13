@@ -13,7 +13,7 @@ Relaciones de aspecto, paths y bucket: [imagenes (supabase)](../supabase/imagene
 
   | Uso | `sizes` | Dónde |
   |---|---|---|
-  | Tarjeta del catálogo | `SIZES_TARJETA` = `(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw` | `tarjeta-producto.tsx` |
+  | Tarjeta del catálogo | `SIZES_TARJETA` = `(max-width: 640px) 50vw, 20rem` (la grilla tiene columnas de 15rem mínimo con `auto-fill`: en escritorio la tarjeta ronda 240–320 px) | `tarjeta-producto.tsx` |
   | Galería de la ficha | `(max-width: 1024px) 100vw, 50vw` | `galeria.tsx` |
   | Miniaturas | `10vw` | `galeria.tsx` |
   | Banner | `100vw` | `carrusel-banners.tsx` |

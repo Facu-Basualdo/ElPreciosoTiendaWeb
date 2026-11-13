@@ -2,7 +2,7 @@ import { Skeleton } from "@heroui/react";
 
 export function EsqueletoGrilla({ cantidad = 8 }: { cantidad?: number }) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" aria-hidden>
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-4" aria-hidden>
       {Array.from({ length: cantidad }, (_, i) => (
         <li key={i} className="flex flex-col gap-3">
           <Skeleton className="aspect-[9/16] w-full rounded-tarjeta" />

@@ -10,7 +10,9 @@ import { ContenedorVista } from "./vista-listado";
 
 // Una sola variante de `sizes` para las grillas: cada combinación distinta consume
 // cupo de optimización de Vercel. Ver claude/web/imagenes.md
-export const SIZES_TARJETA = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw";
+// La grilla usa columnas de 15rem como mínimo (auto-fill): en escritorio una tarjeta
+// ronda los 240–320 px. Pedir 25vw bajaba fotos de casi 500 px en un monitor ancho.
+export const SIZES_TARJETA = "(max-width: 640px) 50vw, 20rem";
 
 /**
  * Tarjeta del catálogo. `horizontal` fija el formato imagen-izquierda (destacados de la
