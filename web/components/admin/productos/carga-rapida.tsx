@@ -14,7 +14,7 @@ import { subirWebp } from "@/lib/admin/subir-imagen";
  * son 9:16 se recortan al centro sin preguntar (para elegir el recorte, subirla desde la
  * ficha). Después se completa nombre, bases y precio en cada uno.
  */
-export function CargaRapida() {
+export function CargaRapida({ className }: { className?: string }) {
   const router = useRouter();
   const [progreso, setProgreso] = useState<{ hechos: number; total: number } | null>(null);
 
@@ -46,9 +46,9 @@ export function CargaRapida() {
 
   return (
     <FileTrigger acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]} allowsMultiple onSelect={cargar}>
-      <Button variant="outline" isPending={!!progreso}>
+      <Button variant="outline" isPending={!!progreso} className={className}>
         {!progreso && <Layers />}
-        {progreso ? `Cargando ${progreso.hechos + 1} de ${progreso.total}…` : "Carga rápida de fotos"}
+        {progreso ? `Cargando ${progreso.hechos + 1} de ${progreso.total}…` : "Cargar fotos"}
       </Button>
     </FileTrigger>
   );

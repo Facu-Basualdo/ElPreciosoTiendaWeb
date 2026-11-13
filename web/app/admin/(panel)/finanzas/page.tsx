@@ -113,7 +113,7 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/admin/fin
       </Seccion>
 
       <div className="grid items-start gap-5 lg:grid-cols-[1fr_22rem]">
-        <Seccion titulo="Cargar gasto o ingreso" descripcion="Los pedidos entregados ya cuentan solos: acá va lo que pasa fuera de la web.">
+        <Seccion id="cargar" titulo="Cargar gasto o ingreso" descripcion="Los pedidos entregados ya cuentan solos: acá va lo que pasa fuera de la web.">
           <AltaMovimiento hoy={hoy()} />
         </Seccion>
         <Seccion titulo="Más vendidos" descripcion="Pedidos entregados en los últimos 12 meses.">

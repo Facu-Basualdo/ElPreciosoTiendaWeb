@@ -7,11 +7,12 @@ import { useTransition } from "react";
 import { crearBorrador } from "@/app/admin/(panel)/productos/acciones";
 
 // Crea el borrador y abre su edición: las imágenes necesitan el id para su path.
-export function BotonNuevoProducto() {
+export function BotonNuevoProducto({ className }: { className?: string }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
   return (
     <Button
+      className={className}
       isPending={pendiente}
       onPress={() =>
         iniciar(async () => {

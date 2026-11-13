@@ -19,7 +19,7 @@ export default function LayoutPanel({ children }: LayoutProps<"/admin">) {
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-40 bg-encabezado text-encabezado-foreground [--logo-contraste:var(--encabezado)]">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-3 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-[1800px] items-center gap-3 px-3 sm:px-6">
           <NavegacionMovil />
           <NextLink href="/admin" className="flex items-center gap-3">
             <Logo />
@@ -40,7 +40,7 @@ export default function LayoutPanel({ children }: LayoutProps<"/admin">) {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-3 py-5 sm:px-6 sm:py-6">
+      <div className="mx-auto flex w-full max-w-[1800px] flex-1 gap-6 px-3 py-5 sm:px-6 sm:py-6">
         <NavegacionLateral />
         <main className="min-w-0 flex-1">
           <Suspense fallback={<Skeleton className="h-64 w-full rounded-tarjeta" />}>

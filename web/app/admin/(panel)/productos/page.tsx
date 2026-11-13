@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight, Pencil } from "@gravity-ui/icons";
-import { Chip, Skeleton, Table } from "@heroui/react";
+import { ChevronLeft, ChevronRight } from "@gravity-ui/icons";
+import { Skeleton } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import type { Metadata } from "next";
-import Image from "next/image";
 import NextLink from "next/link";
 import { Suspense } from "react";
 import {
@@ -12,14 +11,12 @@ import {
 } from "@/components/admin/productos/filtros-listado";
 import { CargaRapida } from "@/components/admin/productos/carga-rapida";
 import { BotonNuevoProducto } from "@/components/admin/productos/nuevo-producto";
-import { SwitchVisible } from "@/components/admin/productos/switch-visible";
+import { ListaProductos } from "@/components/admin/productos/lista-productos";
 import { requerirAdmin } from "@/lib/auth";
-import { formatearPrecio } from "@/lib/formato";
-import { urlPublica } from "@/lib/supabase/storage";
 
 export const metadata: Metadata = { title: "Productos" };
 
-const POR_PAGINA = 25;
+const POR_PAGINA = 48; // parejo en 2, 3, 4, 6 u 8 columnas de la grilla
 
 // Server component: a los componentes de HeroUI (client) sólo props serializables;
 // nada de renderEmptyState ni otras funciones desde acá.
@@ -32,7 +29,7 @@ export default function PaginaProductos(props: PageProps<"/admin/productos">) {
           <h1 className="text-2xl font-semibold tracking-tight">Productos</h1>
           <p className="text-sm text-muted">
             El switch &quot;Visible&quot; muestra u oculta el producto en la
-            tienda. Con &quot;Carga rápida&quot; cada foto se vuelve un borrador.
+            tienda. Con &quot;Cargar fotos&quot; cada foto se vuelve un borrador.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -66,7 +63,7 @@ async function Listado({
   let consulta = supabase
     .from("productos")
     .select(
-      `id, slug, nombre, precio, publicado, destacado, actualizado_en,
+      `id, slug, nombre, precio, publicado, actualizado_en,
        categoria:categorias(nombre),
        imagenes:producto_imagenes(path, orden),
        variantes:producto_variantes(sku)`,
@@ -116,84 +113,16 @@ async function Listado({
           No hay productos con estos filtros.
         </p>
       ) : (
-        <Table className="rounded-tarjeta border border-border bg-surface">
-          <Table.ScrollContainer>
-            <Table.Content aria-label="Productos">
-              <Table.Header>
-                <Table.Column isRowHeader>Producto</Table.Column>
-                <Table.Column>Categoría</Table.Column>
-                <Table.Column>Precio</Table.Column>
-                <Table.Column>Visible</Table.Column>
-                <Table.Column>
-                  <span className="sr-only">Acciones</span>
-                </Table.Column>
-              </Table.Header>
-              <Table.Body>
-                {visibles.map((p) => (
-                  <Table.Row key={p.id} id={p.id}>
-                    <Table.Cell>
-                      <div className="flex items-center gap-3">
-                        <div className="relative aspect-[9/16] w-10 shrink-0 overflow-hidden rounded-lg bg-surface-secondary">
-                          {p.imagen && (
-                            <Image
-                              src={urlPublica(p.imagen)}
-                              alt=""
-                              fill
-                              sizes="40px"
-                              className="object-cover"
-                            />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <NextLink
-                            href={`/admin/productos/${p.id}`}
-                            className="block truncate font-medium hover:underline"
-                          >
-                            {p.nombre}
-                          </NextLink>
-                          <span className="text-xs text-muted">/{p.slug}</span>
-                        </div>
-                        {p.destacado && (
-                          <Chip size="sm" variant="secondary">
-                            Destacado
-                          </Chip>
-                        )}
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>
-                      {p.categoria?.nombre ?? (
-                        <span className="text-muted">—</span>
-                      )}
-                    </Table.Cell>
-                    <Table.Cell className="tabular-nums">
-                      {formatearPrecio(p.precio)}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <SwitchVisible
-                        id={p.id}
-                        publicado={p.publicado}
-                        nombre={p.nombre}
-                      />
-                    </Table.Cell>
-                    <Table.Cell>
-                      <NextLink
-                        href={`/admin/productos/${p.id}`}
-                        aria-label={`Editar ${p.nombre}`}
-                        className={buttonVariants({
-                          variant: "ghost",
-                          size: "sm",
-                          isIconOnly: true,
-                        })}
-                      >
-                        <Pencil />
-                      </NextLink>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Content>
-          </Table.ScrollContainer>
-        </Table>
+        <ListaProductos
+          productos={visibles.map((p) => ({
+            id: p.id,
+            nombre: p.nombre,
+            imagen: p.imagen,
+            categoria: p.categoria?.nombre ?? null,
+            precio: Number(p.precio),
+            publicado: p.publicado,
+          }))}
+        />
       )}
 
       {paginas > 1 && (

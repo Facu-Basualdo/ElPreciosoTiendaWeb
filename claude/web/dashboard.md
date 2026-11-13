@@ -24,6 +24,20 @@ layout con barra, navegación y guardia.
 - Cerrar sesión: Server Action `cerrarSesion` en `app/admin/acciones.ts`, desde un
   `Form action`.
 
+## Inicio
+
+`app/admin/(panel)/page.tsx`, pensado para el celular de la dueña: saludo con el
+`staff.nombre` (el que crea `crear-admin.mjs` es la parte del email antes de la @;
+se cambia en Usuarios), **accesos rápidos** (Cargar fotos, Nuevo producto, Cargar un
+gasto → `/admin/finanzas#cargar`, Ver la tienda; 2×2 en el celular, en fila en la
+computadora), tres cifras (pedidos pendientes, ingresos del mes de `finanzas_por_mes`,
+productos en la tienda; en el celular en una fila, sin el detalle), **pedidos para
+atender** (pendientes y confirmados, con el mismo `ListaPedidos` y su selector de
+estado) y **para completar** (los borradores con su foto). "Refrescar tienda" va abajo.
+
+**El panel usa `max-w-[1800px]`** como la tienda: con `max-w-7xl` quedaba media
+pantalla vacía en un monitor ancho.
+
 ## Páginas del panel
 
 **Una página del panel nunca hace `await requerirAdmin()` (ni lee cookies) en su nivel
@@ -99,7 +113,12 @@ guarda en 1080×1920).
 `app/admin/(panel)/productos/`: listado (`page.tsx`), edición (`[id]/page.tsx`) y todas
 las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 
-- **"Carga rápida de fotos"** (`carga-rapida.tsx`): varias fotos → un borrador por foto,
+- **El listado es una grilla de tarjetas** (`lista-productos.tsx`), no `Table`: foto
+  9:16, nombre, categoría, precio y el switch "Visible" (los ocultos con borde punteado y
+  la marca "Oculto"). Toda la tarjeta abre el producto (link estirado) y el switch va por
+  encima. En el celular la tabla no entraba; en la computadora dejaba vacío.
+  `POR_PAGINA = 48`: parejo en 2, 3, 4, 6 u 8 columnas.
+- **"Cargar fotos"** (`carga-rapida.tsx`): varias fotos → un borrador por foto,
   con la foto como principal. Las que no son 9:16 se recortan al centro sin preguntar
   (`recorteCentrado`); para elegir el recorte, subir desde la ficha.
 - **Ficha corta**: Datos (nombre, precio, categoría, visible, hecho a pedido) → Fotos
