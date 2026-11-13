@@ -19,9 +19,13 @@ oscuro ni `next-themes`.
   pantalla dice "El Precioso", no "EL PRECI SO". Todo en `currentColor`: sobre las franjas
   oscuras alcanza con el color del texto.
 - `web/app/icon.svg`: huella azul noche sobre círculo dorado. `app/opengraph-image.tsx`:
-  la bandera (`og-fondo.jpg`) con velo azul noche, el nombre con la huella y la frase.
-  **`next/og` no lee WebP ni entiende `inset`**: el fondo es JPEG y las capas van con
-  `top`/`left` y medidas; tampoco tiene el peso 900 del logo (sale en 700).
+  fondo marfil con manchas celeste y dorada en las esquinas, "EL / PRECIOSO" en dos líneas
+  con la huella y la frase. **Todo lo importante en el cuadrado central de 630×630**:
+  WhatsApp, en la vista chica, recorta al centro en cuadrado (con el nombre a todo el
+  ancho se leía "PRECI SO"). **`next/og` no lee WebP ni entiende `inset`, y su única
+  fuente no tiene negrita**: el grosor del nombre sale de `WebkitTextStroke`. WhatsApp
+  guarda la vista previa de cada link un tiempo: un link ya compartido puede seguir
+  mostrando la vieja.
 - Links a WhatsApp siempre con `enlaceWhatsapp(mensaje?)` (`lib/whatsapp.ts`).
 
 ## Dónde vive la paleta
