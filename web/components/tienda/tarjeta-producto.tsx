@@ -29,18 +29,18 @@ export function TarjetaProducto({
   const oferta = producto.precioAnterior != null && producto.precioAnterior > producto.precioDesde;
   const fila = horizontal ? "flex-row" : "flex-col sm:group-data-[vista=lista]/vista:flex-row";
   const anchoImagen = horizontal
-    ? "w-28 sm:w-36"
-    : "w-full sm:group-data-[vista=lista]/vista:w-48 sm:group-data-[vista=lista]/vista:self-stretch";
+    ? "w-24 sm:w-28"
+    : "w-full sm:group-data-[vista=lista]/vista:w-36 sm:group-data-[vista=lista]/vista:self-stretch";
 
   return (
     <article
-      className={`flex h-full overflow-hidden rounded-tarjeta border border-border bg-surface transition-shadow hover:shadow-[0_6px_24px_-8px_rgb(0_0_0/0.18)] ${fila}`}
+      className={`flex h-full overflow-hidden rounded-tarjeta border border-border bg-surface transition-shadow hover:shadow-[0_10px_30px_-12px_rgb(14_27_44/0.25)] ${fila}`}
     >
       <NextLink
         href={`/p/${producto.slug}`}
         tabIndex={-1}
         aria-hidden
-        className={`relative block shrink-0 bg-surface-secondary ${horizontal ? "aspect-[4/5] self-center" : "aspect-[4/5]"} ${anchoImagen}`}
+        className={`relative block shrink-0 bg-surface-secondary ${horizontal ? "aspect-[9/16] self-center" : "aspect-[9/16]"} ${anchoImagen}`}
       >
         {producto.imagen ? (
           <Image
@@ -80,7 +80,7 @@ export function TarjetaProducto({
             {horizontal && producto.promo && <span className="rounded bg-foreground px-1.5 py-0.5 text-background">{producto.promo}</span>}
           </p>
         )}
-        <h3 className="line-clamp-2 text-sm leading-snug">
+        <h3 className="line-clamp-2 font-serif text-base leading-snug">
           <NextLink href={`/p/${producto.slug}`} className="outline-none hover:underline hover:underline-offset-4 focus-visible:underline">
             {producto.nombre}
           </NextLink>
@@ -94,8 +94,8 @@ export function TarjetaProducto({
   );
 }
 
-// Variante única con stock → al carrito directo. Con opciones (talle, color…) → a la
-// ficha a elegir. Sin stock → deshabilitado.
+// Variante única con stock → al carrito directo. Con varias bases → a la ficha a
+// elegir. Sin stock → deshabilitado.
 function AccionTarjeta({ producto }: { producto: Datos }) {
   if (!producto.disponible) {
     return (
@@ -109,7 +109,7 @@ function AccionTarjeta({ producto }: { producto: Datos }) {
   }
   return (
     <NextLink href={`/p/${producto.slug}`} className={buttonVariants({ variant: "outline", size: "sm", fullWidth: true })}>
-      Elegir opciones
+      Elegir base
     </NextLink>
   );
 }

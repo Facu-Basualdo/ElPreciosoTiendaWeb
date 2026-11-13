@@ -13,11 +13,11 @@ export function AccesoCarrito() {
     <NextLink
       href="/carrito"
       aria-label={cantidad ? `Carrito, ${cantidad} ${cantidad === 1 ? "unidad" : "unidades"}` : "Carrito vacío"}
-      className="relative inline-flex size-10 items-center justify-center rounded-[var(--radius)] text-encabezado-foreground transition-colors hover:bg-white/10"
+      className="relative inline-flex size-10 items-center justify-center rounded-[var(--radius)] transition-colors hover:bg-default"
     >
       <ShoppingCart className="size-5" />
       {cantidad > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-encabezado-foreground px-1 text-[11px] font-semibold tabular-nums text-encabezado">
+        <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold tabular-nums text-accent-foreground">
           {cantidad > 99 ? "99+" : cantidad}
         </span>
       )}

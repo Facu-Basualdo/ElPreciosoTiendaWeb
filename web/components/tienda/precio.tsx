@@ -1,6 +1,6 @@
 import { formatearPrecio } from "@/lib/formato";
 
-/** "-$ 18.880": el único elemento con color de la interfaz (verde de ahorro). */
+/** "-$ 1.200": el ahorro en pesos, en celeste (información, no decoración). */
 export function ChipAhorro({ monto, className }: { monto: number; className?: string }) {
   return (
     <span
@@ -11,7 +11,7 @@ export function ChipAhorro({ monto, className }: { monto: number; className?: st
   );
 }
 
-// Precio anterior tachado en gris + ahorro en verde. Ver claude/web/tema-y-marca.md
+// Precio anterior tachado en gris + ahorro en celeste. Ver claude/web/tema-y-marca.md
 export function Precio({
   valor,
   anterior,

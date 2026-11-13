@@ -10,6 +10,7 @@ import {
   FiltrosListado,
   type Estado,
 } from "@/components/admin/productos/filtros-listado";
+import { CargaRapida } from "@/components/admin/productos/carga-rapida";
 import { BotonNuevoProducto } from "@/components/admin/productos/nuevo-producto";
 import { SwitchVisible } from "@/components/admin/productos/switch-visible";
 import { requerirAdmin } from "@/lib/auth";
@@ -31,10 +32,13 @@ export default function PaginaProductos(props: PageProps<"/admin/productos">) {
           <h1 className="text-2xl font-semibold tracking-tight">Productos</h1>
           <p className="text-sm text-muted">
             El switch &quot;Visible&quot; muestra u oculta el producto en la
-            tienda.
+            tienda. Con &quot;Carga rápida&quot; cada foto se vuelve un borrador.
           </p>
         </div>
-        <BotonNuevoProducto />
+        <div className="flex flex-wrap gap-2">
+          <CargaRapida />
+          <BotonNuevoProducto />
+        </div>
       </div>
       <Suspense fallback={<Skeleton className="h-12 rounded-xl" />}>
         <FiltrosListado />
@@ -62,7 +66,7 @@ async function Listado({
   let consulta = supabase
     .from("productos")
     .select(
-      `id, slug, nombre, precio, publicado, destacado, actualizado_en,
+      `id, slug, nombre, precio, publicado, destacado, a_pedido, actualizado_en,
        categoria:categorias(nombre),
        imagenes:producto_imagenes(path, orden),
        variantes:producto_variantes(stock, activa, sku)`,
@@ -94,7 +98,7 @@ async function Listado({
         p.nombre.toLowerCase().includes(qn) ||
         p.variantes.some((v) => v.sku?.toLowerCase().includes(qn)),
     )
-    .filter((p) => estado !== "sin-stock" || p.stock === 0);
+    .filter((p) => estado !== "sin-stock" || (!p.a_pedido && p.stock === 0));
 
   const paginas = Math.max(1, Math.ceil(filas.length / POR_PAGINA));
   const visibles = filas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
@@ -134,7 +138,7 @@ async function Listado({
                   <Table.Row key={p.id} id={p.id}>
                     <Table.Cell>
                       <div className="flex items-center gap-3">
-                        <div className="relative aspect-[4/5] w-10 shrink-0 overflow-hidden rounded-lg bg-surface-secondary">
+                        <div className="relative aspect-[9/16] w-10 shrink-0 overflow-hidden rounded-lg bg-surface-secondary">
                           {p.imagen && (
                             <Image
                               src={urlPublica(p.imagen)}
@@ -170,9 +174,10 @@ async function Listado({
                       {formatearPrecio(p.precio)}
                     </Table.Cell>
                     <Table.Cell
-                      className={`tabular-nums ${p.stock === 0 ? "text-danger" : ""}`}
+                      className={`tabular-nums ${!p.a_pedido && p.stock === 0 ? "text-danger" : ""}`}
                     >
-                      {p.stock}
+                      {/* A pedido el stock es 9999 por trigger: no se muestra. */}
+                      {p.a_pedido ? <span className="text-muted">A pedido</span> : p.stock}
                     </Table.Cell>
                     <Table.Cell>
                       <SwitchVisible

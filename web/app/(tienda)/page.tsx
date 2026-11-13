@@ -1,134 +1,144 @@
-import { Box, Comment, ShoppingCart } from "@gravity-ui/icons";
+import { buttonVariants } from "@heroui/styles";
 import Image from "next/image";
 import NextLink from "next/link";
+import { IconoWhatsapp } from "@/components/icono-whatsapp";
 import { CarruselBanners } from "@/components/tienda/carrusel-banners";
 import { CarruselProductos } from "@/components/tienda/carrusel-productos";
-import { PestanasDestacados } from "@/components/tienda/pestanas-destacados";
+import { Hero } from "@/components/tienda/inicio/hero";
+import { Beneficios, ComoComprar, Contacto, Personaliza, Problema, Sobre } from "@/components/tienda/inicio/secciones";
+import { TituloSeccion } from "@/components/tienda/inicio/titulo-seccion";
 import { TarjetaCombo } from "@/components/tienda/tarjeta-combo";
 import { TarjetaProducto } from "@/components/tienda/tarjeta-producto";
 import { buscarCombos } from "@/lib/catalogo/combos";
 import {
   obtenerBanners,
   obtenerCategorias,
-  obtenerDestacados,
   obtenerMosaicoCategorias,
   obtenerOfertas,
+  obtenerRecientes,
+  obtenerValoresGrupo,
 } from "@/lib/catalogo/lecturas";
+import { SITIO } from "@/lib/sitio";
 import { urlPublica } from "@/lib/supabase/storage";
+import { enlaceWhatsapp } from "@/lib/whatsapp";
 
-function Titulo({ normal, fuerte }: { normal: string; fuerte: string }) {
-  return (
-    <>
-      {normal} <strong className="font-semibold">{fuerte}</strong>
-    </>
-  );
-}
-
+// La home es la landing de El Precioso hecha con datos de la base: hero con la bandera,
+// últimos ingresos, catálogo por categoría, personalización, sobre nosotros y contacto.
+// Las reseñas de la landing no eran reales: no se publican. Ver docs/plan-el-precioso.md
 export default async function Inicio() {
-  const [banners, categorias, mosaico, ofertas, combos] = await Promise.all([
+  const [banners, recientes, categorias, mosaico, bases, combos, ofertas] = await Promise.all([
     obtenerBanners(),
+    obtenerRecientes(10),
     obtenerCategorias(),
     obtenerMosaicoCategorias(),
-    obtenerOfertas(12),
-    buscarCombos(true, 8),
-  ]);
-  const destacados = await Promise.all([
-    obtenerDestacados(6).then((productos) => ({ id: "todos", titulo: "Todos", productos })),
-    ...categorias.map((c) => obtenerDestacados(6, c.slug).then((productos) => ({ id: c.slug, titulo: c.nombre, productos }))),
+    obtenerValoresGrupo("base"),
+    SITIO.ventasAvanzadas ? buscarCombos(true, 8) : null,
+    SITIO.ventasAvanzadas ? obtenerOfertas(12) : null,
   ]);
 
   return (
-    <div className="contenedor flex flex-col gap-12 pb-8 pt-3 sm:gap-16 sm:pt-5">
-      <CarruselBanners banners={banners} />
-
-      <section className="flex flex-col gap-5" aria-labelledby="destacados">
-        <h2 id="destacados" className="text-xl font-light tracking-tight sm:text-2xl">
-          <Titulo normal="Conocé nuestros" fuerte="productos destacados" />
-        </h2>
-        <PestanasDestacados
-          paneles={destacados
-            .filter((d) => d.productos.length)
-            .map((d) => ({
-              id: d.id,
-              titulo: d.titulo,
-              contenido: (
-                <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 2xl:grid-cols-4">
-                  {d.productos.map((p) => (
-                    <li key={p.id}>
-                      <TarjetaProducto producto={p} horizontal />
-                    </li>
-                  ))}
-                </ul>
-              ),
-            }))}
-        />
-      </section>
-
-      <section
-        aria-label="Cómo comprar"
-        className="grid gap-6 rounded-tarjeta border border-white/10 bg-encabezado p-6 text-encabezado-foreground sm:grid-cols-3 sm:p-10"
-      >
-        {[
-          { icono: ShoppingCart, titulo: "Armá tu carrito", texto: "Elegí productos, talles y colores. El total se calcula al instante." },
-          { icono: Comment, titulo: "Pedí por WhatsApp", texto: "Enviás el pedido con un toque y te respondemos para coordinar el pago." },
-          { icono: Box, titulo: "Recibilo", texto: "Retiro o envío, lo que te quede mejor." },
-        ].map(({ icono: Icono, titulo, texto }) => (
-          <div key={titulo} className="flex gap-4">
-            <Icono aria-hidden className="size-6 shrink-0" />
-            <div className="flex flex-col gap-1">
-              <h3 className="font-semibold">{titulo}</h3>
-              <p className="text-sm text-white/70">{texto}</p>
-            </div>
+    <div className="flex flex-col gap-16 pb-4 sm:gap-24">
+      <div>
+        <Hero />
+        {banners.length > 0 && (
+          <div className="contenedor pt-8">
+            <CarruselBanners banners={banners} />
           </div>
-        ))}
-      </section>
+        )}
+        <Problema />
+        <Beneficios />
+      </div>
 
-      {mosaico.length > 0 && (
-        <section className="flex flex-col gap-5" aria-labelledby="categorias">
-          <h2 id="categorias" className="text-xl font-light tracking-tight sm:text-2xl">
-            <Titulo normal="Explorá nuestras" fuerte="categorías" />
-          </h2>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            {mosaico.map((c, i) => (
-              <li key={c.slug} className={i === 0 ? "col-span-2 row-span-2" : ""}>
+      {recientes.length > 0 && (
+        <div className="contenedor">
+          <CarruselProductos antetitulo="Últimos ingresos" titulo="Recién salidos de la mesa de trabajo">
+            {recientes.map((p) => (
+              <TarjetaProducto key={p.id} producto={p} />
+            ))}
+          </CarruselProductos>
+        </div>
+      )}
+
+      <section id="catalogo" aria-labelledby="titulo-catalogo" className="contenedor flex scroll-mt-16 flex-col gap-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <TituloSeccion id="titulo-catalogo" antetitulo="Catálogo" titulo="Toda la colección" />
+          {recientes.length > 0 && (
+            <NextLink href="/catalogo" className={buttonVariants({ variant: "outline" })}>
+              Ver todos los modelos
+            </NextLink>
+          )}
+        </div>
+
+        {recientes.length === 0 ? (
+          <div className="flex flex-col items-start gap-4 rounded-tarjeta border border-dashed border-border bg-surface p-8">
+            <p className="font-serif text-xl">Estamos cargando los modelos de esta temporada.</p>
+            <p className="text-muted">Mientras tanto, escribinos y te mandamos fotos de lo que tenemos.</p>
+            <a href={enlaceWhatsapp()} target="_blank" rel="noopener" className={buttonVariants()}>
+              <IconoWhatsapp className="size-4" />
+              Escribinos por WhatsApp
+            </a>
+          </div>
+        ) : mosaico.length > 0 ? (
+          <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {mosaico.map((c) => (
+              <li key={c.slug}>
                 <NextLink
                   href={`/catalogo?cat=${c.slug}`}
-                  className="group relative block aspect-square overflow-hidden rounded-tarjeta bg-surface-secondary"
+                  className="group relative block aspect-[3/4] overflow-hidden rounded-tarjeta bg-surface-secondary"
                 >
                   {c.imagen && (
                     <Image
                       src={urlPublica(c.imagen)}
                       alt=""
                       fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
                     />
                   )}
-                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 pb-4 pt-10 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-noche/80 to-transparent px-4 pb-4 pt-12 font-serif text-xl text-marfil">
                     {c.nombre}
                   </span>
                 </NextLink>
               </li>
             ))}
           </ul>
-        </section>
+        ) : (
+          <ul className="flex flex-wrap gap-2">
+            {categorias.map((c) => (
+              <li key={c.id}>
+                <NextLink href={`/catalogo?cat=${c.slug}`} className={buttonVariants({ variant: "secondary" })}>
+                  {c.nombre}
+                </NextLink>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {combos && combos.combos.length > 0 && (
+        <div className="contenedor">
+          <CarruselProductos antetitulo="Combos" titulo="Llevá más, pagá menos">
+            {combos.combos.map((c) => (
+              <TarjetaCombo key={c.id} combo={c} />
+            ))}
+          </CarruselProductos>
+        </div>
       )}
 
-      {combos.combos.length > 0 && (
-        <CarruselProductos titulo={<Titulo normal="Llevá más con nuestros" fuerte="combos" />}>
-          {combos.combos.map((c) => (
-            <TarjetaCombo key={c.id} combo={c} />
-          ))}
-        </CarruselProductos>
+      {ofertas && ofertas.productos.length > 0 && (
+        <div className="contenedor">
+          <CarruselProductos antetitulo="Ofertas" titulo="Precios rebajados">
+            {ofertas.productos.map((p) => (
+              <TarjetaProducto key={p.id} producto={p} />
+            ))}
+          </CarruselProductos>
+        </div>
       )}
 
-      {ofertas.productos.length > 0 && (
-        <CarruselProductos titulo={<Titulo normal="Los mejores" fuerte="precios rebajados" />}>
-          {ofertas.productos.map((p) => (
-            <TarjetaProducto key={p.id} producto={p} />
-          ))}
-        </CarruselProductos>
-      )}
+      <ComoComprar />
+      <Personaliza bases={bases} />
+      <Sobre />
+      <Contacto />
     </div>
   );
 }

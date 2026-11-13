@@ -22,6 +22,8 @@ promociones ─< promocion_alcance ··> productos | categorias | etiquetas (uno
 banners
 staff ── auth.users (fila activa = admin del panel)
 producto_variantes ─< movimientos_stock (set null: el historial queda)
+producto_variantes ── costos_variante (1 a 1, sólo admin)
+pedidos ─< movimientos_dinero (pedido_id opcional, set null)
 ```
 
 ## productos
@@ -37,7 +39,8 @@ producto_variantes ─< movimientos_stock (set null: el historial queda)
 | `precio_anterior` | `numeric(12,2)` null | Si es mayor que `precio`, la UI muestra "oferta" |
 | `categoria_id` | `uuid` fk null | Una categoría por producto |
 | `publicado` | `boolean` default `false` | Visible en la tienda. `false` = borrador u oculto (switch en el dashboard). Anon sólo ve `true` |
-| `destacado` | `boolean` default `false` | Aparece en la home |
+| `destacado` | `boolean` default `false` | Hoy no lo usa la home (muestra los más nuevos) |
+| `a_pedido` | `boolean` default `true` | Hecho a pedido: sin control de stock, sus variantes quedan en 9999 por trigger (ver [variantes-y-stock](variantes-y-stock.md#productos-a-pedido)) |
 | `busqueda` | `tsvector` generada | Ver [busqueda](busqueda.md) |
 | `creado_en`, `actualizado_en` | `timestamptz` | `actualizado_en` por trigger |
 
@@ -122,7 +125,9 @@ Helpers en el schema `private` (no expuesto): `productos_filtrados`, `filtros_va
 
 ## pedidos · pedido_items
 
-Pedidos del carrito con `numero` secuencial, `estado` (enum `estado_pedido`) y totales;
+Pedidos del carrito con `numero` secuencial, `estado` (enum `estado_pedido`), totales,
+`telefono` (opcional, sólo dígitos), `entrega` (`retiro` · `envio`), `localidad` y
+`entregado_en` (por trigger: ver [finanzas](finanzas.md));
 `pedido_items` es un snapshot (nombre, detalle, SKU, precio, `promo`). Un combo es una
 fila padre + hijas por variante (`padre_id`). Sin grants para `anon`.
 Ver [carrito](carrito.md).
@@ -149,6 +154,11 @@ Personal: `user_id` (pk → `auth.users`, cascade), `email` (copia para listar),
 `nombre` (el que muestra el historial de stock), `activo`. **Sin roles**: toda fila
 activa es admin. Reemplazó a `admins`. Un trigger impide quedarse sin admin activo. Ver
 [seguridad-rls](seguridad-rls.md#staff).
+
+## costos_variante · movimientos_dinero
+
+Costo opcional por variante y movimientos de dinero cargados a mano. Sólo admin. Ver
+[finanzas](finanzas.md).
 
 ## movimientos_stock
 

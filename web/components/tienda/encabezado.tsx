@@ -3,25 +3,44 @@ import { Suspense } from "react";
 import { AccesoCarrito } from "@/components/carrito/acceso-carrito";
 import { Logo } from "@/components/logo";
 import { obtenerCategorias } from "@/lib/catalogo/lecturas";
+import { SITIO } from "@/lib/sitio";
 import { Buscador, BuscadorMovil } from "./buscador";
 import { MenuMovil } from "./menu-movil";
-import { SelectorTema } from "./selector-tema";
 
-// Encabezado oscuro de dos filas (siempre oscuro, también en tema claro):
-// 1) logo · buscador ancho · tema · carrito   2) categorías · combos · ofertas
+// Encabezado liviano de una fila, marfil translúcido. En mobile: menú · logo · lupa ·
+// carrito (siempre visible). En escritorio suma los links y el buscador.
 export async function Encabezado() {
   const categorias = await obtenerCategorias();
+  const enlaces = [
+    { href: "/catalogo", texto: "Catálogo" },
+    ...categorias.map((c) => ({ href: `/catalogo?cat=${c.slug}`, texto: c.nombre })),
+    ...(SITIO.ventasAvanzadas
+      ? [
+          { href: "/combos", texto: "Combos" },
+          { href: "/ofertas", texto: "Ofertas" },
+        ]
+      : []),
+    { href: "/#personaliza", texto: "Personalizá" },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 bg-encabezado text-encabezado-foreground [--logo-contraste:var(--encabezado)]">
-      <div className="contenedor flex h-16 items-center gap-3 lg:gap-8">
-        <MenuMovil categorias={categorias} />
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
+      <div className="contenedor flex h-16 items-center gap-2 lg:gap-8">
+        <MenuMovil enlaces={enlaces} />
         <NextLink href="/" aria-label="Inicio" className="shrink-0">
-          <Logo />
+          <Logo className="text-lg sm:text-xl" />
         </NextLink>
 
+        <nav aria-label="Secciones" className="hidden items-center gap-6 text-sm lg:flex">
+          {enlaces.map((e) => (
+            <NextLink key={e.href} href={e.href} className="text-muted transition-colors hover:text-foreground">
+              {e.texto}
+            </NextLink>
+          ))}
+        </nav>
+
         {/* El buscador lee searchParams: va en Suspense para no volver dinámico el layout. */}
-        <div className="hidden flex-1 md:block">
+        <div className="ml-auto hidden w-full max-w-xs md:block">
           <Suspense fallback={<div className="h-10" />}>
             <Buscador />
           </Suspense>
@@ -31,29 +50,9 @@ export async function Encabezado() {
           <Suspense fallback={null}>
             <BuscadorMovil />
           </Suspense>
-          <SelectorTema />
           <AccesoCarrito />
         </div>
       </div>
-
-      <nav aria-label="Categorías" className="hidden border-t border-white/10 md:block">
-        <div className="contenedor flex h-11 items-center gap-6 text-sm">
-          <NextLink href="/catalogo" className="text-white/75 transition-colors hover:text-white">
-            Productos
-          </NextLink>
-          {categorias.map((c) => (
-            <NextLink key={c.id} href={`/catalogo?cat=${c.slug}`} className="text-white/75 transition-colors hover:text-white">
-              {c.nombre}
-            </NextLink>
-          ))}
-          <NextLink href="/combos" className="text-white/75 transition-colors hover:text-white">
-            Combos
-          </NextLink>
-          <NextLink href="/ofertas" className="text-white/75 transition-colors hover:text-white">
-            Ofertas
-          </NextLink>
-        </div>
-      </nav>
     </header>
   );
 }

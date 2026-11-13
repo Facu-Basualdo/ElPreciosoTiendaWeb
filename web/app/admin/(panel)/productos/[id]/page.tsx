@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowUpRightFromSquare } from "@gravity-ui/icons";
-import { Chip, Skeleton } from "@heroui/react";
+import { Chip, Disclosure, Skeleton } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import type { Metadata } from "next";
 import NextLink from "next/link";
@@ -113,7 +113,7 @@ async function Edicion({
       >
         {/* key: al guardar, router.refresh() trae datos nuevos y cada sección se reinicia con ellos. */}
         <FormularioDatos
-          key={`datos-${producto.slug}-${producto.publicado}`}
+          key={`datos-${producto.slug}-${producto.publicado}-${producto.aPedido}`}
           producto={producto}
           categorias={catalogos.categorias}
         />
@@ -127,27 +127,40 @@ async function Edicion({
             borrar: borrarImagen,
           }}
         />
-        <EditorEtiquetas
-          key={`et-${producto.etiquetas.join()}`}
-          productoId={producto.id}
-          grupos={catalogos.grupos}
-          seleccionadas={producto.etiquetas}
-        />
         <EditorVariantes
-          key={`var-${producto.variantes.map((v) => `${v.clave}:${v.stock}`).join()}`}
+          key={`var-${producto.aPedido}-${producto.variantes.map((v) => `${v.clave}:${v.stock}`).join()}`}
           productoId={producto.id}
           precioBase={producto.precio}
+          aPedido={producto.aPedido}
           grupos={catalogos.grupos}
           variantes={producto.variantes}
         />
-        <EditorDescripcion
-          inicial={producto.descripcion}
-          guardar={guardarDescripcion.bind(null, producto.id)}
-        />
+        {/* Lo opcional, plegado: la ficha corta es nombre, fotos, bases con precio y publicar. */}
+        <Disclosure defaultExpanded={producto.etiquetas.length > 0 || !!producto.descripcion}>
+          <Disclosure.Heading>
+            <Disclosure.Trigger className="flex w-full items-center justify-between rounded-tarjeta border border-border bg-surface px-5 py-4 font-medium">
+              Más detalles: fecha patria, dije, colores y descripción
+              <Disclosure.Indicator />
+            </Disclosure.Trigger>
+          </Disclosure.Heading>
+          <Disclosure.Content>
+            <Disclosure.Body className="flex flex-col gap-5 pt-5">
+              <EditorEtiquetas
+                key={`et-${producto.etiquetas.join()}`}
+                productoId={producto.id}
+                grupos={catalogos.grupos}
+                seleccionadas={producto.etiquetas}
+              />
+              <EditorDescripcion inicial={producto.descripcion} guardar={guardarDescripcion.bind(null, producto.id)} />
+            </Disclosure.Body>
+          </Disclosure.Content>
+        </Disclosure>
       </ProveedorCategoria>
-      <Suspense fallback={<Skeleton className="h-40 rounded-tarjeta" />}>
-        <HistorialStock supabase={supabase} productoId={producto.id} nombres={nombres} />
-      </Suspense>
+      {!producto.aPedido && (
+        <Suspense fallback={<Skeleton className="h-40 rounded-tarjeta" />}>
+          <HistorialStock supabase={supabase} productoId={producto.id} nombres={nombres} />
+        </Suspense>
+      )}
       <BorrarProducto id={producto.id} nombre={producto.nombre} />
     </>
   );

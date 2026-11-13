@@ -14,8 +14,7 @@ import {
   type Formato,
   type Recorte,
 } from "@/lib/admin/imagenes";
-import { BUCKET } from "@/lib/supabase/storage";
-import { supabaseNavegador } from "@/lib/supabase/navegador";
+import { subirWebp } from "@/lib/admin/subir-imagen";
 
 export type ImagenSubida = { path: string; ancho: number; alto: number };
 
@@ -42,12 +41,7 @@ export function SubidaImagen({ formato, carpeta, onSubida, multiple = false, eti
       setSubiendo(true);
       try {
         const blob = await exportarWebp(img, formato, recorte);
-        // Nombre nuevo siempre: sobrescribir un path deja la versión vieja en el CDN.
-        const path = `${carpeta}/${crypto.randomUUID()}.webp`;
-        const { error } = await supabaseNavegador()
-          .storage.from(BUCKET)
-          .upload(path, blob, { contentType: "image/webp", upsert: false });
-        if (error) throw new Error(error.message);
+        const path = await subirWebp(carpeta, blob);
         await onSubida({ path, ancho, alto });
       } catch (e) {
         toast.danger(`No se pudo subir la imagen: ${e instanceof Error ? e.message : "error desconocido"}`);

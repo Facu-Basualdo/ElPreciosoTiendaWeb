@@ -97,7 +97,7 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
                 {p.marca.valor}
               </NextLink>
             )}
-            <h1 className="text-2xl font-light leading-tight tracking-tight sm:text-3xl">{p.nombre}</h1>
+            <h1 className="font-serif text-2xl font-normal leading-tight tracking-tight sm:text-3xl">{p.nombre}</h1>
           </div>
 
           {/* useSearchParams (?variante=) en un client component: requiere su propio Suspense. */}
@@ -105,6 +105,7 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
             <SelectorVariantes
               nombre={p.nombre}
               url={`${SITIO.url}/p/${p.slug}`}
+              aPedido={p.aPedido}
               precioAnterior={p.precioAnterior}
               promoUnitaria={p.promoUnitaria}
               promoCantidad={p.promoCantidad}

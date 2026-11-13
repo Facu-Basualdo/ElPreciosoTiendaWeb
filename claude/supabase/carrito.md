@@ -16,7 +16,7 @@ Migración: `*_carrito_y_pedidos.sql`.
 |---|---|---|---|
 | `private.cotizar(p_items)` | — | invoker | Desglose: líneas con precio, estado y subtotal; totales |
 | `cotizar_carrito(p_items, p_cupon)` | anon, authenticated | invoker | Cotización + cupón para el carrito. No escribe nada |
-| `crear_pedido(p_items, p_nombre, p_notas, p_cupon)` | anon, authenticated | **definer** | Vuelve a cotizar, valida y guarda pedido + ítems |
+| `crear_pedido(p_items, p_nombre, p_notas, p_cupon, p_telefono, p_entrega, p_localidad)` | anon, authenticated | **definer** | Vuelve a cotizar, valida y guarda pedido + ítems |
 | `cambiar_estado_pedido(p_pedido_id, p_estado)` | authenticated (+ admin) | invoker | Cambia estado; descuenta o repone stock |
 
 `p_items`: `[{ "tipo": "variante", "variante_id": uuid, "cantidad": int }]`. Las promociones
@@ -41,7 +41,13 @@ y los combos ya entran adentro (ver [promociones](promociones.md#no-se-acumulan)
 - Es la **única** forma de escribir en `pedidos`/`pedido_items`: `anon` no tiene grants
   sobre esas tablas. Por eso es `security definer` (en `public`, porque la llama la API)
   y valida todo adentro: nombre 1–80, notas ≤ 500, carrito no vacío, todas las líneas
-  `ok`.
+  `ok`, teléfono (opcional) de 8 a 15 dígitos, `entrega` `retiro` o `envio`, y con envío
+  la localidad.
+- **El teléfono se guarda sólo con dígitos** ("3624 123-456" → `3624123456`), tal cual lo
+  escribió el cliente: el `549` de wa.me lo agrega la web al armar el link
+  (`numeroArgentino` en `lib/whatsapp.ts`). La localidad sólo se guarda con envío.
+- Los parámetros nuevos van al final y con default: un carrito viejo cacheado que manda
+  sólo los cuatro primeros sigue funcionando.
 - Los mensajes de error (`raise exception`) **son para el cliente**: la web los muestra
   tal cual en un toast. Redactalos en español y accionables ("revisá el carrito").
 - Guarda un **snapshot** en `pedido_items` (nombre, detalle "M / Negro", SKU, precio):
@@ -73,6 +79,7 @@ mensaje. `anon` leyendo `pedidos` o llamando `cambiar_estado_pedido` → 42501. 
 pedido no cambia el stock.
 
 ## Ver también
+- [Finanzas](finanzas.md) — `entregado_en` y el costo de cada ítem
 
 - [Carrito (web)](../web/carrito.md)
 - [Promociones](promociones.md) — la parte de `cotizar` que descuenta

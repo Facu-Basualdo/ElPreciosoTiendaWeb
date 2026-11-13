@@ -13,7 +13,7 @@ export function TarjetaCombo({ combo, prioridad = false }: { combo: Datos; prior
   const href = `/combo/${combo.slug}`;
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-tarjeta border border-border bg-surface transition-shadow hover:shadow-[0_6px_24px_-8px_rgb(0_0_0/0.18)]">
-      <NextLink href={href} tabIndex={-1} aria-hidden className="relative block aspect-[4/5] bg-surface-secondary">
+      <NextLink href={href} tabIndex={-1} aria-hidden className="relative block aspect-[9/16] bg-surface-secondary">
         {combo.imagen ? (
           <Image
             src={urlPublica(combo.imagen.path)}

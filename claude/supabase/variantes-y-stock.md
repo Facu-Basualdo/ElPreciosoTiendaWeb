@@ -142,9 +142,30 @@ activas:
 |---|---|
 | Ocultar un producto entero de la tienda | `productos.publicado = false` (switch en el listado del dashboard) |
 | Ocultar una combinación (ej. dejar de vender XL) | `producto_variantes.activa = false` |
-| Mostrarlo pero que no se pueda pedir | `stock = 0` → la tienda muestra "Sin stock" |
+| Mostrarlo pero que no se pueda pedir | `stock = 0` → la tienda muestra "Sin stock" (sólo si no es a pedido) |
 
 Sin stock **no oculta** el producto: queda visible con el aviso y al final del listado.
+
+## Productos a pedido
+
+El Precioso fabrica a pedido: casi ningún producto tiene stock. `productos.a_pedido`
+(default `true`) dice que **no se controla stock**, y la forma de cumplirlo es que **un
+trigger fija en 9999 el stock de todas sus variantes** (`producto_variantes_stock_a_pedido`,
+`before insert or update of stock`). Así `buscar_productos`, facetas, filtros por variante,
+`cotizar` y combos lo ven siempre disponible sin saber nada de "a pedido".
+
+| Pasa… | Resultado |
+|---|---|
+| Se crea una variante o se guarda stock en un producto a pedido | Queda 9999, mande lo que mande el panel |
+| Se desmarca `a_pedido` | Todas sus variantes pasan a **0**: hay que cargar el stock real |
+| Se vuelve a marcar | 9999 otra vez |
+| Se confirma o cancela un pedido | `cambiar_estado_pedido` **no descuenta ni repone** sus líneas |
+| Cualquier cambio de stock | **No queda en `movimientos_stock`** (el trigger del historial lo saltea; también con `app.sin_historial = 'si'`) |
+
+- **9999 no se muestra nunca.** La ficha dice "Hecho a pedido", el listado del panel
+  "A pedido" y el editor oculta la columna de stock. Si una vista nueva muestra stock,
+  tiene que mirar `a_pedido` primero.
+- El filtro "Sin stock" del panel excluye los productos a pedido.
 
 ## Descuento de stock
 

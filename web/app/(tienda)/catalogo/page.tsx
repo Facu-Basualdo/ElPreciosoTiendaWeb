@@ -70,7 +70,7 @@ async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">
             <ChevronLeft />
           </NextLink>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">{titulo}</h1>
+            <h1 className="font-serif truncate text-2xl font-normal tracking-tight sm:text-3xl">{titulo}</h1>
             <p className="text-sm text-muted">
               {resultado.total} {resultado.total === 1 ? "producto" : "productos"}
             </p>

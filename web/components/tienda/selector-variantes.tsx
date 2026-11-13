@@ -17,6 +17,7 @@ import { Precio } from "./precio";
 type Props = {
   nombre: string;
   url: string;
+  aPedido: boolean;
   precioAnterior: number | null;
   promoUnitaria: string | null;
   promoCantidad: string | null;
@@ -24,7 +25,7 @@ type Props = {
   variantes: VarianteFicha[];
 };
 
-export function SelectorVariantes({ nombre, url, precioAnterior, promoUnitaria, promoCantidad, grupos, variantes }: Props) {
+export function SelectorVariantes({ nombre, url, aPedido, precioAnterior, promoUnitaria, promoCantidad, grupos, variantes }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const actual = varianteInicial(variantes, useSearchParams().get("variante"));
@@ -103,7 +104,12 @@ export function SelectorVariantes({ nombre, url, precioAnterior, promoUnitaria, 
       ))}
 
       <p className="flex items-center gap-2 text-sm" aria-live="polite">
-        {disponible ? (
+        {aPedido ? (
+          <>
+            <CircleCheck aria-hidden className="size-4 text-celeste-oscuro" />
+            {SITIO.demoraDias ? `Hecho a pedido · listo en ${SITIO.demoraDias} días` : "Hecho a pedido"}
+          </>
+        ) : disponible ? (
           <>
             <CircleCheck aria-hidden className="size-4" />
             {actual.stock <= 3

@@ -26,20 +26,21 @@ export function Galeria({ imagenes }: { imagenes: Imagen[] }) {
   const ir = useCallback((i: number) => embla?.scrollTo(i), [embla]);
 
   if (!imagenes.length) {
-    return <div className="aspect-[4/5] w-full rounded-[var(--radius)] bg-surface-secondary" />;
+    return <div className="mx-auto aspect-[9/16] w-full max-w-md rounded-[var(--radius)] bg-surface-secondary" />;
   }
 
+  // Ancho tope: una foto 9:16 a media pantalla de escritorio mediría más de 1000 px de alto.
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3">
       <div className="relative overflow-hidden rounded-[var(--radius)] bg-surface-secondary" ref={refVisor}>
         <div className="flex">
           {imagenes.map((img, i) => (
-            <div key={img.id} className="relative aspect-[4/5] min-w-0 flex-[0_0_100%]">
+            <div key={img.id} className="relative aspect-[9/16] min-w-0 flex-[0_0_100%]">
               <Image
                 src={urlPublica(img.path)}
                 alt={img.alt}
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 448px) 100vw, 448px"
                 priority={i === 0}
                 className="object-cover"
               />
@@ -80,7 +81,7 @@ export function Galeria({ imagenes }: { imagenes: Imagen[] }) {
               aria-label={`Ver imagen ${i + 1}${i === actual ? " (actual)" : ""}`}
               variant="ghost"
               onPress={() => ir(i)}
-              className={`relative aspect-square h-auto w-full min-w-0 overflow-hidden rounded-[var(--radius)] p-0 ${
+              className={`relative aspect-[9/16] h-auto w-full min-w-0 overflow-hidden rounded-[var(--radius)] p-0 ${
                 i === actual ? "ring-2 ring-foreground" : "opacity-70 hover:opacity-100"
               }`}
             >

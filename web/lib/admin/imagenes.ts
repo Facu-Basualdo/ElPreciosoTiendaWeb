@@ -1,7 +1,8 @@
-// Relaciones y tamaños fijos por uso. La tienda los asume (aspect-[4/5], aspect-[3/1]).
+// Relaciones y tamaños fijos por uso. La tienda los asume (aspect-[9/16], aspect-[3/1]).
 // Ver claude/supabase/imagenes.md#relación-de-aspecto-fija
 export const FORMATOS = {
-  producto: { ancho: 1200, alto: 1500, etiqueta: "4:5" },
+  // 9:16 como las fotos del celular (y la plantilla de marca de El Precioso).
+  producto: { ancho: 1080, alto: 1920, etiqueta: "9:16" },
   bannerDesktop: { ancho: 1920, alto: 640, etiqueta: "3:1" },
   bannerMobile: { ancho: 800, alto: 1000, etiqueta: "4:5" },
 } as const;
@@ -33,6 +34,15 @@ export function necesitaRecorte(img: HTMLImageElement, formato: Formato): boolea
 export function esChica(img: HTMLImageElement, formato: Formato): boolean {
   const { ancho, alto } = FORMATOS[formato];
   return img.naturalWidth < ancho * 0.6 || img.naturalHeight < alto * 0.6;
+}
+
+/** La zona más grande con la relación del formato, centrada (carga rápida, sin modal). */
+export function recorteCentrado(img: HTMLImageElement, formato: Formato): Recorte {
+  const { ancho, alto } = FORMATOS[formato];
+  const relacion = ancho / alto;
+  const w = Math.min(img.naturalWidth, img.naturalHeight * relacion);
+  const h = w / relacion;
+  return { x: (img.naturalWidth - w) / 2, y: (img.naturalHeight - h) / 2, width: w, height: h };
 }
 
 /** Recorta (o toma la imagen entera) y la lleva al tamaño exacto del formato en WebP. */

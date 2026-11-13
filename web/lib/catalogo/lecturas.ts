@@ -84,21 +84,6 @@ export async function buscarProductos(filtros: Filtros): Promise<ResultadoBusque
   return { productos: filas.map(aTarjeta), total, paginas: Math.ceil(total / POR_PAGINA) };
 }
 
-export async function obtenerDestacados(limite = 8, categoria: string | null = null): Promise<TarjetaProducto[]> {
-  "use cache";
-  cacheLife(VIDA_PRECIOS);
-  cacheTag(TAGS.productos, TAGS.promociones);
-
-  const { data, error } = await supabasePublico().rpc("buscar_productos", {
-    p_destacados: true,
-    p_categoria: categoria ?? undefined,
-    p_orden: "recientes",
-    p_limite: limite,
-  });
-  if (error) throw new Error(`destacados: ${error.message}`);
-  return ((data ?? []) as FilaBusqueda[]).map(aTarjeta);
-}
-
 export async function obtenerOfertas(limite = 12, pagina = 1): Promise<ResultadoBusqueda> {
   "use cache";
   cacheLife(VIDA_PRECIOS);
@@ -114,6 +99,32 @@ export async function obtenerOfertas(limite = 12, pagina = 1): Promise<Resultado
   const filas = (data ?? []) as FilaBusqueda[];
   const total = filas[0] ? Number(filas[0].total) : 0;
   return { productos: filas.map(aTarjeta), total, paginas: Math.ceil(total / limite) };
+}
+
+/** Los publicados más nuevos ("Últimos ingresos" de la home). */
+export async function obtenerRecientes(limite = 10): Promise<TarjetaProducto[]> {
+  "use cache";
+  cacheLife(VIDA_PRECIOS);
+  cacheTag(TAGS.productos, TAGS.promociones);
+
+  const { data, error } = await supabasePublico().rpc("buscar_productos", { p_orden: "recientes", p_limite: limite });
+  if (error) throw new Error(`recientes: ${error.message}`);
+  return ((data ?? []) as FilaBusqueda[]).map(aTarjeta);
+}
+
+/** Valores de un grupo de etiquetas en su orden (las bases en "Personalizá el tuyo"). */
+export async function obtenerValoresGrupo(slugGrupo: string): Promise<string[]> {
+  "use cache";
+  cacheLife("max");
+  cacheTag(TAGS.etiquetas);
+
+  const { data, error } = await supabasePublico()
+    .from("etiquetas")
+    .select("valor, orden, grupo:grupos_etiqueta!inner(slug)")
+    .eq("grupo.slug", slugGrupo)
+    .order("orden");
+  if (error) throw new Error(`valores de ${slugGrupo}: ${error.message}`);
+  return data.map((e) => e.valor);
 }
 
 /** Subcategorías con la imagen de su producto más reciente, para el mosaico de la home. */
@@ -263,6 +274,8 @@ export type FichaProducto = {
   descripcionTexto: string;
   precio: number;
   precioAnterior: number | null;
+  /** Hecho a pedido: siempre disponible, la ficha no habla de stock. */
+  aPedido: boolean;
   /** Nombre de la promo unitaria vigente ("20% off en monitores"). */
   promoUnitaria: string | null;
   /** Chip de la promo por cantidad ("3x2"). */
@@ -284,7 +297,7 @@ export async function obtenerProducto(slug: string): Promise<FichaProducto | nul
   const { data: p, error } = await supabasePublico()
     .from("productos")
     .select(
-      `id, slug, nombre, descripcion, descripcion_texto, precio, precio_anterior,
+      `id, slug, nombre, descripcion, descripcion_texto, precio, precio_anterior, a_pedido,
        categoria:categorias(slug, nombre, padre:padre_id(slug, nombre)),
        imagenes:producto_imagenes(id, path, alt, orden, ancho, alto),
        etiquetas:producto_etiquetas(etiqueta:etiquetas(slug, valor, orden, grupo:grupos_etiqueta(slug, nombre, orden, visible_en_ficha, icono, es_marca))),
@@ -377,6 +390,7 @@ export async function obtenerProducto(slug: string): Promise<FichaProducto | nul
     descripcionTexto: p.descripcion_texto,
     precio: Number(p.precio),
     precioAnterior: p.precio_anterior === null ? null : Number(p.precio_anterior),
+    aPedido: p.a_pedido,
     promoUnitaria: precios?.find((x) => x.promo_unitaria && Number(x.precio) < Number(x.precio_lista))?.promo_unitaria ?? null,
     promoCantidad: precios?.[0]?.promo_cantidad ?? null,
     categoria,

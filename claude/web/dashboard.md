@@ -92,13 +92,21 @@ panel (SQL, scripts) no invalidan nada** (ver
 [imagenes](imagenes.md#recorte-obligatorio).
 
 Usado por la galería del producto (verificado: una foto 16:9 abre el recorte y se
-guarda en 1200×1500).
+guarda en 1080×1920).
 
 ## Productos
 
 `app/admin/(panel)/productos/`: listado (`page.tsx`), edición (`[id]/page.tsx`) y todas
 las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 
+- **"Carga rápida de fotos"** (`carga-rapida.tsx`): varias fotos → un borrador por foto,
+  con la foto como principal. Las que no son 9:16 se recortan al centro sin preguntar
+  (`recorteCentrado`); para elegir el recorte, subir desde la ficha.
+- **Ficha corta**: Datos (nombre, precio, categoría, visible, hecho a pedido) → Fotos
+  (con el [editor de fotos](editor-de-fotos.md)) → Bases y precios. Características y
+  descripción quedan plegadas en "Más detalles" (`Disclosure`, abierto si ya tienen
+  algo). Precio anterior sólo con `SITIO.ventasAvanzadas`; "Destacado" ya no se edita
+  (la home muestra los más nuevos) y `guardarDatos` conserva el valor que tenía.
 - **"Nuevo producto" crea el borrador y abre su edición** (`crearBorrador`): slug
   `borrador-xxxxxxxx`, oculto, con su variante única (la crea el trigger). El slug real
   lo pone `guardarDatos` con el nombre (ver [slugs](#slugs)).
@@ -139,7 +147,9 @@ los botones de estado de `components/admin/pedidos/acciones-pedido.tsx`.
   de …").
 - Después de cambiar el estado se invalidan `productos`, `facetas` y la ficha de cada
   producto del pedido: la tienda deja de mostrar unidades que ya no hay.
-- No hay teléfono del cliente: el contacto sigue por el WhatsApp que el cliente inició.
+- Si el cliente dejó su WhatsApp, el detalle tiene **"Abrir chat con …"** (`enlaceChat`
+  con `numeroArgentino`: le agrega el `549`). Si no, el contacto sigue en el chat donde
+  mandó el pedido. También muestra la entrega (retiro o envío a localidad).
 
 ## Características por categoría
 
@@ -187,9 +197,12 @@ publicada, es un caso para redirecciones, no para el admin.
 
 ## Secciones
 
-`components/admin/navegacion-admin.tsx` lista todas, y todas están construidas. Una
-sección nueva puede entrar con `listo: false` (deshabilitada, chip "Pronto") hasta
-estar lista. La lista que lee `usePathname` va en `Suspense` (ver la tabla de arriba).
+`components/admin/navegacion-admin.tsx`: **menú corto para la dueña** (Inicio · Productos
+· Pedidos · Finanzas · Ajustes). Categorías, etiquetas, banners y usuarios cuelgan de
+`/admin/ajustes` (una página de tarjetas); `tambien` marca "Ajustes" como activa en esas
+rutas. Promociones, combos y cupones aparecen sólo con `SITIO.ventasAvanzadas` (en la
+tienda, además, `/combos`, `/ofertas` y `/combo/…` dan 404 y salen del sitemap). Una
+sección nueva puede entrar con `listo: false` (deshabilitada, chip "Pronto"). La lista que lee `usePathname` va en `Suspense` (ver la tabla de arriba).
 
 | Sección | Nota |
 |---|---|
@@ -206,8 +219,10 @@ Reordenar en todo el panel es con flechas (accesible con teclado y en touch), nu
 drag and drop, y cada tabla tiene su RPC `reordenar_*`.
 
 ## Ver también
+- [Finanzas](finanzas.md)
 
 - [Clientes de Supabase](clientes-supabase.md#identidad-en-el-servidor)
 - [Seguridad y RLS](../supabase/seguridad-rls.md)
 - [Imágenes](imagenes.md)
+- [Editor de fotos](editor-de-fotos.md)
 - [Caché y revalidación](cache-y-revalidacion.md)

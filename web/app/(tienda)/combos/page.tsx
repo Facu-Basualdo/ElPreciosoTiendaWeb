@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { EsqueletoGrilla } from "@/components/tienda/esqueletos";
 import { TarjetaCombo } from "@/components/tienda/tarjeta-combo";
 import { buscarCombos } from "@/lib/catalogo/combos";
+import { notFound } from "next/navigation";
+import { SITIO } from "@/lib/sitio";
 
 export const metadata: Metadata = {
   title: "Combos",
@@ -11,10 +13,12 @@ export const metadata: Metadata = {
 
 // Ruta propia: los combos no van en la grilla del catálogo (romperían facetas y paginación).
 export default function PaginaCombos() {
+  // Sin promociones/combos (SITIO.ventasAvanzadas) la página no existe.
+  if (!SITIO.ventasAvanzadas) notFound();
   return (
     <div className="contenedor py-6 sm:py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Combos</h1>
+        <h1 className="font-serif text-3xl font-normal tracking-tight">Combos</h1>
         <p className="text-sm text-muted">Productos que se llevan juntos a un precio menor. Elegís talle y color de cada uno.</p>
       </header>
       <Suspense fallback={<EsqueletoGrilla />}>

@@ -1,14 +1,28 @@
 import { SITIO } from "@/lib/sitio";
+import { Huella } from "./huella";
 
-// Monograma + nombre. Todo en currentColor para que se invierta en modo oscuro.
+// Palabra en mayúsculas muy pesadas con la primera "O" del segundo término como huella
+// ("EL PRECI🐾SO"), como en la plantilla de las fotos. Todo en currentColor: sobre las
+// franjas oscuras basta con cambiar el color del texto. Ver claude/web/tema-y-marca.md
 export function Logo({ className }: { className?: string }) {
+  const nombre = SITIO.nombre.toUpperCase();
+  const o = nombre.indexOf("O", nombre.indexOf(" ") + 1);
+
   return (
-    <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 shrink-0">
-        <rect x="1" y="1" width="22" height="22" rx="3" fill="currentColor" />
-        <path d="M7 8h10M12 8v9" stroke="var(--logo-contraste, var(--background))" strokeWidth="2.5" strokeLinecap="square" />
-      </svg>
-      <span className="text-lg font-semibold tracking-tight">{SITIO.nombre}</span>
+    <span
+      role="img"
+      aria-label={SITIO.nombre}
+      className={`inline-flex items-center whitespace-nowrap text-xl font-black uppercase leading-none tracking-[-0.03em] ${className ?? ""}`}
+    >
+      {o < 0 ? (
+        nombre
+      ) : (
+        <>
+          {nombre.slice(0, o)}
+          <Huella className="mx-[0.04em] size-[0.86em] -translate-y-[0.02em]" />
+          {nombre.slice(o + 1)}
+        </>
+      )}
     </span>
   );
 }

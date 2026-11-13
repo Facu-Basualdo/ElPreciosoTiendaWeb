@@ -35,19 +35,23 @@ const MAX_GRUPOS = 3;
 const MAX_COMBINACIONES = 100;
 const formatoPrecio = { style: "currency", currency: SITIO.moneda, maximumFractionDigits: 0 } as const;
 
-type Valores = { sku: string; precio: number | null; stock: number; activa: boolean };
-const VACIO: Valores = { sku: "", precio: null, stock: 0, activa: true };
+type Valores = { sku: string; precio: number | null; costo: number | null; stock: number; activa: boolean };
+const VACIO: Valores = { sku: "", precio: null, costo: null, stock: 0, activa: true };
 const claveDe = (ids: string[]) => [...ids].sort().join("|");
-const COLUMNAS = "grid grid-cols-[1.4fr_1fr_1fr_0.7fr_auto] gap-3";
+const COLUMNAS = "grid grid-cols-[1.4fr_0.9fr_1fr_1fr_0.7fr_auto] gap-3";
+const COLUMNAS_A_PEDIDO = "grid grid-cols-[1.4fr_0.9fr_1fr_1fr_auto] gap-3";
 
 export function EditorVariantes({
   productoId,
   precioBase,
+  aPedido,
   grupos: todos,
   variantes,
 }: {
   productoId: string;
   precioBase: number;
+  /** A pedido: sin columna de stock (la base lo ignora y lo deja en 9999). */
+  aPedido: boolean;
   grupos: GrupoAdmin[];
   variantes: VarianteAdmin[];
 }) {
@@ -68,7 +72,7 @@ export function EditorVariantes({
     Object.fromEntries(
       variantes.map((v) => [
         claveDe(v.etiquetas),
-        { sku: v.sku ?? "", precio: v.precio, stock: v.stock, activa: v.activa },
+        { sku: v.sku ?? "", precio: v.precio, costo: v.costo, stock: v.stock, activa: v.activa },
       ]),
     ),
   );
@@ -96,7 +100,7 @@ export function EditorVariantes({
 
   function guardar(forzar = false) {
     const actuales = new Set(combinaciones.map(claveDe));
-    const perdidas = variantes.filter((v) => !actuales.has(claveDe(v.etiquetas)) && v.stock > 0);
+    const perdidas = aPedido ? [] : variantes.filter((v) => !actuales.has(claveDe(v.etiquetas)) && v.stock > 0);
     if (perdidas.length && !forzar) {
       setConfirmar({ perdidas: perdidas.map((v) => `${nombreDe(v.etiquetas)} (${v.stock} u.)`) });
       return;
@@ -107,6 +111,7 @@ export function EditorVariantes({
         etiquetas: ids,
         sku: v.sku.trim() || null,
         precio: v.precio,
+        costo: v.costo,
         stock: v.stock,
         stock_original: stockLeido.get(claveDe(ids)) ?? null,
         activa: v.activa,
@@ -130,8 +135,8 @@ export function EditorVariantes({
   return (
     <Seccion
       id="variantes"
-      titulo="Variantes y stock"
-      descripcion="Sin grupos, el producto tiene una variante única. Con talle, color, etc. se genera una fila por combinación."
+      titulo={aPedido ? "Bases y precios" : "Variantes y stock"}
+      descripcion="Sin grupos, el producto tiene una variante única. Elegí las bases que se ofrecen: se genera una fila por cada una, con su precio."
       acciones={
         <Button isPending={pendiente} isDisabled={demasiadas} onPress={() => guardar()}>
           Guardar variantes
@@ -200,7 +205,7 @@ export function EditorVariantes({
         </Alert>
       ) : (
         <>
-          {combinaciones.length > 1 && (
+          {!aPedido && combinaciones.length > 1 && (
             <div className="flex flex-wrap items-end gap-2">
               <NumberField value={stockMasivo} onChange={(v) => setStockMasivo(v ?? 0)} minValue={0} className="w-32">
                 <Label className="text-xs">Stock para todas</Label>
@@ -221,19 +226,20 @@ export function EditorVariantes({
           {/* Grilla y no Table: la Table de HeroUI es un grid de React Aria que captura
               flechas y espacio, y pelea con los campos editables de adentro. */}
           <div className="overflow-x-auto scrollbar-thin">
-            <div role="list" className="flex min-w-[640px] flex-col divide-y divide-separator rounded-xl border border-border">
-              <div className={`${COLUMNAS} bg-surface-secondary px-3 py-2 text-xs font-medium text-muted`}>
+            <div role="list" className="flex min-w-[760px] flex-col divide-y divide-separator rounded-xl border border-border">
+              <div className={`${aPedido ? COLUMNAS_A_PEDIDO : COLUMNAS} bg-surface-secondary px-3 py-2 text-xs font-medium text-muted`}>
                 <span>Combinación</span>
                 <span>SKU</span>
                 <span>Precio (vacío = base)</span>
-                <span>Stock</span>
+                <span>Costo (opcional)</span>
+                {!aPedido && <span>Stock</span>}
                 <span>Activa</span>
               </div>
               {combinaciones.map((ids) => {
                 const v = valoresDe(ids);
                 const nombre = nombreDe(ids);
                 return (
-                  <div role="listitem" key={claveDe(ids) || "unica"} className={`${COLUMNAS} items-center px-3 py-2`}>
+                  <div role="listitem" key={claveDe(ids) || "unica"} className={`${aPedido ? COLUMNAS_A_PEDIDO : COLUMNAS} items-center px-3 py-2`}>
                     <span className="text-sm font-medium">{nombre}</span>
                     <TextField aria-label={`SKU de ${nombre}`} value={v.sku} onChange={(sku) => fijar(ids, { sku })}>
                       <Input className="font-mono text-xs" />
@@ -249,16 +255,30 @@ export function EditorVariantes({
                         <NumberField.Input placeholder={new Intl.NumberFormat(SITIO.locale, formatoPrecio).format(precioBase)} />
                       </NumberField.Group>
                     </NumberField>
+                    {/* Lo que cuesta hacerla: Finanzas lo usa para estimar la ganancia. Sólo lo ve el panel. */}
                     <NumberField
-                      aria-label={`Stock de ${nombre}`}
-                      value={v.stock}
-                      onChange={(s) => fijar(ids, { stock: Math.max(0, Math.round(s ?? 0)) })}
+                      aria-label={`Costo de ${nombre}`}
+                      value={v.costo ?? Number.NaN}
+                      onChange={(c) => fijar(ids, { costo: c === undefined || Number.isNaN(c) ? null : Math.round(c) })}
                       minValue={0}
+                      formatOptions={formatoPrecio}
                     >
                       <NumberField.Group>
                         <NumberField.Input />
                       </NumberField.Group>
                     </NumberField>
+                    {!aPedido && (
+                      <NumberField
+                        aria-label={`Stock de ${nombre}`}
+                        value={v.stock}
+                        onChange={(s) => fijar(ids, { stock: Math.max(0, Math.round(s ?? 0)) })}
+                        minValue={0}
+                      >
+                        <NumberField.Group>
+                          <NumberField.Input />
+                        </NumberField.Group>
+                      </NumberField>
+                    )}
                     <Switch aria-label={`${nombre} activa`} size="sm" isSelected={v.activa} onChange={(activa) => fijar(ids, { activa })}>
                       <Switch.Content>
                         <Switch.Control>

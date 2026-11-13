@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Resultado } from "@/lib/admin/accion";
 import { urlPublica } from "@/lib/supabase/storage";
+import { EditorFoto } from "./editor-foto";
 import { Seccion } from "./seccion";
-import { SubidaImagen } from "./subida-imagen";
+import { SubidaImagen, type ImagenSubida } from "./subida-imagen";
 
 type Imagen = { id: string; path: string; alt: string; orden: number };
 
@@ -38,6 +39,12 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
   }
   const porId = new Map(imagenes.map((i) => [i.id, i]));
 
+  const registrar = async (img: ImagenSubida) => {
+    const r = await acciones.registrar(img);
+    if (!r.ok) toast.danger(r.error);
+    else router.refresh();
+  };
+
   function mover(desde: number, hasta: number) {
     const nuevo = [...orden];
     const [id] = nuevo.splice(desde, 1);
@@ -65,7 +72,7 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
             if (!img) return null;
             return (
               <li key={id} className="flex flex-col gap-2 rounded-xl border border-border p-2">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-surface-secondary">
+                <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-surface-secondary">
                   <Image src={urlPublica(img.path)} alt={img.alt} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover" />
                   {i === 0 && (
                     <Chip size="sm" variant="primary" className="absolute left-2 top-2">
@@ -101,16 +108,11 @@ export function GaleriaAdmin({ carpeta, imagenes, acciones }: { carpeta: string;
         </ul>
       )}
 
-      <SubidaImagen
-        formato="producto"
-        carpeta={carpeta}
-        multiple
-        onSubida={async (img) => {
-          const r = await acciones.registrar(img);
-          if (!r.ok) toast.danger(r.error);
-          else router.refresh();
-        }}
-      />
+      <SubidaImagen formato="producto" carpeta={carpeta} multiple onSubida={registrar} />
+      <div className="flex flex-wrap items-center gap-3">
+        <EditorFoto carpeta={carpeta} onGuardada={registrar} />
+        <p className="text-xs text-muted">Sacá la foto con el celular: el fondo se quita solo y queda sobre la plantilla.</p>
+      </div>
     </Seccion>
   );
 }

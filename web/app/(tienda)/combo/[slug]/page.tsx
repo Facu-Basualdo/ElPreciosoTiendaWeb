@@ -39,7 +39,7 @@ export default function PaginaCombo(props: PageProps<"/combo/[slug]">) {
 
 async function Ficha({ params }: { params: PageProps<"/combo/[slug]">["params"] }) {
   const { slug } = await params;
-  const c = await obtenerCombo(slug);
+  const c = SITIO.ventasAvanzadas ? await obtenerCombo(slug) : null;
   if (!c) notFound();
 
   // Sin imágenes propias, la galería muestra la principal de cada producto.
@@ -74,7 +74,7 @@ async function Ficha({ params }: { params: PageProps<"/combo/[slug]">["params"] 
           </Breadcrumbs>
           <div className="flex flex-col gap-1">
             <p className="text-xs font-medium uppercase tracking-wider text-muted">Combo · {c.items.length} productos</p>
-            <h1 className="text-2xl font-light leading-tight tracking-tight sm:text-3xl">{c.nombre}</h1>
+            <h1 className="font-serif text-2xl font-normal leading-tight tracking-tight sm:text-3xl">{c.nombre}</h1>
           </div>
           {c.items.length ? (
             <SelectorCombo id={c.id} nombre={c.nombre} precio={c.precio} precioItems={c.precioItems} items={c.items} />

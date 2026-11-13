@@ -58,7 +58,7 @@ export function SelectorCombo({
           const sinStock = !actual || actual.stock < item.cantidad;
           return (
             <li key={item.productoId} className="flex gap-3 p-3 sm:p-4">
-              <div className="relative aspect-[4/5] w-16 shrink-0 overflow-hidden rounded-lg bg-surface-secondary">
+              <div className="relative aspect-[9/16] w-16 shrink-0 overflow-hidden rounded-lg bg-surface-secondary">
                 {item.imagen && <Image src={urlPublica(item.imagen.path)} alt="" fill sizes="64px" className="object-cover" />}
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-2">

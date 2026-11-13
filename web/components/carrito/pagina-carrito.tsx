@@ -1,7 +1,7 @@
 "use client";
 
 import { CircleCheck, Comment, ShoppingCart, Tag, TrashBin } from "@gravity-ui/icons";
-import { Button, Form, Input, Label, NumberField, Skeleton, TextArea, TextField, toast } from "@heroui/react";
+import { Button, Description, Form, Input, Label, NumberField, Radio, RadioGroup, Skeleton, TextArea, TextField, toast } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import Image from "next/image";
 import NextLink from "next/link";
@@ -12,6 +12,10 @@ import { formatearPrecio } from "@/lib/formato";
 import { SITIO } from "@/lib/sitio";
 import { supabaseNavegador } from "@/lib/supabase/navegador";
 import { urlPublica } from "@/lib/supabase/storage";
+import { enlaceWhatsapp } from "@/lib/whatsapp";
+
+// "Resistencia" de "Resistencia, Chaco".
+const LUGAR_RETIRO = SITIO.ciudad.split(",")[0];
 
 // El carrito muestra lo que calcula cotizar_carrito; nunca suma precios acá.
 // Ver claude/web/carrito.md
@@ -19,10 +23,13 @@ export function PaginaCarrito() {
   const items = useCarrito();
   const cupon = useCupon();
   const { cotizacion, cargando, error } = useCotizacion(items, cupon);
-  const [pedido, setPedido] = useState<(PedidoCreado & { nombre: string; notas: string }) | null>(null);
+  const [pedido, setPedido] = useState<PedidoConDatos | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [nombre, setNombre] = useState("");
   const [notas, setNotas] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [entrega, setEntrega] = useState<Entrega>("retiro");
+  const [localidad, setLocalidad] = useState("");
 
   if (pedido) return <Confirmacion pedido={pedido} />;
 
@@ -50,6 +57,9 @@ export function PaginaCarrito() {
       p_nombre: nombre,
       p_notas: notas || undefined,
       p_cupon: cupon || undefined,
+      p_telefono: telefono || undefined,
+      p_entrega: entrega,
+      p_localidad: entrega === "envio" ? localidad : undefined,
     });
     setEnviando(false);
     if (e) {
@@ -57,7 +67,7 @@ export function PaginaCarrito() {
       toast.danger(e.message || "No pudimos crear el pedido");
       return;
     }
-    setPedido({ ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim() });
+    setPedido({ ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim(), entrega, localidad: localidad.trim() });
     carrito.vaciar();
     fijarCupon("");
   }
@@ -106,7 +116,9 @@ export function PaginaCarrito() {
           </div>
         </dl>
 
-        <CampoCupon cupon={cupon} aplicado={cotizacion?.cupon ?? null} error={cupon ? (cotizacion?.cupon_error ?? null) : null} />
+        {SITIO.ventasAvanzadas && (
+          <CampoCupon cupon={cupon} aplicado={cotizacion?.cupon ?? null} error={cupon ? (cotizacion?.cupon_error ?? null) : null} />
+        )}
 
         <Form
           className="flex flex-col gap-3"
@@ -119,9 +131,39 @@ export function PaginaCarrito() {
             <Label>Tu nombre</Label>
             <Input placeholder="Para saber quién hace el pedido" />
           </TextField>
+          <TextField type="tel" inputMode="tel" value={telefono} onChange={setTelefono} maxLength={20} name="telefono">
+            <Label>Tu WhatsApp (opcional)</Label>
+            <Input placeholder="3624 123456" />
+            <Description>Con característica, sin 0 ni 15. Para avisarte cuando esté listo.</Description>
+          </TextField>
+          <RadioGroup value={entrega} onChange={(v) => setEntrega(v as Entrega)} name="entrega">
+            <Label>Entrega</Label>
+            <Radio value="retiro">
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              <Radio.Content>
+                <Label>Retiro en {LUGAR_RETIRO}</Label>
+              </Radio.Content>
+            </Radio>
+            <Radio value="envio">
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              <Radio.Content>
+                <Label>Envío a todo el país</Label>
+              </Radio.Content>
+            </Radio>
+          </RadioGroup>
+          {entrega === "envio" && (
+            <TextField isRequired value={localidad} onChange={setLocalidad} maxLength={80} name="localidad">
+              <Label>Localidad</Label>
+              <Input placeholder="Ciudad y provincia" />
+            </TextField>
+          )}
           <TextField value={notas} onChange={setNotas} maxLength={500} name="notas">
             <Label>Notas (opcional)</Label>
-            <TextArea placeholder="Horario, retiro o envío, etc." rows={3} />
+            <TextArea placeholder="Para cuándo lo necesitás, un nombre para grabar, etc." rows={3} />
           </TextField>
           <Button type="submit" fullWidth size="lg" isPending={enviando} isDisabled={!cotizacion || cargando || hayProblemas || cuponInvalido}>
             <Comment />
@@ -204,7 +246,7 @@ function Linea({ linea: l }: { linea: LineaCotizada }) {
   const maximo = Math.max(1, Math.min(l.stock, 20));
   return (
     <li className="flex gap-4 p-4 sm:p-5">
-      <div className="relative aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
+      <div className="relative aspect-[9/16] w-20 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
         {l.imagen_path && <Image src={urlPublica(l.imagen_path)} alt="" fill sizes="80px" className="object-cover" />}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -300,26 +342,29 @@ function Linea({ linea: l }: { linea: LineaCotizada }) {
   );
 }
 
-function mensajeWhatsapp(p: PedidoCreado & { nombre: string; notas: string }) {
+type Entrega = "retiro" | "envio";
+type PedidoConDatos = PedidoCreado & { nombre: string; notas: string; entrega: Entrega; localidad: string };
+
+// "2 × Escarapela sol · Base gancho". El tono es el de la marca: corto y cálido.
+function mensajeWhatsapp(p: PedidoConDatos) {
   const lineas = p.lineas.map(
     (l) =>
-      `• ${l.cantidad} × ${l.tipo === "combo" ? "Combo " : ""}${l.nombre}${l.detalle ? ` (${l.detalle})` : ""} — ${formatearPrecio(l.subtotal)}${l.promo && l.descuento > 0 ? ` (${l.promo})` : ""}`,
+      `• ${l.cantidad} × ${l.tipo === "combo" ? "Combo " : ""}${l.nombre}${l.detalle ? ` · ${l.detalle}` : ""} — ${formatearPrecio(l.subtotal)}${l.promo && l.descuento > 0 ? ` (${l.promo})` : ""}`,
   );
   return [
-    `Hola! Quiero hacer el pedido #${p.numero}:`,
+    `¡Hola! Soy ${p.nombre} y quiero hacer el pedido Nº ${p.numero}:`,
     ...lineas,
     ...(p.descuento_promociones > 0 ? [`Promociones: -${formatearPrecio(p.descuento_promociones)}`] : []),
     ...(p.cupon ? [`Cupón ${p.cupon.codigo}: -${formatearPrecio(p.cupon.descuento)}`] : []),
     `Total: ${formatearPrecio(p.total)}`,
-    `Nombre: ${p.nombre}`,
+    p.entrega === "envio" ? `Entrega: envío a ${p.localidad}` : `Entrega: retiro en ${LUGAR_RETIRO}`,
     ...(p.notas ? [`Notas: ${p.notas}`] : []),
+    "¡Gracias!",
   ].join("\n");
 }
 
-function Confirmacion({ pedido }: { pedido: PedidoCreado & { nombre: string; notas: string } }) {
-  const enlace = SITIO.whatsapp
-    ? `https://wa.me/${SITIO.whatsapp}?text=${encodeURIComponent(mensajeWhatsapp(pedido))}`
-    : null;
+function Confirmacion({ pedido }: { pedido: PedidoConDatos }) {
+  const enlace = SITIO.whatsapp ? enlaceWhatsapp(mensajeWhatsapp(pedido)) : null;
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-tarjeta border border-border bg-surface px-6 py-12 text-center">

@@ -8,7 +8,7 @@ Rutas bajo `web/app/(tienda)/`. Todas leen con funciones de `lib/catalogo/lectur
 
 | Ruta | Lecturas | Build |
 |---|---|---|
-| `/` | `obtenerBanners` · `obtenerDestacados` (por categoría raíz) · `obtenerMosaicoCategorias` · `obtenerOfertas` | Estática, revalida cada 1 min (por los banners) |
+| `/` | `obtenerBanners` · `obtenerRecientes` · `obtenerMosaicoCategorias` · `obtenerValoresGrupo('base')` (+ combos y ofertas con `ventasAvanzadas`). Secciones en [tema-y-marca](tema-y-marca.md#home) | Estática, revalida cada 1 min (por los banners) |
 | `/catalogo` | `buscarProductos` · `obtenerFacetas` · `obtenerCategorias` | Shell estático + contenido por `searchParams` en streaming |
 | `/ofertas` | `obtenerOfertas` (`p_ofertas`) | Estática |
 | `/p/[slug]` | `obtenerProducto` | `generateStaticParams` con todos los publicados; los nuevos se generan al primer pedido. **Nunca devuelve vacío** (con Cache Components el build falla): sin productos, `paramsDeSlugs` manda un slug imposible que da 404. Igual en `/combo/[slug]` |
@@ -86,16 +86,14 @@ Lo mismo para client components con `useSearchParams` (`Buscador`,
 
 ## Home
 
-Banner redondeado (Embla), destacados en pestañas por categoría raíz (`p_destacados` +
-`p_categoria`, tarjetas horizontales), franja "cómo comprar", mosaico de subcategorías
-con la imagen de su producto más reciente y carrusel de rebajados (`p_ofertas`). El
+Qué secciones tiene y de dónde sale cada una: [tema-y-marca](tema-y-marca.md#home). El
 título y botón del banner se superponen desde la tabla `banners`: **las imágenes (de
 banners y de productos) no llevan texto**; escrito en la imagen se duplica y se
 superpone con el de la tarjeta. El color del texto lo elige el admin por banner
 (`texto_claro`); cada diapositiva es `DiapositivaBanner`, la misma que la vista previa del
 panel (ver [banners](banners.md)).
 
-El mosaico hace una consulta por subcategoría: con ~10 está bien (cacheadas con tag);
+El mosaico hace una consulta por categoría hoja: con ~10 está bien (cacheadas con tag);
 si pasan de ~30, moverlo a un RPC.
 
 ## Ver también

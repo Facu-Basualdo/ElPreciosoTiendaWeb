@@ -9,8 +9,11 @@ termina en un pedido por WhatsApp. Un panel simple, usable desde el celular, adm
 todo. Next.js 16 + HeroUI v3 en Vercel, datos e imágenes en Supabase.
 
 **Estado:** heredado y funcionando el catálogo, el carrito con pedido por WhatsApp y el
-panel completo. Fase 0 del plan hecha (base nueva con la taxonomía de El Precioso, poda
-del punto de venta). Sigue la fase 1 (marca): orden y diseño en
+panel completo. Fases 0 a 2 del plan hechas: base nueva con la taxonomía de El Precioso,
+marca aplicada (home = la landing), productos a pedido, fotos 9:16 y los 97 modelos de la
+landing importados como borradores. Fases 3 a 6 también: editor de fotos, panel simplificado, carrito con entrega y
+finanzas. Falta la fase 7 (producción), que depende de las cuentas de GitHub y Vercel:
+orden y diseño en
 [docs/plan-el-precioso.md](docs/plan-el-precioso.md). **Mientras dure la migración, si el
 plan choca con una nota o con este archivo, manda el plan.** Las notas de `claude/`
 describen lo construido; si el código se aparta, gana el código y la nota se corrige
@@ -63,6 +66,7 @@ grep -rn "updateTag" web/             # después, el código
 | Promociones | [promociones](claude/web/promociones.md) | [promociones](claude/supabase/promociones.md) |
 | Combos | [combos](claude/web/combos.md) | [combos](claude/supabase/combos.md) |
 | Cupones | [cupones](claude/web/cupones.md) | [cupones](claude/supabase/cupones.md) |
+| Finanzas | [finanzas](claude/web/finanzas.md) | [finanzas](claude/supabase/finanzas.md) |
 
 ## Reglas de workflow
 
@@ -86,17 +90,17 @@ grep -rn "updateTag" web/             # después, el código
   `<input>`, `<select>`, `<textarea>`, `<dialog>` crudos. Tabla de equivalencias y
   excepciones en [heroui](claude/web/heroui.md).
 - Botones con `onPress`, no `onClick` (React Aria).
-- **Identidad de El Precioso** (en implementación, fase 1 del plan): azul noche
-  `#0E1B2C`, celeste bandera `#74ACDF` como acento puntual, dorado sol `#FCBF49` para
-  botón principal y precio, fondo marfil `#F7F5F0`; Fraunces + Inter; acuarelas y trazos
-  sólo como detalle. Rojo sólo para errores. Reemplaza la estética blanco y negro
-  heredada que todavía describe [tema-y-marca](claude/web/tema-y-marca.md). Nombre y
-  datos de contacto sólo desde `lib/sitio.ts`; logo en `components/logo.tsx`.
+- **Identidad de El Precioso**, un solo tema claro: fondo marfil `#F7F5F0`, texto azul
+  noche `#0E1B2C`, dorado sol `#FCBF49` para la acción principal (un botón dorado por
+  vista), celeste `#74ACDF` como acento patrio puntual; Fraunces (títulos) + Inter.
+  Acuarelas y trazos sólo como detalle. Rojo sólo para errores. Nombre y datos de
+  contacto sólo desde `lib/sitio.ts`; logo con la huella en `components/logo.tsx`.
+  Detalle en [tema-y-marca](claude/web/tema-y-marca.md).
 - HeroUI para todo lo interactivo; Aceternity UI sólo decorativo en la tienda, cargado
   en componentes hoja y respetando `prefers-reduced-motion`.
 - Imágenes siempre con `next/image` y `sizes` explícito. Relación fija por uso con
   recorte obligatorio al subir: producto **9:16** (1080×1920, como las fotos del
-  celular; en migración desde 4:5), banners 3:1.
+  celular), banners 3:1 y 4:5.
 - UI en español rioplatense. Precios en ARS sin decimales, siempre con `formatearPrecio`
   (`lib/formato.ts`). El cliente nunca calcula totales: los muestra.
 - Mobile first: la tienda se navega y el panel se usa mayormente desde el celular. Los

@@ -38,7 +38,7 @@ funciones de Vercel en 4.5 MB; una foto de celular pasa ambos y el error es gen�
    no hay path.
 2. `react-dropzone` recibe los archivos.
 3. **Recorte obligatorio** (sección siguiente).
-4. El recorte se exporta con `canvas` al tamaño exacto de la tabla (1200 × 1500, etc.)
+4. El recorte se exporta con `canvas` al tamaño exacto de la tabla (1080 × 1920, etc.)
    en WebP. No hace falta otra compresión: el tamaño ya está acotado.
 5. `supabaseNavegador().storage.from('catalogo').upload('productos/{id}/{uuid}.webp', blob)`.
    UUID nuevo siempre, **nunca `upsert: true`** sobre un path existente (el CDN sirve
@@ -48,11 +48,11 @@ funciones de Vercel en 4.5 MB; una foto de celular pasa ambos y el error es gen�
 
 ### Recorte obligatorio
 
-Cada uso tiene una relación fija (4:5 producto, 3:1 y 4:5 banner). Al elegir un
+Cada uso tiene una relación fija (9:16 producto, 3:1 y 4:5 banner). Al elegir un
 archivo se lee su tamaño:
 
 - Si la relación difiere en más de 1%, se abre un `Modal` con `react-easy-crop`
-  bloqueado en la relación del uso (`aspect={4 / 5}`). No se puede confirmar sin
+  bloqueado en la relación del uso (`aspect={9 / 16}`). No se puede confirmar sin
   recortar.
 - Si ya coincide, igual se pasa por el canvas para llevarla al tamaño exacto; el
   modal no se abre.
@@ -70,6 +70,7 @@ ids. El `alt` es obligatorio al guardar; por defecto se propone el nombre del pr
 ## Ver también
 
 - [Imágenes (supabase)](../supabase/imagenes.md)
+- [Editor de fotos](editor-de-fotos.md)
 - [HeroUI](heroui.md#excepciones-lo-que-heroui-no-trae)
 - [Caché y revalidación](cache-y-revalidacion.md)
 - [Catálogo](catalogo.md)

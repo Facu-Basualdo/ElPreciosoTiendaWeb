@@ -9,6 +9,9 @@ etiquetas de grupos `es_variante` (Talle, Color…) van en la variante.
 ## Tarjeta del catálogo
 
 - Precio: `precio_desde`. Si `precio_varia`, prefijo "Desde".
+- Varias bases → botón "Elegir base" a la ficha; una sola → "Agregar" directo.
+- En la ficha, un producto a pedido dice "Hecho a pedido" (con `SITIO.demoraDias`, "·
+  listo en N días") en lugar de hablar de stock.
 - **"Sin stock"** con `Chip variant="secondary"` (gris, no rojo: ver
   [tema-y-marca](tema-y-marca.md)) cuando `disponible = false`. La tarjeta sigue
   linkeando a la ficha.
@@ -54,7 +57,10 @@ están en el selector.
 
 ## Dashboard
 
-Sección "Variantes" en la edición del producto:
+Sección "Variantes" en la edición del producto. **Con "Hecho a pedido" (switch en
+Datos) se llama "Bases y precios" y no tiene stock**: sin columna, sin "Aplicar stock a
+todas", sin confirmación al borrar combinaciones y sin historial (ver
+[supabase](../supabase/variantes-y-stock.md#productos-a-pedido)). El resto igual:
 
 1. Elegir los grupos de variante que usa el producto (máximo 3) y, por grupo, las
    etiquetas (`Autocomplete` con "Crear «…»").

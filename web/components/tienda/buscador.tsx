@@ -25,7 +25,7 @@ function useBusqueda() {
   return { valor, setValor, buscar };
 }
 
-// Campo sobre el encabezado oscuro: fondo translúcido y botón de búsqueda a la derecha.
+// Campo del encabezado: la lupa adentro del campo, Enter busca.
 function Campo({ autoFocus, alBuscar }: { autoFocus?: boolean; alBuscar?: () => void }) {
   const { valor, setValor, buscar } = useBusqueda();
   const enviar = (texto: string) => {
@@ -36,7 +36,7 @@ function Campo({ autoFocus, alBuscar }: { autoFocus?: boolean; alBuscar?: () => 
   return (
     <Form
       role="search"
-      className="flex w-full max-w-3xl items-center gap-2"
+      className="flex w-full items-center"
       onSubmit={(e) => {
         e.preventDefault();
         enviar(valor);
@@ -49,14 +49,12 @@ function Campo({ autoFocus, alBuscar }: { autoFocus?: boolean; alBuscar?: () => 
         autoFocus={autoFocus}
         className="flex-1"
       >
-        <SearchField.Group className="border-white/20 bg-white/10 text-white [--field-placeholder:oklch(75%_0_0)]">
-          <SearchField.Input placeholder="¿Qué estás buscando?" className="text-white" />
-          <SearchField.ClearButton className="text-white/70" />
+        <SearchField.Group>
+          <SearchField.SearchIcon />
+          <SearchField.Input placeholder="Buscar modelos" />
+          <SearchField.ClearButton />
         </SearchField.Group>
       </SearchField>
-      <Button type="submit" isIconOnly aria-label="Buscar" className="bg-white text-black">
-        <Magnifier />
-      </Button>
     </Form>
   );
 }
@@ -76,13 +74,12 @@ export function BuscadorMovil() {
         variant="ghost"
         aria-label={abierto ? "Cerrar búsqueda" : "Buscar"}
         aria-expanded={abierto}
-        className="text-encabezado-foreground"
         onPress={() => setAbierto((a) => !a)}
       >
         {abierto ? <Xmark /> : <Magnifier />}
       </Button>
       {abierto && (
-        <div className="absolute inset-x-0 top-16 border-t border-white/10 bg-encabezado px-4 py-3">
+        <div className="absolute inset-x-0 top-16 border-b border-border bg-background px-4 py-3">
           <Campo autoFocus alBuscar={() => setAbierto(false)} />
         </div>
       )}

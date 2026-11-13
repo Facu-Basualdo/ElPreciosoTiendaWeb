@@ -12,14 +12,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: url("/"), changeFrequency: "daily", priority: 1 },
     { url: url("/catalogo"), changeFrequency: "daily", priority: 0.8 },
-    { url: url("/ofertas"), changeFrequency: "daily", priority: 0.6 },
-    { url: url("/combos"), changeFrequency: "weekly", priority: 0.6 },
+    ...(SITIO.ventasAvanzadas
+      ? [
+          { url: url("/ofertas"), changeFrequency: "daily" as const, priority: 0.6 },
+          { url: url("/combos"), changeFrequency: "weekly" as const, priority: 0.6 },
+        ]
+      : []),
     ...categorias.flatMap((c) => [c.slug, ...c.hijas.map((h) => h.slug)]).map((slug) => ({
       url: url(`/catalogo?cat=${slug}`),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
     ...productos.map((slug) => ({ url: url(`/p/${slug}`), changeFrequency: "weekly" as const, priority: 0.9 })),
-    ...combos.map((slug) => ({ url: url(`/combo/${slug}`), changeFrequency: "weekly" as const, priority: 0.7 })),
+    ...(SITIO.ventasAvanzadas ? combos : []).map((slug) => ({ url: url(`/combo/${slug}`), changeFrequency: "weekly" as const, priority: 0.7 })),
   ];
 }

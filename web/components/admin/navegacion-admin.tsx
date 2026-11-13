@@ -1,37 +1,35 @@
 "use client";
 
-import {
-  Bars,
-  Box,
-  Folder,
-  House,
-  LayoutHeaderCells,
-  Percent,
-  Persons,
-  Picture,
-  Receipt,
-  Tag,
-  Tags,
-} from "@gravity-ui/icons";
+import { Bars, Box, ChartColumn, Gear, House, LayoutHeaderCells, Percent, Receipt, Tag } from "@gravity-ui/icons";
 import { Button, Chip, Drawer } from "@heroui/react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
+import { SITIO } from "@/lib/sitio";
 
-// Secciones del panel. `listo: false` se muestra deshabilitada con "Pronto": el orden
-// de construcción está en docs/plan-el-precioso.md.
+// Menú corto para la dueña: lo de todos los días arriba, el resto en Ajustes.
+// `listo: false` se muestra deshabilitada con "Pronto". `tambien`: rutas que marcan la
+// sección como activa (las páginas que cuelgan de Ajustes). Orden en docs/plan-el-precioso.md
 const SECCIONES = [
   { href: "/admin", titulo: "Inicio", icono: House, listo: true },
   { href: "/admin/productos", titulo: "Productos", icono: Box, listo: true },
   { href: "/admin/pedidos", titulo: "Pedidos", icono: Receipt, listo: true },
-  { href: "/admin/combos", titulo: "Combos", icono: LayoutHeaderCells, listo: true },
-  { href: "/admin/promociones", titulo: "Promociones", icono: Percent, listo: true },
-  { href: "/admin/cupones", titulo: "Cupones", icono: Tag, listo: true },
-  { href: "/admin/banners", titulo: "Banners", icono: Picture, listo: true },
-  { href: "/admin/etiquetas", titulo: "Etiquetas", icono: Tags, listo: true },
-  { href: "/admin/categorias", titulo: "Categorías", icono: Folder, listo: true },
-  { href: "/admin/usuarios", titulo: "Usuarios", icono: Persons, listo: true },
-] as const;
+  { href: "/admin/finanzas", titulo: "Finanzas", icono: ChartColumn, listo: true },
+  ...(SITIO.ventasAvanzadas
+    ? [
+        { href: "/admin/promociones", titulo: "Promociones", icono: Percent, listo: true },
+        { href: "/admin/combos", titulo: "Combos", icono: LayoutHeaderCells, listo: true },
+        { href: "/admin/cupones", titulo: "Cupones", icono: Tag, listo: true },
+      ]
+    : []),
+  {
+    href: "/admin/ajustes",
+    titulo: "Ajustes",
+    icono: Gear,
+    listo: true,
+    tambien: ["/admin/categorias", "/admin/etiquetas", "/admin/banners", "/admin/usuarios"],
+  },
+] as { href: string; titulo: string; icono: typeof House; listo: boolean; tambien?: string[] }[];
 
 // usePathname es dato de la URL: en rutas dinámicas (/admin/productos/[id]) tiene que
 // estar dentro de un Suspense o el build falla. Fallback: la misma lista sin activa.
@@ -50,8 +48,9 @@ function EnlacesConRuta({ alNavegar }: { alNavegar?: () => void }) {
 function Lista({ pathname, alNavegar }: { pathname: string; alNavegar?: () => void }) {
   return (
     <nav aria-label="Secciones del panel" className="flex flex-col gap-1">
-      {SECCIONES.map(({ href, titulo, icono: Icono, listo }) => {
-        const activa = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+      {SECCIONES.map(({ href, titulo, icono: Icono, listo, tambien }) => {
+        const activa =
+          href === "/admin" ? pathname === "/admin" : [href, ...(tambien ?? [])].some((r) => pathname.startsWith(r));
         if (!listo) {
           return (
             <span

@@ -278,6 +278,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      costos_variante: {
+        Row: {
+          actualizado_en: string;
+          costo: number;
+          variante_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actualizado_en?: string;
+          costo: number;
+          variante_id: string;
+        };
+        Update: {
+          actualizado_en?: string;
+          costo?: number;
+          variante_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "costos_variante_variante_id_fkey";
+            columns: ["variante_id"];
+            isOneToOne: true;
+            referencedRelation: "producto_variantes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cupones: {
         Row: {
           activo: boolean;
@@ -403,6 +430,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      movimientos_dinero: {
+        Row: {
+          categoria: string;
+          creado_en: string;
+          fecha: string;
+          id: number;
+          medio: string;
+          monto: number;
+          nota: string | null;
+          pedido_id: string | null;
+          tipo: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          categoria: string;
+          creado_en?: string;
+          fecha?: string;
+          id?: never;
+          medio?: string;
+          monto: number;
+          nota?: string | null;
+          pedido_id?: string | null;
+          tipo: string;
+        };
+        Update: {
+          categoria?: string;
+          creado_en?: string;
+          fecha?: string;
+          id?: never;
+          medio?: string;
+          monto?: number;
+          nota?: string | null;
+          pedido_id?: string | null;
+          tipo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_dinero_pedido_id_fkey";
+            columns: ["pedido_id"];
+            isOneToOne: false;
+            referencedRelation: "pedidos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       movimientos_stock: {
         Row: {
           cantidad: number;
@@ -462,6 +534,7 @@ export type Database = {
         Row: {
           cantidad: number;
           combo_id: string | null;
+          costo_unitario: number | null;
           descripcion: string;
           descuento: number;
           detalle: string | null;
@@ -480,6 +553,7 @@ export type Database = {
         Insert: {
           cantidad: number;
           combo_id?: string | null;
+          costo_unitario?: number | null;
           descripcion: string;
           descuento?: number;
           detalle?: string | null;
@@ -497,6 +571,7 @@ export type Database = {
         Update: {
           cantidad?: number;
           combo_id?: string | null;
+          costo_unitario?: number | null;
           descripcion?: string;
           descuento?: number;
           detalle?: string | null;
@@ -557,12 +632,16 @@ export type Database = {
           cupon_id: string | null;
           descuento_cupon: number;
           descuento_promociones: number;
+          entrega: string;
+          entregado_en: string | null;
           estado: Database["public"]["Enums"]["estado_pedido"];
           id: string;
+          localidad: string | null;
           nombre: string;
           notas: string | null;
           numero: number;
           subtotal: number;
+          telefono: string | null;
           total: number;
         };
         ComputedFields: never;
@@ -573,12 +652,16 @@ export type Database = {
           cupon_id?: string | null;
           descuento_cupon?: number;
           descuento_promociones?: number;
+          entrega?: string;
+          entregado_en?: string | null;
           estado?: Database["public"]["Enums"]["estado_pedido"];
           id?: string;
+          localidad?: string | null;
           nombre: string;
           notas?: string | null;
           numero?: never;
           subtotal: number;
+          telefono?: string | null;
           total: number;
         };
         Update: {
@@ -588,12 +671,16 @@ export type Database = {
           cupon_id?: string | null;
           descuento_cupon?: number;
           descuento_promociones?: number;
+          entrega?: string;
+          entregado_en?: string | null;
           estado?: Database["public"]["Enums"]["estado_pedido"];
           id?: string;
+          localidad?: string | null;
           nombre?: string;
           notas?: string | null;
           numero?: never;
           subtotal?: number;
+          telefono?: string | null;
           total?: number;
         };
         Relationships: [
@@ -773,6 +860,7 @@ export type Database = {
       };
       productos: {
         Row: {
+          a_pedido: boolean;
           actualizado_en: string;
           busqueda: unknown;
           categoria_id: string | null;
@@ -789,6 +877,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          a_pedido?: boolean;
           actualizado_en?: string;
           busqueda?: never;
           categoria_id?: string | null;
@@ -804,6 +893,7 @@ export type Database = {
           slug: string;
         };
         Update: {
+          a_pedido?: boolean;
           actualizado_en?: string;
           busqueda?: never;
           categoria_id?: string | null;
@@ -1076,9 +1166,12 @@ export type Database = {
       crear_pedido: {
         Args: {
           p_cupon?: string;
+          p_entrega?: string;
           p_items: Json;
+          p_localidad?: string;
           p_nombre: string;
           p_notas?: string;
+          p_telefono?: string;
         };
         Returns: Json;
       };
@@ -1097,6 +1190,27 @@ export type Database = {
           grupo_orden: number;
           grupo_slug: string;
           seleccionada: boolean;
+        }[];
+      };
+      finanzas_mas_vendidos: {
+        Args: { p_desde: string; p_hasta: string; p_limite?: number };
+        Returns: {
+          ingresos: number;
+          nombre: string;
+          producto_id: string;
+          unidades: number;
+        }[];
+      };
+      finanzas_por_mes: {
+        Args: { p_desde: string; p_hasta: string };
+        Returns: {
+          costo_vendido: number;
+          gastos: number;
+          items_sin_costo: number;
+          mes: string;
+          otros_ingresos: number;
+          pedidos: number;
+          ventas: number;
         }[];
       };
       fusionar_etiquetas: {

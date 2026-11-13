@@ -5,7 +5,7 @@ export function EsqueletoGrilla({ cantidad = 8 }: { cantidad?: number }) {
     <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" aria-hidden>
       {Array.from({ length: cantidad }, (_, i) => (
         <li key={i} className="flex flex-col gap-3">
-          <Skeleton className="aspect-[4/5] w-full rounded-tarjeta" />
+          <Skeleton className="aspect-[9/16] w-full rounded-tarjeta" />
           <Skeleton className="h-4 w-3/4 rounded" />
           <Skeleton className="h-4 w-1/3 rounded" />
         </li>
@@ -36,7 +36,7 @@ export function EsqueletoCatalogo() {
 export function EsqueletoFicha() {
   return (
     <div className="contenedor grid gap-10 py-8 lg:grid-cols-2" aria-busy>
-      <Skeleton className="aspect-[4/5] w-full rounded-tarjeta" />
+      <Skeleton className="mx-auto aspect-[9/16] w-full max-w-md rounded-tarjeta" />
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-3/4 rounded" />
         <Skeleton className="h-6 w-1/4 rounded" />

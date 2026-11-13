@@ -76,6 +76,7 @@ const esquemaDatos = z.object({
   categoriaId: uuid.nullable(),
   destacado: z.boolean(),
   publicado: z.boolean(),
+  aPedido: z.boolean(),
 });
 export type DatosProducto = z.infer<typeof esquemaDatos>;
 
@@ -105,6 +106,8 @@ export async function guardarDatos(id: string, entrada: DatosProducto): Promise<
       categoria_id: d.categoriaId,
       destacado: d.destacado,
       publicado: d.publicado,
+      // Un trigger pone el stock de sus variantes en 9999 (a pedido) o en 0 (al desmarcar).
+      a_pedido: d.aPedido,
     })
     .eq("id", id);
   if (e) return fallo("No se pudieron guardar los datos.");
@@ -187,6 +190,8 @@ const esquemaVariantes = z
       etiquetas: z.array(uuid).max(3),
       sku: z.string().trim().max(60).nullable(),
       precio: z.number().int().min(0).nullable(),
+      // null borra el costo; ver guardar_variantes en claude/supabase/finanzas.md
+      costo: z.number().int().min(0).nullable(),
       stock: z.number().int().min(0).max(100000),
       // El stock que leyó el editor (null en combinaciones nuevas): guardar_variantes no
       // pisa un pedido confirmado mientras tanto. Ver claude/supabase/variantes-y-stock.md

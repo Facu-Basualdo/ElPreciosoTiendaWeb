@@ -11,6 +11,9 @@ export const SITIO = {
   horario: "Lunes a sábados de 9 a 19 h",
   // Días de fabricación de un pedido. Pendiente de definir con la dueña (docs/plan-el-precioso.md).
   demoraDias: null as number | null,
+  // Promociones, combos y cupones: el motor existe, pero la tienda arranca sin ellos.
+  // En false se ocultan de la tienda y del panel (ver docs/plan-el-precioso.md, fase 4).
+  ventasAvanzadas: false,
   moneda: "ARS",
   locale: "es-AR",
 } as const;

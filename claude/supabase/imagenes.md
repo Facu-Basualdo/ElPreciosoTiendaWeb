@@ -36,11 +36,11 @@ con `bucket_id = 'catalogo' and (select es_admin())` para insert, update y delet
 
 | Uso | Relación | Tamaño guardado |
 |---|---|---|
-| Producto (y combo) | 4:5 | 1200 × 1500 WebP |
+| Producto (y combo) | 9:16 | 1080 × 1920 WebP (como las fotos del celular y la plantilla de marca) |
 | Banner desktop | 3:1 | 1920 × 640 WebP |
 | Banner mobile | 4:5 | 800 × 1000 WebP |
 
-**La tienda asume estas relaciones** (`aspect-[4/5]`, `aspect-[3/1]`) con `object-cover`:
+**La tienda asume estas relaciones** (`aspect-[9/16]`, `aspect-[4/5]`, `aspect-[3/1]`) con `object-cover`:
 una imagen con otra proporción no rompe el layout pero se recorta sola y puede cortar
 el producto. Por eso el dashboard no deja subir nada fuera de proporción: abre el
 recorte (ver [imagenes web](../web/imagenes.md#recorte-obligatorio)).
@@ -67,6 +67,13 @@ Storage falla, no se borra la fila: un archivo huérfano es invisible, una fila 
 apunta a un archivo inexistente es una imagen rota en la tienda.
 
 ## Carga por fuera del panel
+
+`web/scripts/importar-catalogo.mjs` trae las fotos de la landing vieja (repo
+`ElPrecioso`, `public/catalogo/`) como borradores "Modelo Nº N" (`modelo-N`), a pedido,
+precio 0, con la foto en WebP 1080×1920. **Sin `--ejecutar` sólo muestra el plan.** Es
+idempotente (saltea los `modelo-N` que ya existen), deja con fecha más nueva las de
+`ingresos/` (79–99) y no importa los flyers con texto (45 y 46): los lista para revisar.
+Las fotos ya traen la plantilla de marca: se llevan al tamaño, no se recortan.
 
 Toda subida normal pasa por el panel con sesión de admin. Un script que suba imágenes
 sin sesión (como la importación de fotos del plan) necesita `SUPABASE_SECRET_KEY`, leída

@@ -26,8 +26,8 @@ export function FormularioDatos({
   const [precioAnterior, setPrecioAnterior] = useState<number | null>(producto.precioAnterior);
   const [categoriaId, setCategoriaId] = useState<string | null>(producto.categoriaId);
   const { setCategoriaId: avisarCategoria } = useCategoriaProducto();
-  const [destacado, setDestacado] = useState(producto.destacado);
   const [publicado, setPublicado] = useState(producto.publicado);
+  const [aPedido, setAPedido] = useState(producto.aPedido);
 
   function guardar() {
     iniciar(async () => {
@@ -36,8 +36,10 @@ export function FormularioDatos({
         precio: Math.round(precio || 0),
         precioAnterior: precioAnterior === null || Number.isNaN(precioAnterior) ? null : Math.round(precioAnterior),
         categoriaId,
-        destacado,
+        // La home de El Precioso muestra los más nuevos, no los destacados: se conserva el valor.
+        destacado: producto.destacado,
         publicado,
+        aPedido,
       });
       if (!r.ok) {
         toast.danger(r.error);
@@ -65,7 +67,7 @@ export function FormularioDatos({
           className="md:col-span-2"
         >
           <Label>Nombre</Label>
-          <Input placeholder="Remera básica" />
+          <Input placeholder="Escarapela con dije de sol" />
           {/* El slug lo arma el servidor con el nombre: ver claude/web/dashboard.md#slugs */}
           <Description>
             {producto.slug.startsWith("borrador-")
@@ -79,21 +81,24 @@ export function FormularioDatos({
           <NumberField.Group>
             <NumberField.Input />
           </NumberField.Group>
-          <Description>Precio base. Una variante puede tener otro.</Description>
+          <Description>Precio de referencia. Cada base puede tener el suyo.</Description>
         </NumberField>
 
-        <NumberField
-          value={precioAnterior ?? Number.NaN}
-          onChange={(v) => setPrecioAnterior(v === undefined || Number.isNaN(v) ? null : v)}
-          minValue={0}
-          formatOptions={formatoPrecio}
-        >
-          <Label>Precio anterior (opcional)</Label>
-          <NumberField.Group>
-            <NumberField.Input />
-          </NumberField.Group>
-          <Description>Si es mayor que el precio, se muestra tachado con el ahorro.</Description>
-        </NumberField>
+        {/* Precio tachado: es una oferta, va con las promociones (SITIO.ventasAvanzadas). */}
+        {SITIO.ventasAvanzadas && (
+          <NumberField
+            value={precioAnterior ?? Number.NaN}
+            onChange={(v) => setPrecioAnterior(v === undefined || Number.isNaN(v) ? null : v)}
+            minValue={0}
+            formatOptions={formatoPrecio}
+          >
+            <Label>Precio anterior (opcional)</Label>
+            <NumberField.Group>
+              <NumberField.Input />
+            </NumberField.Group>
+            <Description>Si es mayor que el precio, se muestra tachado con el ahorro.</Description>
+          </NumberField>
+        )}
 
         <Select
           value={categoriaId ?? SIN_CATEGORIA}
@@ -133,13 +138,14 @@ export function FormularioDatos({
               <Label>Visible en la tienda</Label>
             </Switch.Content>
           </Switch>
-          <Switch isSelected={destacado} onChange={setDestacado}>
+          <Switch isSelected={aPedido} onChange={setAPedido}>
             <Switch.Content>
               <Switch.Control>
                 <Switch.Thumb />
               </Switch.Control>
-              <Label>Destacado en la home</Label>
+              <Label>Hecho a pedido</Label>
             </Switch.Content>
+            <Description>{aPedido ? "Siempre se puede pedir: no hace falta cargar stock." : "Se vende según el stock que cargues en cada base."}</Description>
           </Switch>
         </div>
 

@@ -42,7 +42,7 @@ Tailwind con `themes`. La documentación completa para agentes está en
   `@heroui/styles` para scroll horizontal (tablas de la descripción).
 - **`Tabs` ocupa todo el ancho por defecto**: la lista tiene `min-w-full` y cada pestaña
   `w-full`. `w-fit` no alcanza; para pestañas del ancho de su texto: `min-w-0` en
-  `Tabs.List` y `w-auto` en cada `Tabs.Tab` (ver `pestanas-destacados.tsx`).
+  `Tabs.List` y `w-auto` en cada `Tabs.Tab`.
 - Formularios: `Form` de HeroUI (no `<form>`); `TextField` + `Label` + `Input`/`TextArea`;
   `NumberField` con `NumberField.Group` + botones. Con un `SearchField` dentro de un
   `Form`, no pongas también `onSubmit` en el `SearchField`: Enter dispara los dos.

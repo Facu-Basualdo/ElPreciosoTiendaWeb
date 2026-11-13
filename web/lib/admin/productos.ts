@@ -20,6 +20,8 @@ export type VarianteAdmin = {
   clave: string;
   sku: string | null;
   precio: number | null;
+  /** Costo opcional (tabla costos_variante, sólo admin): para estimar la ganancia. */
+  costo: number | null;
   stock: number;
   activa: boolean;
   etiquetas: string[];
@@ -34,6 +36,8 @@ export type ProductoAdmin = {
   categoriaId: string | null;
   destacado: boolean;
   publicado: boolean;
+  /** Hecho a pedido: sin control de stock (la base lo fija en 9999). */
+  aPedido: boolean;
   descripcion: unknown;
   etiquetas: string[];
   imagenes: { id: string; path: string; alt: string; orden: number }[];
@@ -45,10 +49,10 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
   const { data: p, error } = await supabase
     .from("productos")
     .select(
-      `id, slug, nombre, precio, precio_anterior, categoria_id, destacado, publicado, descripcion,
+      `id, slug, nombre, precio, precio_anterior, categoria_id, destacado, publicado, a_pedido, descripcion,
        etiquetas:producto_etiquetas(etiqueta_id),
        imagenes:producto_imagenes(id, path, alt, orden),
-       variantes:producto_variantes(id, clave, sku, precio, stock, activa, orden, etiquetas:variante_etiquetas(etiqueta_id))`,
+       variantes:producto_variantes(id, clave, sku, precio, stock, activa, orden, costo:costos_variante(costo), etiquetas:variante_etiquetas(etiqueta_id))`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -63,6 +67,7 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
     categoriaId: p.categoria_id,
     destacado: p.destacado,
     publicado: p.publicado,
+    aPedido: p.a_pedido,
     descripcion: p.descripcion,
     etiquetas: p.etiquetas.map((e) => e.etiqueta_id),
     imagenes: [...p.imagenes].sort((a, b) => a.orden - b.orden),
@@ -73,6 +78,7 @@ export async function obtenerProductoAdmin(supabase: Cliente, id: string): Promi
         clave: v.clave,
         sku: v.sku,
         precio: v.precio === null ? null : Number(v.precio),
+        costo: v.costo ? Number(v.costo.costo) : null,
         stock: v.stock,
         activa: v.activa,
         etiquetas: v.etiquetas.map((e) => e.etiqueta_id),

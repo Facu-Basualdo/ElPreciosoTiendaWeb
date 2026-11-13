@@ -74,7 +74,11 @@ del upstream: hay que reescribir `CLAUDE.md` y `claude/web/tema-y-marca.md`.
 - [x] `CLAUDE.md` del repo reescrito.
 - [x] Next 16.4.6 y Zod 4.6.7 (vulnerabilidades de `use cache` e imágenes en 16.3.7).
 
-### 1 — Marca
+### 1 — Marca ✅
+Hecha. Sin Aceternity por ahora: las manchas de acuarela son CSS y la home no necesitó
+`motion`; queda disponible si hace falta un efecto. La imagen para compartir usa la
+fuente por defecto de `next/og` (sin el peso 900 del logo): mejorarla en la fase 7.
+
 - Paleta y tipografías en `globals.css` (variables de HeroUI incluidas).
 - Encabezado liviano con carrito siempre visible en mobile; pie con Instagram y WhatsApp.
 - **Home = la landing actual en Next**: hero con el video de la bandera
@@ -85,7 +89,12 @@ del upstream: hay que reescribir `CLAUDE.md` y `claude/web/tema-y-marca.md`.
   tener reseñas de verdad.
 - Tarjeta de producto 9:16, nombre, precio "desde", botón Agregar.
 
-### 2 — Catálogo para prendedores
+### 2 — Catálogo para prendedores ✅
+Hecha. "A pedido" se implementó con un trigger que fija el stock en 9999 (ver
+`claude/supabase/variantes-y-stock.md#productos-a-pedido`) en vez de tocar cada función
+que mira stock. Importados 97 borradores; los flyers son la 45 y la 46 (la 80 es un
+producto). Pendiente con la dueña: nombre, categoría, bases y precio de cada modelo.
+
 - **Categorías**: Escarapelas · Prendedores · Personalizados · Packs (colegios/mayorista).
 - **Grupos de etiquetas**: Fecha patria (25 de Mayo, 20 de Junio, 9 de Julio,
   2 de Abril, Mundial), Dije (estrella, sol, Malvinas, guitarra, pava, Cabildo, corazón,
@@ -102,7 +111,12 @@ del upstream: hay que reescribir `CLAUDE.md` y `claude/web/tema-y-marca.md`.
   con fecha más nueva. Las imágenes tipo flyer (varios prendedores + texto, ej. 45 y 80)
   no son productos: se marcan para revisar y van a banners o se descartan.
 
-### 3 — Editor de fotos (en el panel)
+### 3 — Editor de fotos (en el panel) ✅
+Hecho sin `react-konva`: gestos con pointer events sobre un canvas y ajustes píxel por
+píxel (Safari no tiene `ctx.filter`). Probado con fotos reales: la organza translúcida
+sobre fondo blanco se pierde en parte, la pantalla sugiere fondo oscuro. Detalle en
+`claude/web/editor-de-fotos.md`.
+
 Objetivo: que la dueña saque la foto del prendedor con el celular y quede como las de
 referencia.
 
@@ -119,7 +133,10 @@ referencia.
 5. Exportar WebP 1080×1920 y subir directo a Storage (mismo camino que la galería).
 - La plantilla podría ser configurable más adelante (fechas: Mayo, Julio, Mundial).
 
-### 4 — Dashboard simplificado
+### 4 — Dashboard simplificado ✅
+Hecho. El interruptor es `SITIO.ventasAvanzadas`. Para el botón de chat con el cliente,
+el carrito pide su WhatsApp (opcional): ver fase 5.
+
 - Menú: **Productos · Pedidos · Finanzas · Ajustes** (categorías, etiquetas, banners,
   usuarios). Promociones, combos y cupones detrás de un interruptor en `sitio.ts`.
 - **Carga rápida**: varias fotos → un borrador por foto. Ficha corta: foto, nombre,
@@ -127,13 +144,20 @@ referencia.
 - Pedidos: botón para abrir el chat de WhatsApp del cliente.
 - Todo usable en el celular.
 
-### 5 — Carrito y WhatsApp
+### 5 — Carrito y WhatsApp ✅
+Hecho: teléfono opcional, retiro o envío con localidad (migración
+`pedidos_contacto_y_entrega`) y mensaje con el tono de la marca.
+
 Ya existe. Ajustes:
 - Mensaje con el tono de la marca: número de pedido, cantidad × modelo · base, total.
 - Campo opcional de localidad / envío (retiro en Resistencia o envío al país).
 - Precio mayorista posible con promociones por cantidad (si se habilitan).
 
-### 6 — Finanzas
+### 6 — Finanzas ✅
+Hecha. Tabla `movimientos_dinero` (no `movimientos`: ya existe `movimientos_stock`) y el
+costo en `costos_variante` aparte, porque anon lee `producto_variantes` entera. Detalle
+en `claude/supabase/finanzas.md` y `claude/web/finanzas.md`.
+
 Migración nueva con grants, RLS y policies sólo admin en la misma migración.
 
 - **Ingresos automáticos**: pedidos en estado `entregado` (fecha de entrega), sin
@@ -147,6 +171,12 @@ Migración nueva con grants, RLS y policies sólo admin en la misma migración.
   Mayo), modelos más vendidos, alta rápida de gasto, exportar CSV.
 
 ### 7 — Producción
+Hecho lo que no necesita cuentas: imagen para compartir con la bandera, sitemap sin
+combos ni ofertas mientras `ventasAvanzadas` esté apagado, build de producción OK con
+la base vacía. **Falta (lo hace el dueño de las cuentas):** repo en GitHub, repuntar
+Vercel, URLs de Auth en Supabase, sign-ups cerrados, analytics y la prueba de punta a
+punta desde el celular.
+
 - Repuntar el proyecto de Vercel de la landing al repo nuevo. La landing queda en su
   repo como respaldo.
   1. **Root Directory `web`**.
