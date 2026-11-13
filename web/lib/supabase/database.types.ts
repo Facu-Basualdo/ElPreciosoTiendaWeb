@@ -632,16 +632,13 @@ export type Database = {
           cupon_id: string | null;
           descuento_cupon: number;
           descuento_promociones: number;
-          entrega: string;
           entregado_en: string | null;
           estado: Database["public"]["Enums"]["estado_pedido"];
           id: string;
-          localidad: string | null;
           nombre: string;
           notas: string | null;
           numero: number;
           subtotal: number;
-          telefono: string | null;
           total: number;
         };
         ComputedFields: never;
@@ -652,16 +649,13 @@ export type Database = {
           cupon_id?: string | null;
           descuento_cupon?: number;
           descuento_promociones?: number;
-          entrega?: string;
           entregado_en?: string | null;
           estado?: Database["public"]["Enums"]["estado_pedido"];
           id?: string;
-          localidad?: string | null;
           nombre: string;
           notas?: string | null;
           numero?: never;
           subtotal: number;
-          telefono?: string | null;
           total: number;
         };
         Update: {
@@ -671,16 +665,13 @@ export type Database = {
           cupon_id?: string | null;
           descuento_cupon?: number;
           descuento_promociones?: number;
-          entrega?: string;
           entregado_en?: string | null;
           estado?: Database["public"]["Enums"]["estado_pedido"];
           id?: string;
-          localidad?: string | null;
           nombre?: string;
           notas?: string | null;
           numero?: never;
           subtotal?: number;
-          telefono?: string | null;
           total?: number;
         };
         Relationships: [
@@ -1166,12 +1157,9 @@ export type Database = {
       crear_pedido: {
         Args: {
           p_cupon?: string;
-          p_entrega?: string;
           p_items: Json;
-          p_localidad?: string;
           p_nombre: string;
           p_notas?: string;
-          p_telefono?: string;
         };
         Returns: Json;
       };
