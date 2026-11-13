@@ -8,7 +8,6 @@ export const ESTADOS = {
   todos: "Todos",
   visibles: "Visibles",
   ocultos: "Ocultos (borradores)",
-  "sin-stock": "Sin stock",
 } as const;
 export type Estado = keyof typeof ESTADOS;
 

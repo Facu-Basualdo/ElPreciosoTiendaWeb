@@ -54,7 +54,7 @@ export function leerFiltros(sp: SearchParams): Filtros {
   return { cat: cat && SLUG.test(cat) ? cat : null, q, orden, pagina, etiquetas };
 }
 
-export function urlDeFiltros(f: Filtros, base = "/catalogo"): string {
+export function urlDeFiltros(f: Filtros, base = "/"): string {
   const params = new URLSearchParams();
   if (f.cat) params.set("cat", f.cat);
   if (f.q) params.set("q", f.q);

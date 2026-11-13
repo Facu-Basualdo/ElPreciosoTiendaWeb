@@ -8,7 +8,7 @@ export const NOMBRE_ESTADO: Record<EstadoPedido, string> = {
   cancelado: "Cancelado",
 };
 
-// Blanco y negro: pendiente resalta (acción requerida), el resto gris.
+// Pendiente resalta en dorado (acción requerida), el resto gris.
 export function ChipEstado({ estado }: { estado: EstadoPedido }) {
   return (
     <Chip size="sm" variant={estado === "pendiente" ? "primary" : "secondary"} className={estado === "cancelado" ? "line-through" : ""}>

@@ -1,14 +1,13 @@
 import { ChevronLeft, ChevronRight } from "@gravity-ui/icons";
-import { Skeleton, Table } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { Suspense } from "react";
 import type { EstadoPedido } from "./acciones";
-import { ChipEstado } from "@/components/admin/pedidos/estado";
 import { FILTROS_ESTADO, FiltrosPedidos, type FiltroEstado } from "@/components/admin/pedidos/filtros-pedidos";
+import { ListaPedidos } from "@/components/admin/pedidos/lista-pedidos";
 import { requerirAdmin } from "@/lib/auth";
-import { formatearPrecio } from "@/lib/formato";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
@@ -21,7 +20,7 @@ export default function PaginaPedidos(props: PageProps<"/admin/pedidos">) {
     <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Pedidos</h1>
-        <p className="text-sm text-muted">Llegan desde el carrito de la tienda. Confirmar un pedido descuenta el stock.</p>
+        <p className="text-sm text-muted">Llegan desde el carrito de la tienda. Tocá un pedido para ver el detalle; el estado se cambia desde acá.</p>
       </div>
       <Suspense fallback={<Skeleton className="h-12 rounded-xl" />}>
         <FiltrosPedidos />
@@ -73,38 +72,18 @@ async function Listado({ searchParams }: { searchParams: PageProps<"/admin/pedid
       <p className="text-sm text-muted">
         {total} {total === 1 ? "pedido" : "pedidos"}
       </p>
-      <Table className="rounded-tarjeta border border-border bg-surface">
-        <Table.ScrollContainer>
-          <Table.Content aria-label="Pedidos">
-            <Table.Header>
-              <Table.Column isRowHeader>Pedido</Table.Column>
-              <Table.Column>Fecha</Table.Column>
-              <Table.Column>Cliente</Table.Column>
-              <Table.Column>Unidades</Table.Column>
-              <Table.Column>Total</Table.Column>
-              <Table.Column>Estado</Table.Column>
-            </Table.Header>
-            <Table.Body>
-              {data.map((p) => (
-                <Table.Row key={p.id} id={p.id}>
-                  <Table.Cell>
-                    <NextLink href={`/admin/pedidos/${p.id}`} className="font-semibold hover:underline">
-                      #{p.numero}
-                    </NextLink>
-                  </Table.Cell>
-                  <Table.Cell className="text-muted">{fecha.format(new Date(p.creado_en))}</Table.Cell>
-                  <Table.Cell>{p.nombre}</Table.Cell>
-                  <Table.Cell className="tabular-nums">{p.items.filter((i) => !(i.combo_id && !i.padre_id)).reduce((n, i) => n + i.cantidad, 0)}</Table.Cell>
-                  <Table.Cell className="tabular-nums">{formatearPrecio(p.total)}</Table.Cell>
-                  <Table.Cell>
-                    <ChipEstado estado={p.estado as EstadoPedido} />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Content>
-        </Table.ScrollContainer>
-      </Table>
+      <ListaPedidos
+        pedidos={data.map((p) => ({
+          id: p.id,
+          numero: p.numero,
+          fecha: fecha.format(new Date(p.creado_en)),
+          nombre: p.nombre,
+          // Sin las filas padre de combo: sus unidades ya están en las hijas.
+          unidades: p.items.filter((i) => !(i.combo_id && !i.padre_id)).reduce((n, i) => n + i.cantidad, 0),
+          total: Number(p.total),
+          estado: p.estado as EstadoPedido,
+        }))}
+      />
       {paginas > 1 && (
         <nav aria-label="Paginación" className="flex items-center justify-end gap-2 text-sm">
           {pagina > 1 && (

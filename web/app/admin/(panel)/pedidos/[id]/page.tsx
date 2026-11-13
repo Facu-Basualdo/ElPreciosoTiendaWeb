@@ -9,11 +9,7 @@ import { AccionesPedido } from "@/components/admin/pedidos/acciones-pedido";
 import { ChipEstado } from "@/components/admin/pedidos/estado";
 import { Seccion } from "@/components/admin/seccion";
 import { requerirAdmin } from "@/lib/auth";
-import { buttonVariants } from "@heroui/styles";
-import { IconoWhatsapp } from "@/components/icono-whatsapp";
 import { formatearPrecio } from "@/lib/formato";
-import { SITIO } from "@/lib/sitio";
-import { enlaceChat, numeroArgentino } from "@/lib/whatsapp";
 
 export const metadata: Metadata = { title: "Pedido" };
 
@@ -40,7 +36,7 @@ async function Detalle({ params }: { params: PageProps<"/admin/pedidos/[id]">["p
   const { data: p } = await supabase
     .from("pedidos")
     .select(
-      `id, numero, estado, nombre, notas, telefono, entrega, localidad, subtotal, descuento_promociones, descuento_cupon, total, cupon_codigo, creado_en, actualizado_en,
+      `id, numero, estado, nombre, notas, subtotal, descuento_promociones, descuento_cupon, total, cupon_codigo, creado_en, actualizado_en,
        items:pedido_items(id, descripcion, detalle, sku, cantidad, precio_unitario, descuento, subtotal, orden, producto_id, combo_id, padre_id, promo)`,
     )
     .eq("id", id)
@@ -145,16 +141,6 @@ async function Detalle({ params }: { params: PageProps<"/admin/pedidos/[id]">["p
                 <dt className="text-muted">Nombre</dt>
                 <dd className="font-medium">{p.nombre}</dd>
               </div>
-              <div>
-                <dt className="text-muted">Entrega</dt>
-                <dd>{p.entrega === "envio" ? `Envío a ${p.localidad ?? "—"}` : "Retiro"}</dd>
-              </div>
-              {p.telefono && (
-                <div>
-                  <dt className="text-muted">WhatsApp</dt>
-                  <dd className="tabular-nums">{p.telefono}</dd>
-                </div>
-              )}
               {p.notas && (
                 <div>
                   <dt className="text-muted">Notas</dt>
@@ -172,19 +158,7 @@ async function Detalle({ params }: { params: PageProps<"/admin/pedidos/[id]">["p
                 </div>
               )}
             </dl>
-            {p.telefono ? (
-              <a
-                href={enlaceChat(numeroArgentino(p.telefono), `¡Hola ${p.nombre}! Te escribimos de ${SITIO.nombre} por tu pedido Nº ${p.numero}.`)}
-                target="_blank"
-                rel="noopener"
-                className={buttonVariants({ fullWidth: true })}
-              >
-                <IconoWhatsapp className="size-4" />
-                Abrir chat con {p.nombre.split(" ")[0]}
-              </a>
-            ) : (
-              <p className="text-xs text-muted">No dejó su número: el contacto sigue en el chat donde te mandó el pedido Nº {p.numero}.</p>
-            )}
+            <p className="text-xs text-muted">El contacto sigue en el chat de WhatsApp donde el cliente te mandó el pedido Nº {p.numero}.</p>
           </Seccion>
         </div>
       </div>

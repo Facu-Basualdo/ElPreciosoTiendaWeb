@@ -41,7 +41,7 @@ después de leer la sesión y `guardarBanner(id, nuevo: true, …)` inserta con 
 
 ## Ver también
 
-- [Catálogo: home](catalogo.md#home)
+- [Catálogo: portada](catalogo.md#home)
 - [Imágenes](imagenes.md)
 - [Dashboard](dashboard.md)
 - [Esquema: banners](../supabase/esquema.md#banners)

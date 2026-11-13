@@ -134,8 +134,8 @@ referencia.
 - La plantilla podría ser configurable más adelante (fechas: Mayo, Julio, Mundial).
 
 ### 4 — Dashboard simplificado ✅
-Hecho. El interruptor es `SITIO.ventasAvanzadas`. Para el botón de chat con el cliente,
-el carrito pide su WhatsApp (opcional): ver fase 5.
+Hecho. El interruptor es `SITIO.ventasAvanzadas`. Sin botón de chat con el cliente:
+ver fase 5.
 
 - Menú: **Productos · Pedidos · Finanzas · Ajustes** (categorías, etiquetas, banners,
   usuarios). Promociones, combos y cupones detrás de un interruptor en `sitio.ts`.
@@ -145,8 +145,9 @@ el carrito pide su WhatsApp (opcional): ver fase 5.
 - Todo usable en el celular.
 
 ### 5 — Carrito y WhatsApp ✅
-Hecho: teléfono opcional, retiro o envío con localidad (migración
-`pedidos_contacto_y_entrega`) y mensaje con el tono de la marca.
+Hecho: mensaje con el tono de la marca. Se probó pedir WhatsApp y forma de entrega en el
+carrito y se sacó: el pedido ya termina en el chat del cliente, ahí se arregla todo. Por
+lo mismo, el panel no tiene botón "Abrir chat".
 
 Ya existe. Ajustes:
 - Mensaje con el tono de la marca: número de pedido, cantidad × modelo · base, total.

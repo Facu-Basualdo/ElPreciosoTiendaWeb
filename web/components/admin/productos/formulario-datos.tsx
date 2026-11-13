@@ -27,7 +27,6 @@ export function FormularioDatos({
   const [categoriaId, setCategoriaId] = useState<string | null>(producto.categoriaId);
   const { setCategoriaId: avisarCategoria } = useCategoriaProducto();
   const [publicado, setPublicado] = useState(producto.publicado);
-  const [aPedido, setAPedido] = useState(producto.aPedido);
 
   function guardar() {
     iniciar(async () => {
@@ -39,7 +38,8 @@ export function FormularioDatos({
         // La home de El Precioso muestra los más nuevos, no los destacados: se conserva el valor.
         destacado: producto.destacado,
         publicado,
-        aPedido,
+        // El Precioso no maneja stock: todo es a pedido. Se conserva el valor de la base.
+        aPedido: producto.aPedido,
       });
       if (!r.ok) {
         toast.danger(r.error);
@@ -137,15 +137,6 @@ export function FormularioDatos({
               </Switch.Control>
               <Label>Visible en la tienda</Label>
             </Switch.Content>
-          </Switch>
-          <Switch isSelected={aPedido} onChange={setAPedido}>
-            <Switch.Content>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              <Label>Hecho a pedido</Label>
-            </Switch.Content>
-            <Description>{aPedido ? "Siempre se puede pedir: no hace falta cargar stock." : "Se vende según el stock que cargues en cada base."}</Description>
           </Switch>
         </div>
 

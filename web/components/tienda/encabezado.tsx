@@ -2,25 +2,26 @@ import NextLink from "next/link";
 import { Suspense } from "react";
 import { AccesoCarrito } from "@/components/carrito/acceso-carrito";
 import { Logo } from "@/components/logo";
-import { obtenerCategorias } from "@/lib/catalogo/lecturas";
 import { SITIO } from "@/lib/sitio";
 import { Buscador, BuscadorMovil } from "./buscador";
 import { MenuMovil } from "./menu-movil";
 
 // Encabezado liviano de una fila, marfil translúcido. En mobile: menú · logo · lupa ·
-// carrito (siempre visible). En escritorio suma los links y el buscador.
-export async function Encabezado() {
-  const categorias = await obtenerCategorias();
+// carrito (siempre visible). En escritorio suma los links y el buscador. Las categorías
+// no van acá: están en los filtros del catálogo. Ver claude/web/catalogo.md
+export function Encabezado() {
   const enlaces = [
-    { href: "/catalogo", texto: "Catálogo" },
-    ...categorias.map((c) => ({ href: `/catalogo?cat=${c.slug}`, texto: c.nombre })),
+    { href: "/", texto: "Catálogo" },
     ...(SITIO.ventasAvanzadas
       ? [
           { href: "/combos", texto: "Combos" },
           { href: "/ofertas", texto: "Ofertas" },
         ]
       : []),
-    { href: "/#personaliza", texto: "Personalizá" },
+    { href: "/nosotros", texto: "Quiénes somos" },
+    { href: "/nosotros#personaliza", texto: "Personalizá" },
+    { href: "/nosotros#como-comprar", texto: "Cómo comprar" },
+    { href: "/nosotros#contacto", texto: "Contacto" },
   ];
 
   return (

@@ -66,10 +66,10 @@ async function Listado({
   let consulta = supabase
     .from("productos")
     .select(
-      `id, slug, nombre, precio, publicado, destacado, a_pedido, actualizado_en,
+      `id, slug, nombre, precio, publicado, destacado, actualizado_en,
        categoria:categorias(nombre),
        imagenes:producto_imagenes(path, orden),
-       variantes:producto_variantes(stock, activa, sku)`,
+       variantes:producto_variantes(sku)`,
     )
     .order("actualizado_en", { ascending: false })
     .limit(1000);
@@ -79,16 +79,13 @@ async function Listado({
   if (error)
     return <p className="text-danger">No se pudieron leer los productos.</p>;
 
-  // Búsqueda por nombre o SKU y "sin stock" se resuelven acá: el stock vive en las
+  // Búsqueda por nombre o SKU se resuelve acá: el SKU vive en las
   // variantes y PostgREST no filtra por un agregado. Alcanza para catálogos de cientos
   // de productos (tope 1000); con más, pasar a un RPC.
   const qn = q.toLowerCase();
   const filas = data
     .map((p) => ({
       ...p,
-      stock: p.variantes
-        .filter((v) => v.activa)
-        .reduce((n, v) => n + v.stock, 0),
       imagen:
         [...p.imagenes].sort((a, b) => a.orden - b.orden)[0]?.path ?? null,
     }))
@@ -97,8 +94,7 @@ async function Listado({
         !qn ||
         p.nombre.toLowerCase().includes(qn) ||
         p.variantes.some((v) => v.sku?.toLowerCase().includes(qn)),
-    )
-    .filter((p) => estado !== "sin-stock" || (!p.a_pedido && p.stock === 0));
+    );
 
   const paginas = Math.max(1, Math.ceil(filas.length / POR_PAGINA));
   const visibles = filas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
@@ -127,7 +123,6 @@ async function Listado({
                 <Table.Column isRowHeader>Producto</Table.Column>
                 <Table.Column>Categoría</Table.Column>
                 <Table.Column>Precio</Table.Column>
-                <Table.Column>Stock</Table.Column>
                 <Table.Column>Visible</Table.Column>
                 <Table.Column>
                   <span className="sr-only">Acciones</span>
@@ -172,12 +167,6 @@ async function Listado({
                     </Table.Cell>
                     <Table.Cell className="tabular-nums">
                       {formatearPrecio(p.precio)}
-                    </Table.Cell>
-                    <Table.Cell
-                      className={`tabular-nums ${!p.a_pedido && p.stock === 0 ? "text-danger" : ""}`}
-                    >
-                      {/* A pedido el stock es 9999 por trigger: no se muestra. */}
-                      {p.a_pedido ? <span className="text-muted">A pedido</span> : p.stock}
                     </Table.Cell>
                     <Table.Cell>
                       <SwitchVisible

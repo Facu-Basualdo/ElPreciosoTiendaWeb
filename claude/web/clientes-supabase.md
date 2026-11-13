@@ -17,7 +17,7 @@ que arma la URL sin cliente.
 
 ## El error caro: cookies en el catálogo
 
-**Síntoma:** el build deja de mostrar `○`/`◐` en `/`, `/catalogo` y `/p/[slug]`, o
+**Síntoma:** el build deja de mostrar `○`/`◐` en `/`, `/nosotros` y `/p/[slug]`, o
 falla con *blocking route*, y cada visita tarda lo que tarde Supabase.
 
 **Causa:** `supabaseServidor()` en una página pública. Llama a `cookies()`, una API de

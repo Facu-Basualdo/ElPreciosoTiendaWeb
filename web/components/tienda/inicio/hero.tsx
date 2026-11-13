@@ -37,7 +37,7 @@ export function Hero() {
           Hechos a mano, con tiempo, para los actos y las fechas patrias. Pensados para durar.
         </p>
         <div className="flex flex-wrap gap-3">
-          <NextLink href="/catalogo" className={buttonVariants({ size: "lg" })}>
+          <NextLink href="/" className={buttonVariants({ size: "lg" })}>
             Ver catálogo
             <ArrowRight aria-hidden />
           </NextLink>

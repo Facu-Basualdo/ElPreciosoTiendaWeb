@@ -9,9 +9,9 @@ const ESTADOS = ["pendiente", "confirmado", "entregado", "cancelado"] as const;
 export type EstadoPedido = (typeof ESTADOS)[number];
 
 /**
- * Cambia el estado con cambiar_estado_pedido: confirmar/entregar DESCUENTA stock
- * (atómico por variante; si una no alcanza, falla todo) y volver a pendiente/cancelar
- * desde confirmado/entregado lo REPONE. Ver claude/supabase/carrito.md#estados-y-stock
+ * Cambia el estado con cambiar_estado_pedido. Los productos a pedido (todos en El
+ * Precioso) no mueven stock; si algún día uno lo tuviera, confirmar lo descuenta y
+ * cancelar lo repone. Ver claude/supabase/variantes-y-stock.md#productos-a-pedido
  */
 export async function cambiarEstado(pedidoId: string, estado: EstadoPedido): Promise<Resultado> {
   const { supabase, error } = await adminParaAccion();

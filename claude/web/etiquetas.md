@@ -9,7 +9,7 @@ filtros en React más allá del reflejo de la URL.
 ## URL de filtros
 
 ```
-/catalogo?cat=monitores&refresco=144-hz,165-hz&panel=ips&q=gamer&orden=precio-asc&pagina=2
+/?cat=escarapelas&fecha=25-de-mayo,9-de-julio&dije=sol&q=pin&orden=precio-asc&pagina=2
 ```
 
 | Clave | Significado |
@@ -41,6 +41,9 @@ cliente sólo arma el objeto `{ grupo: [slugs] }`. Detalle y SQL en
 
 ## Panel de filtros
 
+- **La categoría va arriba de todo**, como `RadioGroup` (una sola a la vez, las hijas con
+  sangría): navega con `conCambios(filtros, { cat })`. En el cajón del celular se acumula
+  con el resto hasta "Ver resultados" y cuenta en el número del botón.
 - **Las facetas vienen de `facetas_productos`, nunca se cuentan en el cliente** con los
   productos de la página actual: esos son 24 de 300 y los conteos saldrían mal.
 - Un `CheckboxGroup` por grupo, ordenados por `grupos_etiqueta.orden`. Cada opción

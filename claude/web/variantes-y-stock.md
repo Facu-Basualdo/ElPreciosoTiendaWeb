@@ -57,9 +57,10 @@ están en el selector.
 
 ## Dashboard
 
-Sección "Variantes" en la edición del producto. **Con "Hecho a pedido" (switch en
-Datos) se llama "Bases y precios" y no tiene stock**: sin columna, sin "Aplicar stock a
-todas", sin confirmación al borrar combinaciones y sin historial (ver
+Sección "Variantes" en la edición del producto. **Con el producto a pedido (todos en El
+Precioso: el panel ya no muestra el switch) se llama "Bases y precios" y no tiene
+stock**: sin columna, sin "Aplicar stock a todas", sin confirmación al borrar
+combinaciones y sin historial (ver
 [supabase](../supabase/variantes-y-stock.md#productos-a-pedido)). El resto igual:
 
 1. Elegir los grupos de variante que usa el producto (máximo 3) y, por grupo, las

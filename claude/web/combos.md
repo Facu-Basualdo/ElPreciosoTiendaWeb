@@ -13,7 +13,7 @@ Motor y pedido en [combos supabase](../supabase/combos.md).
 
 | Ruta / pieza | Qué hace |
 |---|---|
-| `/combos` | Grilla de `TarjetaCombo` (de `buscar_combos`). **No van en `/catalogo`**: romperían facetas y paginación |
+| `/combos` | Grilla de `TarjetaCombo` (de `buscar_combos`). **No van en el catálogo**: romperían facetas y paginación |
 | Home | Carrusel "combos" con los destacados |
 | `/combo/[slug]` | Galería (si el combo no tiene imágenes, la principal de cada producto), precio con lista tachada y "Ahorrás", `SelectorCombo`, descripción |
 | `TarjetaCombo` | Siempre lleva a la ficha ("Armar combo"): hay que elegir variantes |

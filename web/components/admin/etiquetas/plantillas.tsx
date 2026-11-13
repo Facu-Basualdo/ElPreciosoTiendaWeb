@@ -146,8 +146,8 @@ function EdicionPlantilla({
                 onChange={setGrupoIds}
               />
               <Casillas
-                etiqueta="Opciones con stock propio"
-                ayuda="Cada combinación tiene su stock (talle, color, memoria…)."
+                etiqueta="Opciones con precio propio"
+                ayuda="Como la base: el cliente elige una y cada una puede tener su precio."
                 opciones={grupos.filter((g) => g.esVariante)}
                 valor={grupoIds}
                 onChange={setGrupoIds}

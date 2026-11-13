@@ -32,7 +32,7 @@ export function BorrarProducto({ id, nombre }: { id: string; nombre: string }) {
               <AlertDialog.Heading>¿Borrar «{nombre}»?</AlertDialog.Heading>
             </AlertDialog.Header>
             <AlertDialog.Body>
-              Se borran el producto, sus imágenes, variantes y stock. Los pedidos ya hechos lo conservan (guardan una copia). No
+              Se borran el producto, sus imágenes y sus bases. Los pedidos ya hechos lo conservan (guardan una copia). No
               se puede deshacer.
             </AlertDialog.Body>
             <AlertDialog.Footer>

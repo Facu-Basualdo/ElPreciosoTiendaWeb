@@ -11,8 +11,8 @@ todo. Next.js 16 + HeroUI v3 en Vercel, datos e imágenes en Supabase.
 **Estado:** heredado y funcionando el catálogo, el carrito con pedido por WhatsApp y el
 panel completo. Fases 0 a 2 del plan hechas: base nueva con la taxonomía de El Precioso,
 marca aplicada (home = la landing), productos a pedido, fotos 9:16 y los 97 modelos de la
-landing importados como borradores. Fases 3 a 6 también: editor de fotos, panel simplificado, carrito con entrega y
-finanzas. Falta la fase 7 (producción), que depende de las cuentas de GitHub y Vercel:
+landing importados como borradores. Fases 3 a 6 también: editor de fotos, panel simplificado, mensaje de WhatsApp con el
+tono de la marca y finanzas. Falta la fase 7 (producción), que depende de las cuentas de GitHub y Vercel:
 orden y diseño en
 [docs/plan-el-precioso.md](docs/plan-el-precioso.md). **Mientras dure la migración, si el
 plan choca con una nota o con este archivo, manda el plan.** Las notas de `claude/`

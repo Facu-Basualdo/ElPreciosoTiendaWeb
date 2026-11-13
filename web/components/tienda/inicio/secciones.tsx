@@ -89,8 +89,8 @@ const PASOS = [
 
 export function ComoComprar() {
   return (
-    <section aria-labelledby="como-comprar" className="contenedor flex flex-col gap-8">
-      <TituloSeccion id="como-comprar" antetitulo="Cómo comprar" titulo="Tres pasos y listo" />
+    <section id="como-comprar" aria-labelledby="titulo-como-comprar" className="contenedor flex scroll-mt-20 flex-col gap-8">
+      <TituloSeccion id="titulo-como-comprar" antetitulo="Cómo comprar" titulo="Tres pasos y listo" />
       <ol className="grid gap-4 sm:grid-cols-3">
         {PASOS.map((p, i) => (
           <li key={p.titulo} className="flex gap-4 rounded-tarjeta bg-surface-secondary p-6">
@@ -212,7 +212,7 @@ export function Sobre() {
 
 export function Contacto() {
   return (
-    <section aria-labelledby="titulo-contacto" className="contenedor">
+    <section id="contacto" aria-labelledby="titulo-contacto" className="contenedor scroll-mt-20">
       <div className="relative isolate overflow-hidden rounded-tarjeta border border-border bg-surface px-6 py-14 text-center sm:py-20">
         {/* Manchas de acuarela celeste y dorada, como en la plantilla de las fotos. */}
         <span aria-hidden className="absolute -left-16 -top-20 -z-10 size-72 rounded-full bg-celeste/35 blur-3xl" />

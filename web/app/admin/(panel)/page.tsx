@@ -38,17 +38,17 @@ async function Resumen() {
   const { supabase } = await requerirAdmin();
 
   const [productos, pedidos] = await Promise.all([
-    supabase.from("productos").select("publicado, variantes:producto_variantes(stock, activa)"),
+    supabase.from("productos").select("publicado"),
     supabase.from("pedidos").select("estado", { count: "exact" }).eq("estado", "pendiente"),
   ]);
 
   const lista = productos.data ?? [];
   const publicados = lista.filter((p) => p.publicado).length;
-  const sinStock = lista.filter((p) => p.publicado && !p.variantes.some((v) => v.activa && v.stock > 0)).length;
+  const borradores = lista.length - publicados;
 
   const tarjetas = [
     { titulo: "Productos", valor: lista.length, detalle: `${publicados} visibles en la tienda`, href: "/admin/productos" },
-    { titulo: "Sin stock", valor: sinStock, detalle: "Visibles pero sin unidades", href: "/admin/productos?estado=sin-stock" },
+    { titulo: "Borradores", valor: borradores, detalle: "Falta completarlos y publicarlos", href: "/admin/productos?estado=ocultos" },
     { titulo: "Pedidos pendientes", valor: pedidos.count ?? 0, detalle: "Esperando confirmación", href: "/admin/pedidos?estado=pendiente" },
   ];
 

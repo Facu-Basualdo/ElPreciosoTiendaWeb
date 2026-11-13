@@ -162,10 +162,11 @@ trigger fija en 9999 el stock de todas sus variantes** (`producto_variantes_stoc
 | Se confirma o cancela un pedido | `cambiar_estado_pedido` **no descuenta ni repone** sus líneas |
 | Cualquier cambio de stock | **No queda en `movimientos_stock`** (el trigger del historial lo saltea; también con `app.sin_historial = 'si'`) |
 
-- **9999 no se muestra nunca.** La ficha dice "Hecho a pedido", el listado del panel
-  "A pedido" y el editor oculta la columna de stock. Si una vista nueva muestra stock,
-  tiene que mirar `a_pedido` primero.
-- El filtro "Sin stock" del panel excluye los productos a pedido.
+- **9999 no se muestra nunca.** La ficha dice "Hecho a pedido" y el editor oculta la
+  columna de stock. Si una vista nueva muestra stock, tiene que mirar `a_pedido` primero.
+- **El panel ya no tiene el switch**: todo producto nace y queda a pedido. Para volver a
+  vender algo con stock hay que mostrar el switch otra vez (el mecanismo de la base sigue
+  completo).
 
 ## Descuento de stock
 

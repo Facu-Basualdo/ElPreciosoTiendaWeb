@@ -86,7 +86,7 @@ Detalle en [imagenes](imagenes.md).
 | `imagen_path` | `text` not null | Desktop, 1920×640 recomendado |
 | `imagen_mobile_path` | `text` null | Si falta, se usa la de desktop recortada con `object-cover` |
 | `texto_claro` | `boolean` | Texto blanco sobre la imagen (imagen oscura). Lo elige el admin |
-| `enlace` | `text` null | Ruta interna (`/catalogo?cat=ofertas`) o URL externa |
+| `enlace` | `text` null | Ruta interna (`/?cat=escarapelas`) o URL externa |
 | `orden` | `int` | |
 | `activo` | `boolean` | |
 | `desde`, `hasta` | `timestamptz` null | Ventana de publicación. Null = sin límite |
@@ -125,8 +125,7 @@ Helpers en el schema `private` (no expuesto): `productos_filtrados`, `filtros_va
 
 ## pedidos · pedido_items
 
-Pedidos del carrito con `numero` secuencial, `estado` (enum `estado_pedido`), totales,
-`telefono` (opcional, sólo dígitos), `entrega` (`retiro` · `envio`), `localidad` y
+Pedidos del carrito con `numero` secuencial, `estado` (enum `estado_pedido`), totales y
 `entregado_en` (por trigger: ver [finanzas](finanzas.md));
 `pedido_items` es un snapshot (nombre, detalle, SKU, precio, `promo`). Un combo es una
 fila padre + hijas por variante (`padre_id`). Sin grants para `anon`.

@@ -19,7 +19,7 @@ function useBusqueda() {
 
   const buscar = (texto: string) => {
     const limpio = texto.trim();
-    router.push(limpio ? `/catalogo?q=${encodeURIComponent(limpio)}` : "/catalogo");
+    router.push(limpio ? `/?q=${encodeURIComponent(limpio)}` : "/");
   };
 
   return { valor, setValor, buscar };

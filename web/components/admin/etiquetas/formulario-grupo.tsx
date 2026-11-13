@@ -140,8 +140,8 @@ export function FormularioGrupo({
             valor={esVariante}
             onChange={setEsVariante}
             isDisabled={enUso || esMarca}
-            titulo="Es de variante"
-            ayuda={enUso ? "No se puede cambiar: el grupo ya está en uso." : "Talle, color: cada combinación tiene su stock."}
+            titulo="Es una opción a elegir"
+            ayuda={enUso ? "No se puede cambiar: el grupo ya está en uso." : "Como la base: el cliente elige una y cada una puede tener su precio."}
           />
           <Casilla
             valor={esMarca}

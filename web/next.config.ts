@@ -5,6 +5,10 @@ const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://lo
 const nextConfig: NextConfig = {
   // Lecturas del catálogo con 'use cache' + cacheTag; ver claude/web/cache-y-revalidacion.md
   cacheComponents: true,
+  // El catálogo es la portada: los links viejos a /catalogo (con sus filtros) siguen andando.
+  async redirects() {
+    return [{ source: "/catalogo", destination: "/", permanent: true }];
+  },
   images: {
     remotePatterns: [
       {

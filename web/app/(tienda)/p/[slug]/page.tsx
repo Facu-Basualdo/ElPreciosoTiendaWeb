@@ -81,17 +81,17 @@ async function Ficha({ params }: { params: PageProps<"/p/[slug]">["params"] }) {
 
         <div className="flex flex-col gap-5">
           <Breadcrumbs>
-            <Breadcrumbs.Item href="/catalogo">Productos</Breadcrumbs.Item>
+            <Breadcrumbs.Item href="/">Productos</Breadcrumbs.Item>
             {p.categoria?.padre && (
-              <Breadcrumbs.Item href={`/catalogo?cat=${p.categoria.padre.slug}`}>{p.categoria.padre.nombre}</Breadcrumbs.Item>
+              <Breadcrumbs.Item href={`/?cat=${p.categoria.padre.slug}`}>{p.categoria.padre.nombre}</Breadcrumbs.Item>
             )}
-            {p.categoria && <Breadcrumbs.Item href={`/catalogo?cat=${p.categoria.slug}`}>{p.categoria.nombre}</Breadcrumbs.Item>}
+            {p.categoria && <Breadcrumbs.Item href={`/?cat=${p.categoria.slug}`}>{p.categoria.nombre}</Breadcrumbs.Item>}
           </Breadcrumbs>
 
           <div className="flex flex-col gap-1">
             {p.marca && (
               <NextLink
-                href={`/catalogo?marca=${p.marca.slug}`}
+                href={`/?marca=${p.marca.slug}`}
                 className="self-start text-xs font-medium uppercase tracking-wider text-muted hover:text-foreground"
               >
                 {p.marca.valor}
@@ -154,7 +154,7 @@ function Especificaciones({ caracteristicas }: { caracteristicas: Caracteristica
                   {c.esVariante ? (
                     v.valor
                   ) : (
-                    <NextLink href={`/catalogo?${c.grupoSlug}=${v.slug}`} className="hover:underline hover:underline-offset-4">
+                    <NextLink href={`/?${c.grupoSlug}=${v.slug}`} className="hover:underline hover:underline-offset-4">
                       {v.valor}
                     </NextLink>
                   )}

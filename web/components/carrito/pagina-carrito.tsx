@@ -1,7 +1,7 @@
 "use client";
 
 import { CircleCheck, Comment, ShoppingCart, Tag, TrashBin } from "@gravity-ui/icons";
-import { Button, Description, Form, Input, Label, NumberField, Radio, RadioGroup, Skeleton, TextArea, TextField, toast } from "@heroui/react";
+import { Button, Form, Input, Label, NumberField, Skeleton, TextArea, TextField, toast } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import Image from "next/image";
 import NextLink from "next/link";
@@ -14,9 +14,6 @@ import { supabaseNavegador } from "@/lib/supabase/navegador";
 import { urlPublica } from "@/lib/supabase/storage";
 import { enlaceWhatsapp } from "@/lib/whatsapp";
 
-// "Resistencia" de "Resistencia, Chaco".
-const LUGAR_RETIRO = SITIO.ciudad.split(",")[0];
-
 // El carrito muestra lo que calcula cotizar_carrito; nunca suma precios acá.
 // Ver claude/web/carrito.md
 export function PaginaCarrito() {
@@ -27,9 +24,6 @@ export function PaginaCarrito() {
   const [enviando, setEnviando] = useState(false);
   const [nombre, setNombre] = useState("");
   const [notas, setNotas] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [entrega, setEntrega] = useState<Entrega>("retiro");
-  const [localidad, setLocalidad] = useState("");
 
   if (pedido) return <Confirmacion pedido={pedido} />;
 
@@ -39,7 +33,7 @@ export function PaginaCarrito() {
         <ShoppingCart aria-hidden className="size-10 text-muted" />
         <h2 className="text-xl font-semibold">Tu carrito está vacío</h2>
         <p className="text-muted">Sumá productos desde el catálogo y enviá el pedido por WhatsApp.</p>
-        <NextLink href="/catalogo" className={buttonVariants({ variant: "primary" })}>
+        <NextLink href="/" className={buttonVariants({ variant: "primary" })}>
           Ver productos
         </NextLink>
       </div>
@@ -57,9 +51,6 @@ export function PaginaCarrito() {
       p_nombre: nombre,
       p_notas: notas || undefined,
       p_cupon: cupon || undefined,
-      p_telefono: telefono || undefined,
-      p_entrega: entrega,
-      p_localidad: entrega === "envio" ? localidad : undefined,
     });
     setEnviando(false);
     if (e) {
@@ -67,7 +58,7 @@ export function PaginaCarrito() {
       toast.danger(e.message || "No pudimos crear el pedido");
       return;
     }
-    setPedido({ ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim(), entrega, localidad: localidad.trim() });
+    setPedido({ ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim() });
     carrito.vaciar();
     fijarCupon("");
   }
@@ -131,39 +122,9 @@ export function PaginaCarrito() {
             <Label>Tu nombre</Label>
             <Input placeholder="Para saber quién hace el pedido" />
           </TextField>
-          <TextField type="tel" inputMode="tel" value={telefono} onChange={setTelefono} maxLength={20} name="telefono">
-            <Label>Tu WhatsApp (opcional)</Label>
-            <Input placeholder="3624 123456" />
-            <Description>Con característica, sin 0 ni 15. Para avisarte cuando esté listo.</Description>
-          </TextField>
-          <RadioGroup value={entrega} onChange={(v) => setEntrega(v as Entrega)} name="entrega">
-            <Label>Entrega</Label>
-            <Radio value="retiro">
-              <Radio.Control>
-                <Radio.Indicator />
-              </Radio.Control>
-              <Radio.Content>
-                <Label>Retiro en {LUGAR_RETIRO}</Label>
-              </Radio.Content>
-            </Radio>
-            <Radio value="envio">
-              <Radio.Control>
-                <Radio.Indicator />
-              </Radio.Control>
-              <Radio.Content>
-                <Label>Envío a todo el país</Label>
-              </Radio.Content>
-            </Radio>
-          </RadioGroup>
-          {entrega === "envio" && (
-            <TextField isRequired value={localidad} onChange={setLocalidad} maxLength={80} name="localidad">
-              <Label>Localidad</Label>
-              <Input placeholder="Ciudad y provincia" />
-            </TextField>
-          )}
           <TextField value={notas} onChange={setNotas} maxLength={500} name="notas">
             <Label>Notas (opcional)</Label>
-            <TextArea placeholder="Para cuándo lo necesitás, un nombre para grabar, etc." rows={3} />
+            <TextArea placeholder="Para cuándo lo necesitás, retiro o envío, un nombre para grabar…" rows={3} />
           </TextField>
           <Button type="submit" fullWidth size="lg" isPending={enviando} isDisabled={!cotizacion || cargando || hayProblemas || cuponInvalido}>
             <Comment />
@@ -342,8 +303,8 @@ function Linea({ linea: l }: { linea: LineaCotizada }) {
   );
 }
 
-type Entrega = "retiro" | "envio";
-type PedidoConDatos = PedidoCreado & { nombre: string; notas: string; entrega: Entrega; localidad: string };
+// El cliente escribe desde su WhatsApp: el número y la entrega se arreglan en ese chat.
+type PedidoConDatos = PedidoCreado & { nombre: string; notas: string };
 
 // "2 × Escarapela sol · Base gancho". El tono es el de la marca: corto y cálido.
 function mensajeWhatsapp(p: PedidoConDatos) {
@@ -357,7 +318,6 @@ function mensajeWhatsapp(p: PedidoConDatos) {
     ...(p.descuento_promociones > 0 ? [`Promociones: -${formatearPrecio(p.descuento_promociones)}`] : []),
     ...(p.cupon ? [`Cupón ${p.cupon.codigo}: -${formatearPrecio(p.cupon.descuento)}`] : []),
     `Total: ${formatearPrecio(p.total)}`,
-    p.entrega === "envio" ? `Entrega: envío a ${p.localidad}` : `Entrega: retiro en ${LUGAR_RETIRO}`,
     ...(p.notas ? [`Notas: ${p.notas}`] : []),
     "¡Gracias!",
   ].join("\n");
@@ -381,7 +341,7 @@ function Confirmacion({ pedido }: { pedido: PedidoConDatos }) {
           Abrir WhatsApp
         </a>
       )}
-      <NextLink href="/catalogo" className="text-sm text-muted underline underline-offset-4 hover:text-foreground">
+      <NextLink href="/" className="text-sm text-muted underline underline-offset-4 hover:text-foreground">
         Seguir comprando
       </NextLink>
     </div>

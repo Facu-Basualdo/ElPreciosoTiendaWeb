@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (ruta: string) => `${SITIO.url}${ruta}`;
   return [
     { url: url("/"), changeFrequency: "daily", priority: 1 },
-    { url: url("/catalogo"), changeFrequency: "daily", priority: 0.8 },
+    { url: url("/nosotros"), changeFrequency: "monthly", priority: 0.5 },
     ...(SITIO.ventasAvanzadas
       ? [
           { url: url("/ofertas"), changeFrequency: "daily" as const, priority: 0.6 },
@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ]
       : []),
     ...categorias.flatMap((c) => [c.slug, ...c.hijas.map((h) => h.slug)]).map((slug) => ({
-      url: url(`/catalogo?cat=${slug}`),
+      url: url(`/?cat=${slug}`),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),

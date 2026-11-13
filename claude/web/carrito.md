@@ -41,7 +41,7 @@ así que corre como `anon`, con el RLS del catálogo.
 | Tarjeta del catálogo | Variante única con stock → `BotonAgregar` directo. Con opciones → "Elegir opciones" (a la ficha). Sin stock → deshabilitado |
 | Ficha | Cantidad (`NumberField`, máx. `min(stock, 20)`) + `BotonAgregar` con la variante elegida |
 | Encabezado | `AccesoCarrito`: ícono + unidades, link a `/carrito` |
-| `/carrito` | `PaginaCarrito`: líneas cotizadas, avisos por estado, resumen, nombre, WhatsApp (opcional), entrega (retiro o envío + localidad), notas, "Enviar pedido por WhatsApp". El cupón sólo con `SITIO.ventasAvanzadas` |
+| `/carrito` | `PaginaCarrito`: líneas cotizadas, avisos por estado, resumen, nombre y notas, "Enviar pedido por WhatsApp". **No pide WhatsApp ni entrega**: el pedido llega por el chat del cliente. El cupón sólo con `SITIO.ventasAvanzadas` |
 
 `tarjeta.varianteId` sale de `buscar_productos.variante_id`: sólo viene cuando el
 producto tiene **una** variante activa y sin etiquetas. Con opciones es `null` a
@@ -53,7 +53,7 @@ piden quitarla. **El botón de enviar queda deshabilitado mientras haya avisos**
 
 ## Envío
 
-1. `rpc('crear_pedido', { p_items, p_nombre, p_notas, p_cupon, p_telefono, p_entrega, p_localidad })`. Si falla, el `message` va
+1. `rpc('crear_pedido', { p_items, p_nombre, p_notas, p_cupon })`. Si falla, el `message` va
    directo a un `toast.danger` (los textos están escritos para el cliente).
 2. Se vacía el carrito y se muestra la confirmación con el número de pedido.
 3. **WhatsApp se abre con un link que el usuario toca**, no con `window.open` después
@@ -61,7 +61,7 @@ piden quitarla. **El botón de enviar queda deshabilitado mientras haya avisos**
 4. El mensaje (`mensajeWhatsapp`) usa las líneas y el total **que devolvió
    `crear_pedido`**, no los de la cotización previa. Tono de la marca: "¡Hola! Soy Ana y
    quiero hacer el pedido Nº 12:", una línea por producto (`2 × Modelo · Base gancho —
-   $ 5.000`), total, entrega y notas.
+   $ 5.000`), total y notas.
 5. Sin `NEXT_PUBLIC_WHATSAPP` el pedido se registra igual y la confirmación no muestra
    el botón.
 

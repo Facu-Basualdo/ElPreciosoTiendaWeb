@@ -9,27 +9,34 @@ import { Paginacion } from "@/components/tienda/paginacion";
 import { GrillaProductos } from "@/components/tienda/tarjeta-producto";
 import { EsqueletoCatalogo } from "@/components/tienda/esqueletos";
 import { SelectorVista } from "@/components/tienda/vista-listado";
-import { conCambios, conGrupo, leerFiltros, urlDeFiltros, type Filtros } from "@/lib/catalogo/filtros";
+import { cantidadDeFiltros, conCambios, conGrupo, leerFiltros, urlDeFiltros, type Filtros } from "@/lib/catalogo/filtros";
+import { IconoWhatsapp } from "@/components/icono-whatsapp";
 import { buscarProductos, obtenerCategorias, obtenerFacetas, type Categoria } from "@/lib/catalogo/lecturas";
+import { enlaceWhatsapp } from "@/lib/whatsapp";
 
-export async function generateMetadata(props: PageProps<"/catalogo">): Promise<Metadata> {
-  const filtros = leerFiltros(await props.searchParams);
+type ParametrosBusqueda = Promise<Record<string, string | string[] | undefined>>;
+
+// El catálogo es la portada de la tienda (`/`). /catalogo redirige acá (next.config.ts).
+// Ver claude/web/catalogo.md
+export async function metadataCatalogo(searchParams: ParametrosBusqueda): Promise<Metadata> {
+  const filtros = leerFiltros(await searchParams);
   const categoria = buscarCategoria(await obtenerCategorias(), filtros.cat);
-  const titulo = filtros.q ? `Resultados para “${filtros.q}”` : (categoria?.nombre ?? "Catálogo");
+  const titulo = filtros.q ? `Resultados para “${filtros.q}”` : categoria?.nombre;
   // Las combinaciones de filtros no se indexan: sólo la categoría limpia.
   const indexable = !filtros.q && Object.keys(filtros.etiquetas).length === 0 && filtros.pagina === 1;
   return {
-    title: titulo,
+    // Sin categoría ni búsqueda queda el título por defecto del sitio.
+    ...(titulo ? { title: titulo } : {}),
     alternates: { canonical: urlDeFiltros({ ...filtros, etiquetas: {}, q: null, pagina: 1 }) },
     robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
-export default function PaginaCatalogo(props: PageProps<"/catalogo">) {
-  // searchParams se lee dentro del Suspense: así el resto del layout queda en el shell estático.
+/** searchParams se lee dentro del Suspense: así el resto del layout queda en el shell estático. */
+export function PaginaCatalogo({ searchParams, banners }: { searchParams: ParametrosBusqueda; banners?: React.ReactNode }) {
   return (
     <Suspense fallback={<EsqueletoCatalogo />}>
-      <Catalogo searchParams={props.searchParams} />
+      <Catalogo searchParams={searchParams} banners={banners} />
     </Suspense>
   );
 }
@@ -44,7 +51,7 @@ function buscarCategoria(categorias: Categoria[], slug: string | null) {
   return null;
 }
 
-async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">["searchParams"] }) {
+async function Catalogo({ searchParams, banners }: { searchParams: ParametrosBusqueda; banners?: React.ReactNode }) {
   const filtros = leerFiltros(await searchParams);
   const [resultado, facetas, categorias] = await Promise.all([
     buscarProductos(filtros),
@@ -57,18 +64,23 @@ async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">
   // Subcategorías para navegar: las hijas de la actual, o las hermanas si es hija.
   const subcategorias = categoria?.padre ? categoria.padre.hijas : (categoria?.hijas ?? []);
   const fueraDeRango = resultado.total > 0 && filtros.pagina > resultado.paginas;
+  // Los banners sólo en la portada limpia: con filtros o búsqueda, estorban.
+  const portada = !filtros.cat && !filtros.q && cantidadDeFiltros(filtros) === 0 && filtros.pagina === 1;
 
   return (
     <div className="contenedor py-5 sm:py-8">
+      {portada && banners}
       <header className="mb-6 flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border pb-4">
-          <NextLink
-            href={categoria?.padre ? urlDeFiltros(conCambios(filtros, { cat: categoria.padre.slug })) : "/"}
-            aria-label={categoria?.padre ? `Volver a ${categoria.padre.nombre}` : "Volver al inicio"}
-            className={buttonVariants({ variant: "ghost", size: "sm", isIconOnly: true })}
-          >
-            <ChevronLeft />
-          </NextLink>
+          {categoria?.padre && (
+            <NextLink
+              href={urlDeFiltros(conCambios(filtros, { cat: categoria.padre.slug }))}
+              aria-label={`Volver a ${categoria.padre.nombre}`}
+              className={buttonVariants({ variant: "ghost", size: "sm", isIconOnly: true })}
+            >
+              <ChevronLeft />
+            </NextLink>
+          )}
           <div className="min-w-0 flex-1">
             <h1 className="font-serif truncate text-2xl font-normal tracking-tight sm:text-3xl">{titulo}</h1>
             <p className="text-sm text-muted">
@@ -76,7 +88,7 @@ async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">
             </p>
           </div>
           <div className="flex w-full items-center gap-2 sm:w-auto">
-            <BotonFiltrosMovil facetas={facetas} filtros={filtros} />
+            <BotonFiltrosMovil facetas={facetas} filtros={filtros} categorias={categorias} />
             <div className="ml-auto flex items-center gap-2">
               <SelectorOrden filtros={filtros} />
               <SelectorVista />
@@ -100,7 +112,7 @@ async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">
       </header>
 
       <div className="flex gap-6">
-        <PanelFiltros facetas={facetas} filtros={filtros} />
+        <PanelFiltros facetas={facetas} filtros={filtros} categorias={categorias} />
 
         <section className="flex min-w-0 flex-1 flex-col gap-5" aria-label="Productos">
           <FiltrosActivos filtros={filtros} facetas={facetas} />
@@ -108,7 +120,7 @@ async function Catalogo({ searchParams }: { searchParams: PageProps<"/catalogo">
           {resultado.productos.length > 0 ? (
             <GrillaProductos productos={resultado.productos} prioridad={filtros.pagina === 1 ? 4 : 0} />
           ) : (
-            <SinResultados filtros={filtros} fueraDeRango={fueraDeRango} />
+            <SinResultados filtros={filtros} fueraDeRango={fueraDeRango} portada={portada} />
           )}
 
           <Paginacion filtros={filtros} paginas={resultado.paginas} />
@@ -152,7 +164,20 @@ function FiltrosActivos({ filtros, facetas }: { filtros: Filtros; facetas: Await
   );
 }
 
-function SinResultados({ filtros, fueraDeRango }: { filtros: Filtros; fueraDeRango: boolean }) {
+function SinResultados({ filtros, fueraDeRango, portada }: { filtros: Filtros; fueraDeRango: boolean; portada: boolean }) {
+  // Portada sin ningún producto publicado (tienda recién armada o temporada sin cargar).
+  if (portada) {
+    return (
+      <div className="flex flex-col items-start gap-4 rounded-tarjeta border border-dashed border-border bg-surface p-8">
+        <p className="font-serif text-xl">Estamos cargando los modelos de esta temporada.</p>
+        <p className="text-muted">Mientras tanto, escribinos y te mandamos fotos de lo que tenemos.</p>
+        <a href={enlaceWhatsapp()} target="_blank" rel="noopener" className={buttonVariants()}>
+          <IconoWhatsapp className="size-4" />
+          Escribinos por WhatsApp
+        </a>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col items-start gap-4 rounded-tarjeta border border-border bg-surface p-8">
       <p className="font-medium">{fueraDeRango ? "Esta página no existe." : "No hay productos con estos filtros."}</p>

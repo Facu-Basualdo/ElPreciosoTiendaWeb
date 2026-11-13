@@ -354,9 +354,9 @@ function EdicionCategoria({
                 }
                 className="flex flex-col gap-2"
               >
-                <Label>Opciones con stock propio</Label>
+                <Label>Opciones con precio propio</Label>
                 <Description>
-                  Cada combinación tiene su stock (talle, color, memoria…).
+                  Como la base: el cliente elige una y cada una puede tener su precio.
                 </Description>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {grupos

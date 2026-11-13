@@ -68,20 +68,18 @@ producto también. El panel de admin sigue en Inter.
 - Animaciones con `motion-reduce:` (el video del hero se oculta, el zoom del mosaico no
   corre).
 
-## Home
+## Nosotros
 
-La home es la landing de El Precioso pasada a Next (`app/(tienda)/page.tsx`,
-componentes en `components/tienda/inicio/`):
+`/nosotros` ("Quiénes somos") es la landing de El Precioso pasada a Next
+(`app/(tienda)/nosotros/page.tsx`, componentes en `components/tienda/inicio/`). La
+portada es el catálogo. Cada sección tiene `id` (`sobre`, `personaliza`, `como-comprar`,
+`contacto`) con `scroll-mt` para el encabezado fijo: el encabezado enlaza ahí.
 
 | Sección | Datos |
 |---|---|
 | Hero con la bandera flameando | Estático. **El LCP es el poster** (`bandera-poster.webp` con `priority`); el video (`bandera.webm`/`.mp4`, `preload="metadata"`) lo tapa cuando arranca |
-| Banners | `obtenerBanners`, sólo si hay |
 | Problema y beneficios | Textos fijos de la landing |
-| Últimos ingresos | `obtenerRecientes(10)`; si no hay productos, la sección no aparece |
-| Catálogo | Mosaico por categoría (`obtenerMosaicoCategorias`); sin productos, un aviso con WhatsApp |
-| Combos y ofertas | Sólo con `SITIO.ventasAvanzadas` |
-| Cómo comprar · Personalizá · Sobre nosotros · Contacto | Fijos. Las **bases** de "Personalizá" salen del grupo `base` (`obtenerValoresGrupo`) |
+| Sobre nosotros · Personalizá · Cómo comprar · Contacto | Fijos. Las **bases** de "Personalizá" salen del grupo `base` (`obtenerValoresGrupo`) |
 
 **Las reseñas de la landing no se publican**: no eran reales. Vuelven cuando haya
 reseñas de clientes de verdad.

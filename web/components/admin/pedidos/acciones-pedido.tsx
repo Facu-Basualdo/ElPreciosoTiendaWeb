@@ -8,21 +8,23 @@ import { NOMBRE_ESTADO } from "./estado";
 
 type Transicion = { a: EstadoPedido; etiqueta: string; variante: "primary" | "outline" | "danger-soft"; aviso?: string };
 
-// Qué se puede hacer desde cada estado. Los avisos explican el efecto en el stock.
+// Qué se puede hacer desde cada estado. Sin stock (todo es a pedido), sólo cancelar
+// pide confirmación; igual se puede reabrir.
+const CANCELAR = "El pedido deja de estar activo. Podés reabrirlo después si hace falta.";
 const TRANSICIONES: Record<EstadoPedido, Transicion[]> = {
   pendiente: [
-    { a: "confirmado", etiqueta: "Confirmar", variante: "primary", aviso: "Se descuenta el stock de cada variante del pedido. Si alguna no alcanza, no se confirma." },
-    { a: "cancelado", etiqueta: "Cancelar", variante: "danger-soft" },
+    { a: "confirmado", etiqueta: "Confirmar", variante: "primary" },
+    { a: "cancelado", etiqueta: "Cancelar", variante: "danger-soft", aviso: CANCELAR },
   ],
   confirmado: [
     { a: "entregado", etiqueta: "Marcar entregado", variante: "primary" },
-    { a: "pendiente", etiqueta: "Volver a pendiente", variante: "outline", aviso: "Se repone el stock que se había descontado al confirmar." },
-    { a: "cancelado", etiqueta: "Cancelar", variante: "danger-soft", aviso: "Se repone el stock que se había descontado al confirmar." },
+    { a: "pendiente", etiqueta: "Volver a pendiente", variante: "outline" },
+    { a: "cancelado", etiqueta: "Cancelar", variante: "danger-soft", aviso: CANCELAR },
   ],
   entregado: [{ a: "confirmado", etiqueta: "Volver a confirmado", variante: "outline" }],
   cancelado: [
     { a: "pendiente", etiqueta: "Reabrir", variante: "outline" },
-    { a: "confirmado", etiqueta: "Confirmar", variante: "primary", aviso: "Se descuenta el stock de cada variante del pedido." },
+    { a: "confirmado", etiqueta: "Confirmar", variante: "primary" },
   ],
 };
 

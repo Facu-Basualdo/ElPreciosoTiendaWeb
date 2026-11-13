@@ -23,10 +23,13 @@ export function Pie() {
         </div>
         <div className="flex flex-col gap-2 text-sm">
           <p className="antetitulo text-dorado">Tienda</p>
-          <NextLink href="/catalogo" className="hover:text-dorado">
+          <NextLink href="/" className="hover:text-dorado">
             Catálogo
           </NextLink>
-          <NextLink href="/#personaliza" className="hover:text-dorado">
+          <NextLink href="/nosotros" className="hover:text-dorado">
+            Quiénes somos
+          </NextLink>
+          <NextLink href="/nosotros#personaliza" className="hover:text-dorado">
             Personalizá el tuyo
           </NextLink>
           <NextLink href="/carrito" className="hover:text-dorado">

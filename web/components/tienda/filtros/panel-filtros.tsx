@@ -1,11 +1,54 @@
 "use client";
 
 import { Funnel } from "@gravity-ui/icons";
-import { Button, Checkbox, CheckboxGroup, Drawer, Label, ScrollShadow, Spinner } from "@heroui/react";
+import { Button, Checkbox, CheckboxGroup, Drawer, Label, Radio, RadioGroup, ScrollShadow, Spinner } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { cantidadDeFiltros, conGrupo, urlDeFiltros, type Filtros } from "@/lib/catalogo/filtros";
-import type { Faceta } from "@/lib/catalogo/lecturas";
+import { cantidadDeFiltros, conCambios, conGrupo, urlDeFiltros, type Filtros } from "@/lib/catalogo/filtros";
+import type { Categoria, Faceta } from "@/lib/catalogo/lecturas";
+
+const TODAS = "todas";
+
+// Categorías arriba de todo: una sola a la vez (Escarapelas, Prendedores…). Las hijas,
+// con sangría debajo de su madre.
+function Categorias({
+  categorias,
+  actual,
+  onCambio,
+}: {
+  categorias: Categoria[];
+  actual: string | null;
+  onCambio: (cat: string | null) => void;
+}) {
+  if (!categorias.length) return null;
+  const opciones = [
+    { slug: TODAS, nombre: "Todas", hija: false },
+    ...categorias.flatMap((c) => [
+      { slug: c.slug, nombre: c.nombre, hija: false },
+      ...c.hijas.map((h) => ({ slug: h.slug, nombre: h.nombre, hija: true })),
+    ]),
+  ];
+  return (
+    <RadioGroup
+      name="cat"
+      value={actual ?? TODAS}
+      onChange={(v) => onCambio(v === TODAS ? null : v)}
+      className="flex flex-col gap-2.5 pb-5"
+    >
+      <Label className="text-sm font-semibold">Categoría</Label>
+      {opciones.map((o) => (
+        <Radio key={o.slug} value={o.slug} aria-label={o.nombre} className={o.hija ? "pl-6" : ""}>
+          <Radio.Content className="w-full">
+            <Radio.Control>
+              <Radio.Indicator />
+            </Radio.Control>
+            <span className="text-sm">{o.nombre}</span>
+          </Radio.Content>
+        </Radio>
+      ))}
+    </RadioGroup>
+  );
+}
 
 // Facetas del RPC facetas_productos: nunca se cuentan en el cliente.
 // Ver claude/web/etiquetas.md#panel-de-filtros
@@ -18,7 +61,7 @@ function GruposDeFacetas({
   filtros: Filtros;
   onCambio: (grupo: string, slugs: string[]) => void;
 }) {
-  if (!facetas.length) return <p className="text-sm text-muted">No hay filtros para estos resultados.</p>;
+  if (!facetas.length) return null;
 
   return (
     <div className="flex flex-col divide-y divide-separator">
@@ -82,7 +125,7 @@ function GrupoFaceta({
   );
 }
 
-export function PanelFiltros({ facetas, filtros }: { facetas: Faceta[]; filtros: Filtros }) {
+export function PanelFiltros({ facetas, filtros, categorias }: { facetas: Faceta[]; filtros: Filtros; categorias: Categoria[] }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
   const navegar = (f: Filtros) => iniciar(() => router.replace(urlDeFiltros(f), { scroll: false }));
@@ -98,6 +141,7 @@ export function PanelFiltros({ facetas, filtros }: { facetas: Faceta[]; filtros:
         {/* ScrollShadow: scrollbar del tema de HeroUI + degradado cuando hay más contenido.
             Nada de overflow-y-auto suelto: muestra el scrollbar nativo del sistema. */}
         <ScrollShadow className="min-h-0 flex-1 pr-3" size={32}>
+          <Categorias categorias={categorias} actual={filtros.cat} onCambio={(cat) => navegar(conCambios(filtros, { cat }))} />
           <GruposDeFacetas facetas={facetas} filtros={filtros} onCambio={(g, s) => navegar(conGrupo(filtros, g, s))} />
         </ScrollShadow>
       </div>
@@ -106,7 +150,7 @@ export function PanelFiltros({ facetas, filtros }: { facetas: Faceta[]; filtros:
 }
 
 // Mobile: botón + Drawer. Va en la barra de herramientas, no como columna del layout.
-export function BotonFiltrosMovil({ facetas, filtros }: { facetas: Faceta[]; filtros: Filtros }) {
+export function BotonFiltrosMovil({ facetas, filtros, categorias }: { facetas: Faceta[]; filtros: Filtros; categorias: Categoria[] }) {
   const router = useRouter();
   const [, iniciar] = useTransition();
   const [abierto, setAbierto] = useState(false);
@@ -114,7 +158,7 @@ export function BotonFiltrosMovil({ facetas, filtros }: { facetas: Faceta[]; fil
   // navegación y en mobile se siente trabado.
   const [borrador, setBorrador] = useState(filtros);
   const navegar = (f: Filtros) => iniciar(() => router.replace(urlDeFiltros(f), { scroll: false }));
-  const cantidad = cantidadDeFiltros(filtros);
+  const cantidad = cantidadDeFiltros(filtros) + (filtros.cat ? 1 : 0);
 
   return (
     <>
@@ -138,6 +182,7 @@ export function BotonFiltrosMovil({ facetas, filtros }: { facetas: Faceta[]; fil
                 <Drawer.Heading>Filtros</Drawer.Heading>
               </Drawer.Header>
               <Drawer.Body>
+                <Categorias categorias={categorias} actual={borrador.cat} onCambio={(cat) => setBorrador((b) => conCambios(b, { cat }))} />
                 <GruposDeFacetas
                   facetas={facetas}
                   filtros={borrador}
@@ -145,7 +190,7 @@ export function BotonFiltrosMovil({ facetas, filtros }: { facetas: Faceta[]; fil
                 />
               </Drawer.Body>
               <Drawer.Footer className="flex gap-2">
-                <Button variant="ghost" onPress={() => setBorrador({ ...borrador, etiquetas: {}, pagina: 1 })}>
+                <Button variant="ghost" onPress={() => setBorrador({ ...borrador, cat: null, etiquetas: {}, pagina: 1 })}>
                   Limpiar
                 </Button>
                 <Button

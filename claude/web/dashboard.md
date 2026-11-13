@@ -118,9 +118,13 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
   `remera-e2-e` (separa número de letra). Si se cambia uno, cambiar el otro.
 - `guardarEtiquetas` **agrega antes de quitar**: si algo falla a mitad, sobra una
   etiqueta en vez de faltar la marca.
-- Listado: "sin stock" y la búsqueda por SKU se filtran en el servidor de Next sobre
-  hasta 1000 productos (el stock vive en las variantes y PostgREST no filtra por un
-  agregado). Con catálogos más grandes, pasar a un RPC.
+- Listado: la búsqueda por SKU se filtra en el servidor de Next sobre hasta 1000
+  productos (el SKU vive en las variantes). Con catálogos más grandes, pasar a un RPC.
+- **El panel no habla de stock**: El Precioso hace todo a pedido. Sin columna ni filtro
+  "Sin stock" en el listado, sin tarjeta "Sin stock" en el inicio (ahora cuenta
+  borradores) y sin switch "Hecho a pedido" en Datos: `guardarDatos` conserva el
+  `a_pedido` que ya tiene el producto (default `true`). Ver
+  [supabase](../supabase/variantes-y-stock.md#productos-a-pedido).
 - Reordenar imágenes con flechas y "Hacer principal", no drag and drop: funciona con
   teclado y en touch sin otra dependencia.
 
@@ -140,16 +144,19 @@ las acciones (`acciones.ts`). Componentes en `components/admin/productos/`.
 búsqueda por número exacto o por nombre) y detalle con los ítems guardados (snapshot) y
 los botones de estado de `components/admin/pedidos/acciones-pedido.tsx`.
 
-- **Cada cambio de estado pasa por `cambiar_estado_pedido`**, que descuenta o repone
-  stock (ver [carrito (supabase)](../supabase/carrito.md#estados-y-stock)). Las
-  transiciones que tocan stock piden confirmación con el efecto explicado.
-- Los mensajes de error de la función se muestran tal cual ("No hay stock suficiente
-  de …").
+- **El listado es una lista, no `Table`** (`lista-pedidos.tsx`): **toda la fila abre el
+  detalle** (el link del número se estira con `after:absolute after:inset-0`) y el
+  **estado se cambia ahí mismo** con un `Select` que va en `relative z-10` para quedar por
+  encima del link. La `Table` de HeroUI es un grid de React Aria y pelea con un `Select`
+  adentro. El aviso del cambio trae "Deshacer" (vuelve al estado anterior).
+- **Cada cambio de estado pasa por `cambiar_estado_pedido`** (ver
+  [carrito (supabase)](../supabase/carrito.md#estados-y-stock)). Sin stock, sólo
+  "Cancelar" pide confirmación en el detalle, y se puede reabrir.
+- Los mensajes de error de la función se muestran tal cual.
 - Después de cambiar el estado se invalidan `productos`, `facetas` y la ficha de cada
   producto del pedido: la tienda deja de mostrar unidades que ya no hay.
-- Si el cliente dejó su WhatsApp, el detalle tiene **"Abrir chat con …"** (`enlaceChat`
-  con `numeroArgentino`: le agrega el `549`). Si no, el contacto sigue en el chat donde
-  mandó el pedido. También muestra la entrega (retiro o envío a localidad).
+- No hay teléfono del cliente ni botón de chat: el contacto sigue en el chat de WhatsApp
+  donde el cliente mandó el pedido (con su número).
 
 ## Características por categoría
 

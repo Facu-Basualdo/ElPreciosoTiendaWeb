@@ -8,13 +8,14 @@ Rutas bajo `web/app/(tienda)/`. Todas leen con funciones de `lib/catalogo/lectur
 
 | Ruta | Lecturas | Build |
 |---|---|---|
-| `/` | `obtenerBanners` · `obtenerRecientes` · `obtenerMosaicoCategorias` · `obtenerValoresGrupo('base')` (+ combos y ofertas con `ventasAvanzadas`). Secciones en [tema-y-marca](tema-y-marca.md#home) | Estática, revalida cada 1 min (por los banners) |
-| `/catalogo` | `buscarProductos` · `obtenerFacetas` · `obtenerCategorias` | Shell estático + contenido por `searchParams` en streaming |
+| `/` | **El catálogo es la portada**: `buscarProductos` · `obtenerFacetas` · `obtenerCategorias`, y `obtenerBanners` arriba sólo sin filtros. Componente en `components/tienda/catalogo.tsx` | Shell estático + contenido por `searchParams` en streaming |
+| `/catalogo` | — | **Redirige a `/`** (`next.config.ts`, conserva los filtros): los links viejos siguen andando. `urlDeFiltros` arma `/?…` |
+| `/nosotros` | `obtenerValoresGrupo('base')`. La landing: ver [tema-y-marca](tema-y-marca.md#nosotros) | Estática |
 | `/ofertas` | `obtenerOfertas` (`p_ofertas`) | Estática |
 | `/p/[slug]` | `obtenerProducto` | `generateStaticParams` con todos los publicados; los nuevos se generan al primer pedido. **Nunca devuelve vacío** (con Cache Components el build falla): sin productos, `paramsDeSlugs` manda un slug imposible que da 404. Igual en `/combo/[slug]` |
 | `/carrito` | — (cotiza en el cliente) | Estática, `noindex`. Ver [carrito](carrito.md) |
 
-**Ofertas es una ruta y no un filtro de `/catalogo`**: `?ofertas=1` sería otra clave
+**Ofertas es una ruta y no un filtro del catálogo**: `?ofertas=1` sería otra clave
 reservada que ningún grupo de etiquetas podría usar como slug.
 
 ## Tarjeta de producto
@@ -68,7 +69,7 @@ Lo mismo para client components con `useSearchParams` (`Buscador`,
 
 ## SEO
 
-- `/catalogo` con búsqueda, filtros de etiquetas o `pagina > 1` → `noindex, follow`;
+- El catálogo (`/`) con búsqueda, filtros de etiquetas o `pagina > 1` → `noindex, follow`;
   canonical a la categoría limpia. Las combinaciones de filtros son infinitas y
   duplican contenido.
 - **`notFound()` dentro de un `Suspense` responde HTTP 200** (el streaming ya empezó),
@@ -86,15 +87,17 @@ Lo mismo para client components con `useSearchParams` (`Buscador`,
 
 ## Home
 
-Qué secciones tiene y de dónde sale cada una: [tema-y-marca](tema-y-marca.md#home). El
+La portada es el catálogo: **los banners van arriba sólo en la portada limpia** (sin
+categoría, búsqueda ni filtros, página 1); con filtros estorban. Sin ningún producto
+publicado, en vez de "No hay productos con estos filtros" muestra un aviso con WhatsApp.
+El encabezado no lleva categorías (están en los filtros) sino Catálogo, Quiénes somos,
+Personalizá, Cómo comprar y Contacto (anclas de `/nosotros`). El
 título y botón del banner se superponen desde la tabla `banners`: **las imágenes (de
 banners y de productos) no llevan texto**; escrito en la imagen se duplica y se
 superpone con el de la tarjeta. El color del texto lo elige el admin por banner
 (`texto_claro`); cada diapositiva es `DiapositivaBanner`, la misma que la vista previa del
 panel (ver [banners](banners.md)).
 
-El mosaico hace una consulta por categoría hoja: con ~10 está bien (cacheadas con tag);
-si pasan de ~30, moverlo a un RPC.
 
 ## Ver también
 

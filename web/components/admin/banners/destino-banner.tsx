@@ -6,7 +6,7 @@ import { useState } from "react";
 export type CategoriaDestino = { slug: string; nombre: string };
 
 const FIJOS = [
-  { id: "/catalogo", nombre: "Todos los productos" },
+  { id: "/", nombre: "Todos los productos" },
   { id: "/ofertas", nombre: "Ofertas" },
   { id: "/combos", nombre: "Combos" },
 ];
@@ -27,7 +27,7 @@ export function DestinoBanner({
   onChange: (enlace: string) => void;
   categorias: CategoriaDestino[];
 }) {
-  const opciones = [...FIJOS, ...categorias.map((c) => ({ id: `/catalogo?cat=${c.slug}`, nombre: `Categoría: ${c.nombre}` }))];
+  const opciones = [...FIJOS, ...categorias.map((c) => ({ id: `/?cat=${c.slug}`, nombre: `Categoría: ${c.nombre}` }))];
   const inicial = !enlace ? NINGUNO : opciones.some((o) => o.id === enlace) ? enlace : OTRA;
   const [eleccion, setEleccion] = useState(inicial);
 

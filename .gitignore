@@ -31,3 +31,6 @@ Thumbs.db
 
 # Fotos de prueba locales
 .temp/
+
+# Vínculo local con el proyecto de Vercel (vercel link)
+.vercel/

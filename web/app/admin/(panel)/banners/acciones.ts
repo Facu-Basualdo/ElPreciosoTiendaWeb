@@ -43,7 +43,7 @@ const esquema = z
     titulo: texto(60),
     subtitulo: texto(120),
     textoBoton: texto(30),
-    // Ruta interna (/catalogo?cat=ropa) o URL https.
+    // Ruta interna (/?cat=escarapelas) o URL https.
     enlace: texto(300)
       .transform((e) => (e ? aRutaPropia(e) : e))
       .refine((e) => e === null || /^\/(?!\/)/.test(e) || /^https:\/\//.test(e), "El link tiene que ser una página de la tienda o empezar con https://"),
