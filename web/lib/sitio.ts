@@ -14,6 +14,10 @@ export const SITIO = {
   // Promociones, combos y cupones: el motor existe, pero la tienda arranca sin ellos.
   // En false se ocultan de la tienda y del panel (ver docs/plan-el-precioso.md, fase 4).
   ventasAvanzadas: false,
+  // Productos (slug) cuyas fotos van en la portada de /nosotros, en este orden. Fijos a
+  // propósito: los últimos publicados podían tener fotos mal encuadradas. Si uno se
+  // despublica o cambia de slug, simplemente no aparece.
+  portadaNosotros: ["modelo-n-99", "modelo-n-98", "modelo-88"],
   moneda: "ARS",
   locale: "es-AR",
 } as const;

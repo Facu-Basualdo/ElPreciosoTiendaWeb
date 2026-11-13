@@ -112,6 +112,26 @@ export async function obtenerRecientes(limite = 10): Promise<TarjetaProducto[]> 
   return ((data ?? []) as FilaBusqueda[]).map(aTarjeta);
 }
 
+export type FotoPortada = { slug: string; nombre: string; path: string; alt: string };
+
+/** Primera foto de cada producto pedido (sólo publicados: la RLS filtra), en el orden de `slugs`. */
+export async function obtenerFotosPortada(slugs: readonly string[]): Promise<FotoPortada[]> {
+  "use cache";
+  cacheLife("max");
+  cacheTag(TAGS.productos, ...slugs.map(TAGS.producto));
+
+  const { data, error } = await supabasePublico()
+    .from("productos")
+    .select("slug, nombre, imagenes:producto_imagenes(path, alt, orden)")
+    .in("slug", [...slugs]);
+  if (error) throw new Error(`fotos de portada: ${error.message}`);
+  return slugs.flatMap((slug) => {
+    const p = data.find((x) => x.slug === slug);
+    const img = p?.imagenes.toSorted((a, b) => a.orden - b.orden)[0];
+    return p && img ? [{ slug, nombre: p.nombre, path: img.path, alt: img.alt || p.nombre }] : [];
+  });
+}
+
 /** Valores de un grupo de etiquetas en su orden (las bases en "Personalizá el tuyo"). */
 export async function obtenerValoresGrupo(slugGrupo: string): Promise<string[]> {
   "use cache";

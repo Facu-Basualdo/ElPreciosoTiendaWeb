@@ -79,10 +79,10 @@ portada es el catálogo. Cada sección tiene `id` (`sobre`, `trabajos`, `persona
 
 | Sección | Datos |
 |---|---|
-| Hero con la bandera flameando | Estático, ~72svh (deja ver que sigue contenido). **El LCP es el poster** (`bandera-poster.webp` con `priority`); el video (`bandera.webm`/`.mp4`, `preload="metadata"`) lo tapa cuando arranca |
+| Hero | Fondo marfil: el texto de la marca y **tres fotos fijas**, la primera foto de los productos de `SITIO.portadaNosotros` (`obtenerFotosPortada`; escalonadas, con `priority`: son el LCP). **Fijas y no "los últimos"**: los recientes podían traer fotos mal encuadradas. Para cambiarlas se edita esa lista de slugs; un producto despublicado no aparece y con menos de tres queda sólo el texto. **Sin video**: la bandera de stock se sacó porque no mostraba el producto y pesaba 2–4 MB en el celular |
 | Problema y beneficios | Textos fijos de la landing |
 | Sobre nosotros | Historia, tres datos clave con ícono (hecho a mano, envíos y retiro, personalizados y por cantidad) y el porqué del nombre |
-| Trabajos | Fotos de los últimos publicados (`obtenerRecientes`, `components/tienda/inicio/mas-secciones.tsx`), link a cada ficha y al catálogo. Sin productos con foto, no aparece |
+| Trabajos | Fotos de los últimos publicados, **sin repetir las del hero** (`obtenerRecientes(12)` menos los slugs de la portada; `components/tienda/inicio/mas-secciones.tsx`), link a cada ficha y al catálogo. Sin productos con foto, no aparece |
 | Personalizá · Cómo comprar | Fijos. Las **bases** de "Personalizá" salen del grupo `base` (`obtenerValoresGrupo`) |
 | Preguntas frecuentes | `Disclosure` por pregunta. **Sólo lo que la tienda ya sabe**: no nombra medios de pago ni plazos (la demora usa `SITIO.demoraDias` si está cargada) |
 | Contacto | Botón de WhatsApp, horario, retiro y envíos |
