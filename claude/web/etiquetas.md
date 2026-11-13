@@ -44,9 +44,9 @@ cliente sólo arma el objeto `{ grupo: [slugs] }`. Detalle y SQL en
 - **La categoría va arriba de todo**, como `RadioGroup` (una sola a la vez, las hijas con
   sangría): navega con `conCambios(filtros, { cat })`. En el cajón del celular se acumula
   con el resto hasta "Ver resultados" y cuenta en el número del botón.
-- **Cada grupo es desplegable** (`Disclosure`): Categoría arranca abierta; las facetas,
-  cerradas salvo que tengan algo elegido, y el título muestra cuántos hay elegidos
-  ("Base (1)") para que un grupo cerrado no esconda un filtro activo. Por eso **la
+- **Cada grupo es desplegable** (`Disclosure`) y **todos arrancan cerrados**, incluida
+  Categoría. El título muestra lo elegido ("Categoría (Escarapelas)", "Base (1)") para
+  que un grupo cerrado no esconda un filtro activo. Por eso **la
   columna no tiene scroll propio ni es sticky**: entra entera y acompaña la página.
 - **Las facetas vienen de `facetas_productos`, nunca se cuentan en el cliente** con los
   productos de la página actual: esos son 24 de 300 y los conteos saldrían mal.

@@ -10,27 +10,18 @@ import type { Categoria, Faceta } from "@/lib/catalogo/lecturas";
 const TODAS = "todas";
 
 /**
- * Cada grupo de filtros es desplegable. El título dice cuántos hay elegidos, así un
- * grupo cerrado no esconde un filtro activo. Ver claude/web/etiquetas.md#panel-de-filtros
+ * Cada grupo de filtros es desplegable y arranca cerrado. El título dice qué hay elegido
+ * ("Base (1)", "Categoría (Escarapelas)"), así un grupo cerrado no esconde un filtro
+ * activo. Ver claude/web/etiquetas.md#panel-de-filtros
  */
-function Desplegable({
-  titulo,
-  elegidos = 0,
-  abierto,
-  children,
-}: {
-  titulo: string;
-  elegidos?: number;
-  abierto: boolean;
-  children: React.ReactNode;
-}) {
+function Desplegable({ titulo, elegido, children }: { titulo: string; elegido?: string; children: React.ReactNode }) {
   return (
-    <Disclosure defaultExpanded={abierto} className="py-4 first:pt-0 last:pb-0">
+    <Disclosure className="py-4 first:pt-0 last:pb-0">
       <Disclosure.Heading>
         <Disclosure.Trigger className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold">
           <span>
             {titulo}
-            {elegidos > 0 && <span className="ml-1.5 font-normal text-muted">({elegidos})</span>}
+            {elegido && <span className="ml-1.5 font-normal text-muted">({elegido})</span>}
           </span>
           <Disclosure.Indicator />
         </Disclosure.Trigger>
@@ -42,7 +33,7 @@ function Desplegable({
   );
 }
 
-// Categorías arriba de todo y abiertas: una sola a la vez (Escarapelas, Prendedores…).
+// Categorías arriba de todo: una sola a la vez (Escarapelas, Prendedores…).
 // Las hijas, con sangría debajo de su madre.
 function Categorias({
   categorias,
@@ -62,7 +53,7 @@ function Categorias({
     ]),
   ];
   return (
-    <Desplegable titulo="Categoría" abierto>
+    <Desplegable titulo="Categoría" elegido={opciones.find((o) => o.slug === actual)?.nombre}>
       <RadioGroup
         name="cat"
         aria-label="Categoría"
@@ -87,9 +78,9 @@ function Categorias({
 
 const VISIBLES = 5;
 
-// Facetas del RPC facetas_productos: nunca se cuentan en el cliente. Arrancan cerradas
-// salvo que tengan algo elegido. Grupos largos muestran 5 opciones y "Ver más"; si hay
-// una elegida entre las ocultas, arranca expandido (si no, el filtro activo no se ve).
+// Facetas del RPC facetas_productos: nunca se cuentan en el cliente. Grupos largos
+// muestran 5 opciones y "Ver más"; si hay una elegida entre las ocultas, la lista arranca
+// expandida (si no, el filtro activo no se ve al abrir el grupo).
 function GrupoFaceta({
   faceta: f,
   valores,
@@ -104,7 +95,7 @@ function GrupoFaceta({
   const opciones = expandido ? f.opciones : f.opciones.slice(0, VISIBLES);
 
   return (
-    <Desplegable titulo={f.nombre} elegidos={valores.length} abierto={valores.length > 0}>
+    <Desplegable titulo={f.nombre} elegido={valores.length ? String(valores.length) : undefined}>
       <div className="flex flex-col gap-3">
         <CheckboxGroup name={f.slug} aria-label={f.nombre} value={valores} onChange={(v) => onCambio(f.slug, v)} className="flex flex-col gap-2.5">
           {opciones.map((o) => (

@@ -55,9 +55,11 @@ piden quitarla. **El botón de enviar queda deshabilitado mientras haya avisos**
 
 1. `rpc('crear_pedido', { p_items, p_nombre, p_notas, p_cupon })`. Si falla, el `message` va
    directo a un `toast.danger` (los textos están escritos para el cliente).
-2. Se vacía el carrito y se muestra la confirmación con el número de pedido.
-3. **WhatsApp se abre con un link que el usuario toca**, no con `window.open` después
-   del `await`: los navegadores bloquean popups que no salen directo de un clic.
+2. Se vacía el carrito y **WhatsApp se abre al instante en la misma pestaña**
+   (`window.location.assign`). No con `window.open`: una ventana nueva después del
+   `await` la bloquean los navegadores; navegar la pestaña no. En el celular abre la app.
+3. Detrás queda la confirmación ("Abriendo WhatsApp…") con el botón, sólo de respaldo
+   por si el navegador no lo abrió. No es un paso más para el cliente.
 4. El mensaje (`mensajeWhatsapp`) usa las líneas y el total **que devolvió
    `crear_pedido`**, no los de la cotización previa. Tono de la marca: "¡Hola! Soy Ana y
    quiero hacer el pedido Nº 12:", una línea por producto (`2 × Modelo · Base gancho —

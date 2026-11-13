@@ -58,9 +58,14 @@ export function PaginaCarrito() {
       toast.danger(e.message || "No pudimos crear el pedido");
       return;
     }
-    setPedido({ ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim() });
+    const creado: PedidoConDatos = { ...(data as unknown as PedidoCreado), nombre: nombre.trim(), notas: notas.trim() };
+    setPedido(creado);
     carrito.vaciar();
     fijarCupon("");
+    // WhatsApp se abre ya, en la MISMA pestaña: una ventana nueva (window.open) después
+    // del await la bloquean los navegadores; navegar la pestaña no. En el celular abre la
+    // app. La confirmación queda de respaldo por si no abrió.
+    if (SITIO.whatsapp) window.location.assign(enlaceWhatsapp(mensajeWhatsapp(creado)));
   }
 
   return (
@@ -329,14 +334,14 @@ function Confirmacion({ pedido }: { pedido: PedidoConDatos }) {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-tarjeta border border-border bg-surface px-6 py-12 text-center">
       <CircleCheck aria-hidden className="size-10" />
-      <h2 className="text-2xl font-semibold">Pedido #{pedido.numero} registrado</h2>
+      <h2 className="font-serif text-2xl">Pedido Nº {pedido.numero} registrado</h2>
       <p className="text-muted">
         Total {formatearPrecio(pedido.total)}.{" "}
-        {enlace ? "Envialo por WhatsApp para que lo confirmemos." : "Nos vamos a comunicar para confirmarlo."}
+        {enlace ? "Abriendo WhatsApp… Si no se abrió, tocá el botón." : "Nos vamos a comunicar para confirmarlo."}
       </p>
-      {/* Link y no window.open después del await: los navegadores bloquean popups que no salen de un clic. */}
+      {/* Respaldo: enviar() ya navegó a WhatsApp; esto queda si el navegador no lo abrió. */}
       {enlace && (
-        <a href={enlace} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "lg" })}>
+        <a href={enlace} className={buttonVariants({ size: "lg" })}>
           <Comment />
           Abrir WhatsApp
         </a>
