@@ -1,26 +1,22 @@
--- Fase 1 del punto de venta: roles de staff, cajas, historial de stock y código de barras.
--- Plan en docs/plan-punto-de-venta.md (fase 1); reglas en claude/supabase/seguridad-rls.md
--- y claude/supabase/variantes-y-stock.md#historial-de-stock
+-- Personal del panel e historial de stock.
+-- Reglas en claude/supabase/seguridad-rls.md y claude/supabase/variantes-y-stock.md#historial-de-stock
 
 -- ===========================================================================
--- 1. Staff con roles (reemplaza a `admins`)
+-- 1. Staff (reemplaza a `admins`)
 -- ===========================================================================
--- Los clientes también van a ser usuarios de Auth (fase 2): estar logueado no da ningún
--- permiso. Lo que da permisos es tener una fila activa en `staff`.
-
-create type public.rol_staff as enum ('admin', 'encargado', 'vendedor');
+-- Estar logueado no da ningún permiso: lo que da permisos es tener una fila ACTIVA en
+-- `staff`. Todo el staff es administrador del panel (no hay roles).
 
 create table public.staff (
   user_id   uuid primary key references auth.users (id) on delete cascade,
   email     text not null,                         -- copia para listar en el panel
   nombre    text not null check (length(trim(nombre)) between 1 and 80),
-  rol       public.rol_staff not null,
   activo    boolean not null default true,
   creado_en timestamptz not null default now()
 );
 
-insert into public.staff (user_id, email, nombre, rol)
-select a.user_id, u.email, coalesce(nullif(split_part(u.email, '@', 1), ''), 'Admin'), 'admin'
+insert into public.staff (user_id, email, nombre)
+select a.user_id, u.email, coalesce(nullif(split_part(u.email, '@', 1), ''), 'Admin')
 from public.admins a
 join auth.users u on u.id = a.user_id;
 
@@ -31,33 +27,9 @@ language sql stable security definer
 set search_path = ''
 as $$
   select exists (
-    select 1 from public.staff where user_id = (select auth.uid()) and rol = 'admin' and activo
+    select 1 from public.staff where user_id = (select auth.uid()) and activo
   )
 $$;
-
--- Rol del usuario actual, o null si no es staff activo.
-create function private.rol_staff()
-returns public.rol_staff
-language sql stable security definer
-set search_path = ''
-as $$
-  select rol from public.staff where user_id = (select auth.uid()) and activo
-$$;
-
-create function private.es_staff()
-returns boolean
-language sql stable security definer
-set search_path = ''
-as $$
-  select (select private.rol_staff()) is not null
-$$;
-
--- Para el POS (y la web): "¿qué rol tengo?". null = no es staff.
-create function public.mi_rol()
-returns text
-language sql stable
-set search_path = ''
-as $$ select (select private.rol_staff())::text $$;
 
 -- Un usuario por email. Definer: lee auth.users. En `private`: la API no la expone, sólo
 -- la llaman funciones que antes verificaron que quien pregunta es admin.
@@ -69,9 +41,9 @@ as $$
   select id from auth.users where lower(email) = lower(trim(p_email)) limit 1
 $$;
 
--- Alta o cambio de rol desde el panel, sin la secret key: el usuario tiene que existir
--- (registrado en la web o creado con el script). Invoker: la escritura pasa por RLS.
-create function public.asignar_staff(p_email text, p_nombre text, p_rol public.rol_staff, p_activo boolean default true)
+-- Alta desde el panel, sin la secret key: el usuario tiene que existir (creado con el
+-- script o registrado en Auth). Invoker: la escritura pasa por RLS.
+create function public.asignar_staff(p_email text, p_nombre text, p_activo boolean default true)
 returns uuid
 language plpgsql
 set search_path = ''
@@ -86,10 +58,10 @@ begin
   if v_id is null then
     raise exception 'No hay ningún usuario con el email %: primero tiene que crear su cuenta', trim(p_email);
   end if;
-  insert into public.staff (user_id, email, nombre, rol, activo)
-  values (v_id, lower(trim(p_email)), trim(p_nombre), p_rol, p_activo)
+  insert into public.staff (user_id, email, nombre, activo)
+  values (v_id, lower(trim(p_email)), trim(p_nombre), p_activo)
   on conflict (user_id) do update
-    set email = excluded.email, nombre = excluded.nombre, rol = excluded.rol, activo = excluded.activo;
+    set email = excluded.email, nombre = excluded.nombre, activo = excluded.activo;
   return v_id;
 end;
 $$;
@@ -101,10 +73,10 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if old.rol = 'admin' and old.activo
-     and (tg_op = 'DELETE' or new.rol <> 'admin' or not new.activo)
+  if old.activo
+     and (tg_op = 'DELETE' or not new.activo)
      and not exists (
-       select 1 from public.staff where rol = 'admin' and activo and user_id <> old.user_id
+       select 1 from public.staff where activo and user_id <> old.user_id
      ) then
     raise exception 'Tiene que quedar al menos un admin activo';
   end if;
@@ -128,36 +100,15 @@ create policy "admin borra" on public.staff for delete to authenticated using ((
 drop table public.admins;
 
 -- ===========================================================================
--- 2. Cajas
--- ===========================================================================
--- Cada caja es un punto de venta de ARCA propio: así la numeración fiscal de cada caja es
--- independiente y dos cajas nunca piden el mismo número (ver el plan, facturación).
-create table public.cajas (
-  id          uuid primary key default gen_random_uuid(),
-  nombre      text not null unique check (length(trim(nombre)) between 1 and 40),
-  punto_venta int not null unique check (punto_venta between 1 and 99998),
-  activa      boolean not null default true,
-  creado_en   timestamptz not null default now()
-);
-
-grant select, insert, update, delete on public.cajas to authenticated;
-alter table public.cajas enable row level security;
-create policy "staff ve" on public.cajas for select to authenticated using ((select private.es_staff()));
-create policy "admin inserta" on public.cajas for insert to authenticated with check ((select private.es_admin()));
-create policy "admin actualiza" on public.cajas for update to authenticated
-  using ((select private.es_admin())) with check ((select private.es_admin()));
-create policy "admin borra" on public.cajas for delete to authenticated using ((select private.es_admin()));
-
--- ===========================================================================
--- 3. Historial de stock
+-- 2. Historial de stock
 -- ===========================================================================
 -- Cada cambio de producto_variantes.stock deja una fila. Lo escribe un TRIGGER, no cada
--- función: así ningún camino (panel, pedido web, venta en el local, SQL a mano) puede
--- saltearse el registro. Quien cambia el stock dice el motivo con
---   set_config('app.motivo_stock', 'venta_local', true)   -- y app.referencia_stock / app.detalle_stock
+-- función: así ningún camino (panel, pedido, SQL a mano) puede saltearse el registro.
+-- Quien cambia el stock dice el motivo con
+--   set_config('app.motivo_stock', 'pedido', true)   -- y app.referencia_stock / app.detalle_stock
 -- (local a la transacción); sin motivo, queda como 'ajuste'.
 
-create type public.motivo_stock as enum ('alta', 'ajuste', 'ingreso', 'pedido_web', 'venta_local', 'devolucion');
+create type public.motivo_stock as enum ('alta', 'ajuste', 'ingreso', 'pedido');
 
 create table public.movimientos_stock (
   id               bigint generated always as identity primary key,
@@ -166,7 +117,7 @@ create table public.movimientos_stock (
   cantidad         int not null check (cantidad <> 0),   -- + entra, − sale
   stock_resultante int not null,
   motivo           public.motivo_stock not null,
-  referencia       uuid,                                  -- pedido, venta o devolución
+  referencia       uuid,                                  -- pedido
   detalle          text,
   usuario_id       uuid default auth.uid(),
   creado_en        timestamptz not null default now()
@@ -175,11 +126,11 @@ create index movimientos_stock_variante_idx on public.movimientos_stock (variant
 create index movimientos_stock_producto_idx on public.movimientos_stock (producto_id, creado_en desc);
 create index movimientos_stock_referencia_idx on public.movimientos_stock (referencia);
 
--- Sólo lectura por la API (admin y encargado). Nadie inserta por HTTP: sólo el trigger.
+-- Sólo lectura por la API, sólo admin. Nadie inserta por HTTP: sólo el trigger.
 grant select on public.movimientos_stock to authenticated;
 alter table public.movimientos_stock enable row level security;
-create policy "admin y encargado leen" on public.movimientos_stock for select to authenticated
-  using ((select private.rol_staff()) in ('admin', 'encargado'));
+create policy "admin lee" on public.movimientos_stock for select to authenticated
+  using ((select private.es_admin()));
 
 create function private.registrar_movimiento_stock()
 returns trigger
@@ -212,22 +163,14 @@ after insert or update of stock on public.producto_variantes
 for each row execute function private.registrar_movimiento_stock();
 
 -- ===========================================================================
--- 4. Código de barras por variante
+-- 3. guardar_variantes: stock sin pisar pedidos confirmados en el medio
 -- ===========================================================================
--- El lector USB "tipea" el código: el POS lo busca exacto. El SKU sigue siendo el código
--- interno. Único entre todas las variantes de todos los productos.
-alter table public.producto_variantes
-  add column codigo_barras text unique check (codigo_barras ~ '^[0-9A-Za-z-]{4,32}$');
-
--- ===========================================================================
--- 5. guardar_variantes: código de barras y stock sin pisar ventas
--- ===========================================================================
--- Antes el panel mandaba el stock que leyó al abrir el editor y lo pisaba. Con ventas en
--- el local en paralelo, eso "deshacía" ventas. Ahora cada fila trae `stock_original` (lo
--- que leyó el panel):
+-- Antes el panel mandaba el stock que leyó al abrir el editor y lo pisaba: si en el medio
+-- se confirmaba un pedido, el guardado lo "deshacía". Ahora cada fila trae
+-- `stock_original` (lo que leyó el panel):
 --   * si el stock que manda es igual al original, el admin no lo tocó: queda el actual;
---   * si lo cambió pero el stock real ya no es el original, alguien vendió o cargó en el
---     medio: se rechaza todo y el panel pide recargar.
+--   * si lo cambió pero el stock real ya no es el original, algo lo movió en el medio:
+--     se rechaza todo y el panel pide recargar.
 create or replace function public.guardar_variantes(p_producto_id uuid, p_variantes jsonb)
 returns void
 language plpgsql
@@ -265,7 +208,7 @@ begin
     v_claves := v_claves || v_clave;
   end loop;
 
-  -- 2. Borrar primero las que no vienen (libera sus SKU y códigos de barras).
+  -- 2. Borrar primero las que no vienen (libera sus SKU).
   delete from public.producto_variantes
   where producto_id = p_producto_id and clave <> all (v_claves);
 
@@ -276,7 +219,7 @@ begin
     v_stock := coalesce((v_item ->> 'stock')::int, 0);
     v_original := (v_item ->> 'stock_original')::int;
 
-    -- Bloquea la fila: una venta en paralelo espera a que termine este guardado.
+    -- Bloquea la fila: una confirmación de pedido en paralelo espera a que termine.
     select stock into v_actual
     from public.producto_variantes
     where producto_id = p_producto_id and clave = v_clave
@@ -290,12 +233,11 @@ begin
       end if;
     end if;
 
-    insert into public.producto_variantes (producto_id, clave, sku, codigo_barras, precio, stock, activa, orden)
+    insert into public.producto_variantes (producto_id, clave, sku, precio, stock, activa, orden)
     values (
       p_producto_id,
       v_clave,
       nullif(trim(v_item ->> 'sku'), ''),
-      nullif(trim(v_item ->> 'codigo_barras'), ''),
       (v_item ->> 'precio')::numeric,
       v_stock,
       coalesce((v_item ->> 'activa')::boolean, true),
@@ -303,7 +245,6 @@ begin
     )
     on conflict (producto_id, clave) do update
       set sku = excluded.sku,
-          codigo_barras = excluded.codigo_barras,
           precio = excluded.precio,
           stock = excluded.stock,
           activa = excluded.activa,
@@ -320,7 +261,7 @@ end;
 $$;
 
 -- ===========================================================================
--- 6. cambiar_estado_pedido: registra sus movimientos (igual que antes en lo demás)
+-- 4. cambiar_estado_pedido: registra sus movimientos (igual que antes en lo demás)
 -- ===========================================================================
 create or replace function public.cambiar_estado_pedido(p_pedido_id uuid, p_estado public.estado_pedido)
 returns void
@@ -350,7 +291,7 @@ begin
   v_descontar := p_estado in ('confirmado', 'entregado') and v_actual in ('pendiente', 'cancelado');
   v_reponer   := p_estado in ('pendiente', 'cancelado') and v_actual in ('confirmado', 'entregado');
 
-  perform set_config('app.motivo_stock', 'pedido_web', true);
+  perform set_config('app.motivo_stock', 'pedido', true);
   perform set_config('app.referencia_stock', p_pedido_id::text, true);
   perform set_config('app.detalle_stock', 'Pedido #' || v_numero || ': ' || p_estado::text, true);
 
@@ -400,19 +341,13 @@ $$;
 -- Grants de funciones
 -- ===========================================================================
 revoke execute on function
-  private.rol_staff(),
-  private.es_staff(),
   private.usuario_por_email(text),
   private.validar_ultimo_admin(),
   private.registrar_movimiento_stock(),
-  public.mi_rol(),
-  public.asignar_staff(text, text, public.rol_staff, boolean)
+  public.asignar_staff(text, text, boolean)
 from public, anon;
 
 grant execute on function
-  private.rol_staff(),
-  private.es_staff(),
   private.usuario_por_email(text),
-  public.mi_rol(),
-  public.asignar_staff(text, text, public.rol_staff, boolean)
+  public.asignar_staff(text, text, boolean)
 to authenticated;

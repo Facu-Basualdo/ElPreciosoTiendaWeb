@@ -8,12 +8,12 @@ import { EsqueletoFicha } from "@/components/tienda/esqueletos";
 import { Galeria } from "@/components/tienda/galeria";
 import { SelectorCombo } from "@/components/tienda/selector-combo";
 import { obtenerCombo, obtenerSlugsCombos } from "@/lib/catalogo/combos";
+import { paramsDeSlugs } from "@/lib/catalogo/lecturas";
 import { SITIO } from "@/lib/sitio";
 import { urlPublica } from "@/lib/supabase/storage";
 
 export async function generateStaticParams() {
-  const slugs = await obtenerSlugsCombos();
-  return slugs.map((slug) => ({ slug }));
+  return paramsDeSlugs(await obtenerSlugsCombos());
 }
 
 export async function generateMetadata(props: PageProps<"/combo/[slug]">): Promise<Metadata> {

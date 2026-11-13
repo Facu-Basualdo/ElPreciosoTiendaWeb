@@ -21,8 +21,8 @@ después de leer la sesión y `guardarBanner(id, nuevo: true, …)` inserta con 
 - Escritorio 3:1 (obligatoria) y celular 4:5 (opcional; sin ella, la tienda recorta el
   centro de la de escritorio). Ambas con `SubidaImagen` y recorte obligatorio.
 - **El color del texto es un dato del banner (`texto_claro`)**, no la posición en el
-  carrusel. Antes el carrusel alternaba negro y blanco por índice, que sólo servía para
-  las imágenes de demo.
+  carrusel: alternar negro y blanco por índice sólo sirve si todas las imágenes están
+  armadas para eso.
 - **El destino del botón se elige, no se escribe**: `DestinoBanner` ofrece "Todos los
   productos", ofertas, combos y cada categoría; "Otra página" deja pegar un link. Un
   link pegado de la propia tienda (`https://dominio/p/x`) se guarda como ruta (`/p/x`)

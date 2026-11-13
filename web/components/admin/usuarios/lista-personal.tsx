@@ -4,12 +4,11 @@ import { TrashBin } from "@gravity-ui/icons";
 import { AlertDialog, Button, Chip, Switch, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { cambiarActivo, cambiarRol, quitarPersona } from "@/app/admin/(panel)/usuarios/acciones";
-import type { PersonaStaff, RolStaff } from "@/lib/admin/staff";
-import { SelectorRol } from "./selector-rol";
+import { cambiarActivo, quitarPersona } from "@/app/admin/(panel)/usuarios/acciones";
+import type { PersonaStaff } from "@/lib/admin/staff";
 
 // Lista y no Table: la Table de HeroUI es un grid de React Aria que captura flechas y
-// espacio, y pelea con el Select de cada fila (igual que el editor de variantes).
+// espacio, y pelea con los controles de cada fila (igual que el editor de variantes).
 export function ListaPersonal({ personas, yo }: { personas: PersonaStaff[]; yo: string | undefined }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
@@ -45,15 +44,6 @@ export function ListaPersonal({ personas, yo }: { personas: PersonaStaff[]; yo: 
               </p>
               <p className="text-sm text-muted">{p.email}</p>
             </div>
-            <div className="w-44">
-              <SelectorRol
-                oculta
-                etiqueta={`Rol de ${p.nombre}`}
-                valor={p.rol}
-                isDisabled={pendiente}
-                onChange={(rol: RolStaff) => ejecutar(() => cambiarRol(p.userId, rol), `${p.nombre}: rol cambiado`)}
-              />
-            </div>
             <Switch
               size="sm"
               isSelected={p.activo}
@@ -84,8 +74,8 @@ export function ListaPersonal({ personas, yo }: { personas: PersonaStaff[]; yo: 
               <AlertDialog.Heading>¿Quitar a {quitar?.nombre}?</AlertDialog.Heading>
             </AlertDialog.Header>
             <AlertDialog.Body>
-              Deja de poder entrar al panel y a la caja. Su cuenta no se borra: si compra en la tienda, sigue pudiendo
-              hacerlo. Para un descanso temporal, mejor apagá «Puede entrar».
+              Deja de poder entrar al panel. Su cuenta no se borra. Para un descanso temporal, mejor apagá «Puede
+              entrar».
             </AlertDialog.Body>
             <AlertDialog.Footer>
               <Button variant="ghost" onPress={() => setQuitar(null)}>

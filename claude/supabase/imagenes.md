@@ -66,18 +66,13 @@ Storage (`storage.from('catalogo').remove([...])`) y después la fila. Si el bor
 Storage falla, no se borra la fila: un archivo huérfano es invisible, una fila que
 apunta a un archivo inexistente es una imagen rota en la tienda.
 
-## Imágenes de demo
+## Carga por fuera del panel
 
-`web/scripts/sembrar-imagenes.mjs` genera ilustraciones en blanco y negro (SVG →
-WebP con `sharp`, en los tamaños de la tabla de arriba) para cada producto sin
-imágenes y crea los dos banners si no hay ninguno. Es idempotente; con `--regenerar`
-borra archivos y filas de todos los productos y los vuelve a generar. **Las imágenes no
-llevan texto**: el nombre ya está en la tarjeta y escrito en la imagen se superpone.
-Después de regenerar hay que invalidar la caché (ver
+Toda subida normal pasa por el panel con sesión de admin. Un script que suba imágenes
+sin sesión (como la importación de fotos del plan) necesita `SUPABASE_SECRET_KEY`, leída
+de `web/.env` y sólo en local: la app no la importa y no va a Vercel. **Después de
+cargar por fuera hay que invalidar la caché** (ver
 [cache-y-revalidacion](../web/cache-y-revalidacion.md#cambios-hechos-fuera-de-la-app)).
-
-**Junto con `crear-admin.mjs`, es lo único que usa `SUPABASE_SECRET_KEY`**, leída de `web/.env` y sólo en local:
-sube a Storage sin sesión de admin. La app no la importa y no va a Vercel.
 
 ## Ver también
 

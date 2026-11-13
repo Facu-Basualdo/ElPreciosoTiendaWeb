@@ -28,17 +28,17 @@ import { SelectorEtiquetas } from "./selector-etiquetas";
 // - sin grupos = variante única (el monitor sin opciones)
 // - guardar manda TODAS las filas a guardar_variantes (un solo RPC)
 // - si se pierden combinaciones con stock, se confirma antes
-// - cada fila manda el stock que se leyó al abrir (stock_original): si el local vendió
-//   en el medio, la base no lo pisa
+// - cada fila manda el stock que se leyó al abrir (stock_original): si se confirmó un
+//   pedido en el medio, la base no lo pisa
 
 const MAX_GRUPOS = 3;
 const MAX_COMBINACIONES = 100;
 const formatoPrecio = { style: "currency", currency: SITIO.moneda, maximumFractionDigits: 0 } as const;
 
-type Valores = { sku: string; codigoBarras: string; precio: number | null; stock: number; activa: boolean };
-const VACIO: Valores = { sku: "", codigoBarras: "", precio: null, stock: 0, activa: true };
+type Valores = { sku: string; precio: number | null; stock: number; activa: boolean };
+const VACIO: Valores = { sku: "", precio: null, stock: 0, activa: true };
 const claveDe = (ids: string[]) => [...ids].sort().join("|");
-const COLUMNAS ="grid grid-cols-[1.4fr_1fr_1.1fr_1fr_0.7fr_auto] gap-3";
+const COLUMNAS = "grid grid-cols-[1.4fr_1fr_1fr_0.7fr_auto] gap-3";
 
 export function EditorVariantes({
   productoId,
@@ -68,7 +68,7 @@ export function EditorVariantes({
     Object.fromEntries(
       variantes.map((v) => [
         claveDe(v.etiquetas),
-        { sku: v.sku ?? "", codigoBarras: v.codigoBarras ?? "", precio: v.precio, stock: v.stock, activa: v.activa },
+        { sku: v.sku ?? "", precio: v.precio, stock: v.stock, activa: v.activa },
       ]),
     ),
   );
@@ -106,7 +106,6 @@ export function EditorVariantes({
       return {
         etiquetas: ids,
         sku: v.sku.trim() || null,
-        codigo_barras: v.codigoBarras.trim() || null,
         precio: v.precio,
         stock: v.stock,
         stock_original: stockLeido.get(claveDe(ids)) ?? null,
@@ -222,11 +221,10 @@ export function EditorVariantes({
           {/* Grilla y no Table: la Table de HeroUI es un grid de React Aria que captura
               flechas y espacio, y pelea con los campos editables de adentro. */}
           <div className="overflow-x-auto scrollbar-thin">
-            <div role="list" className="flex min-w-[800px] flex-col divide-y divide-separator rounded-xl border border-border">
+            <div role="list" className="flex min-w-[640px] flex-col divide-y divide-separator rounded-xl border border-border">
               <div className={`${COLUMNAS} bg-surface-secondary px-3 py-2 text-xs font-medium text-muted`}>
                 <span>Combinación</span>
                 <span>SKU</span>
-                <span>Código de barras</span>
                 <span>Precio (vacío = base)</span>
                 <span>Stock</span>
                 <span>Activa</span>
@@ -239,14 +237,6 @@ export function EditorVariantes({
                     <span className="text-sm font-medium">{nombre}</span>
                     <TextField aria-label={`SKU de ${nombre}`} value={v.sku} onChange={(sku) => fijar(ids, { sku })}>
                       <Input className="font-mono text-xs" />
-                    </TextField>
-                    {/* Con el cursor acá, el lector de códigos "tipea" el código y Enter. */}
-                    <TextField
-                      aria-label={`Código de barras de ${nombre}`}
-                      value={v.codigoBarras}
-                      onChange={(codigoBarras) => fijar(ids, { codigoBarras })}
-                    >
-                      <Input className="font-mono text-xs" placeholder="Opcional" />
                     </TextField>
                     <NumberField
                       aria-label={`Precio de ${nombre}`}

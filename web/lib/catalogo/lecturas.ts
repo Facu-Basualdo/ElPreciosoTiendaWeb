@@ -391,6 +391,15 @@ export async function obtenerProducto(slug: string): Promise<FichaProducto | nul
   };
 }
 
+/**
+ * Params de `generateStaticParams` a partir de slugs. Con Cache Components la lista no
+ * puede volver vacía (el build falla), y una tienda recién creada no tiene productos ni
+ * combos: entonces va un slug imposible (los reales cumplen ^[a-z0-9-]+$) que da 404.
+ */
+export function paramsDeSlugs(slugs: string[]): { slug: string }[] {
+  return slugs.length ? slugs.map((slug) => ({ slug })) : [{ slug: "_" }];
+}
+
 export async function obtenerSlugsPublicados(): Promise<string[]> {
   "use cache";
   cacheLife("max");

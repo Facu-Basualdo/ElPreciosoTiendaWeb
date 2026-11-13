@@ -28,11 +28,3 @@ Thumbs.db
 .mcp.json
 .claude/settings.local.json
 
-# Punto de venta (Python)
-pos/.venv/
-pos/dist/
-__pycache__/
-.pytest_cache/
-.ruff_cache/
-# La escribe empaquetado/construir.py con la URL y la key públicas antes de armar el .exe
-pos/src/pos/_config_empaquetado.py

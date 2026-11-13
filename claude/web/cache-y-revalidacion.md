@@ -58,9 +58,9 @@ Las facetas llevan `facetas` **y** `productos`: publicar un producto cambia los 
 ## Cambios hechos fuera de la app
 
 **Si los datos se tocan por SQL, por la CLI o con un script, ningún tag se invalida** y
-la tienda sigue mostrando lo anterior. Ya pasó: se regeneraron las imágenes de demo con
-`scripts/sembrar-imagenes.mjs --regenerar` y el build siguiente siguió sirviendo las
-fichas con los paths viejos (archivos ya borrados).
+la tienda sigue mostrando lo anterior. Ya pasó: se regeneraron imágenes con un script y
+el build siguiente siguió sirviendo las fichas con los paths viejos (archivos ya
+borrados). Aplica igual a la importación de fotos del plan.
 
 - En local, **la caché de `'use cache'` sobrevive entre builds** en `web/.next/cache`:
   después de tocar datos por fuera, `rm -rf web/.next` antes de `next build`.

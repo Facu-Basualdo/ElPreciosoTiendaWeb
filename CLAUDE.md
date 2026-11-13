@@ -1,18 +1,18 @@
-# CatalogoTienda
+# El Precioso — tienda web
 
-Tienda con catálogo genérico (ropa, electrónica, lo que sea), proyecto de portfolio.
-Los productos se filtran por **etiquetas agrupadas** (`Tasa de refresco: 144 Hz`,
-`Material: 100% algodón`), tienen **variantes con stock** (talle × color), varias
-imágenes y una descripción rica con tablas. Se compra con un carrito que termina en un
-pedido por WhatsApp, con promociones, combos y cupones. Un dashboard administra todo.
-Next.js 16 + HeroUI v3 en Vercel, datos e imágenes en Supabase.
+Tienda online de **El Precioso** (escarapelas y prendedores patrios artesanales,
+Resistencia, Chaco). Sólo la tienda web: nació de CatalogoTienda, que fue la base y ya
+no se sincroniza. Los productos se filtran por **etiquetas agrupadas** (`Fecha patria:
+25 de Mayo`, `Dije: Sol`), la **base** (cómo se prende) es la variante con su propio
+precio, tienen varias imágenes y una descripción rica. Se compra con un carrito que
+termina en un pedido por WhatsApp. Un panel simple, usable desde el celular, administra
+todo. Next.js 16 + HeroUI v3 en Vercel, datos e imágenes en Supabase.
 
-**Estado:** hechos la base, el modelo de datos con demo, el catálogo público con el
-rediseño estilo compragamer, el carrito con pedido por WhatsApp, el dashboard de
-completo (productos, pedidos, promociones, combos, cupones, banners, etiquetas y
-categorías). Falta la puesta en producción (SEO, Vercel): orden y diseño en
-[docs/plan-implementacion.md](docs/plan-implementacion.md). En curso, el **punto de venta de
-escritorio** (`pos/`): fases 0 y 1 hechas (roles de staff, cajas, historial de stock), plan en [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md). Las notas de `claude/`
+**Estado:** heredado y funcionando el catálogo, el carrito con pedido por WhatsApp y el
+panel completo. Fase 0 del plan hecha (base nueva con la taxonomía de El Precioso, poda
+del punto de venta). Sigue la fase 1 (marca): orden y diseño en
+[docs/plan-el-precioso.md](docs/plan-el-precioso.md). **Mientras dure la migración, si el
+plan choca con una nota o con este archivo, manda el plan.** Las notas de `claude/`
 describen lo construido; si el código se aparta, gana el código y la nota se corrige
 con `/docs`.
 
@@ -39,14 +39,13 @@ grep -rn "updateTag" web/             # después, el código
 |---|---|---|
 | `web/` | Next.js 16 (App Router, Cache Components) · HeroUI v3 · Tailwind v4 · `@supabase/ssr` · TipTap v3 · Embla | [claude/web/INDICE.md](claude/web/INDICE.md) |
 | `supabase/` | Postgres 17 · RLS · Storage · funciones RPC en SQL · Supabase CLI | [claude/supabase/INDICE.md](claude/supabase/INDICE.md) |
-| `pos/` | Python 3.12 · PySide6 (Qt) · supabase-py · PyInstaller (`Caja.exe` portable) | [claude/pos/INDICE.md](claude/pos/INDICE.md) |
 
 ## Notas transversales
 
 | Nota | De qué trata |
 |---|---|
 | [Arquitectura](claude/general/arquitectura.md) | Tres caminos de datos (catálogo cacheado sin cookies · dashboard con sesión · subida directa a Storage) · sin secret key en la app ni API propia · la seguridad es grants + RLS, no el proxy |
-| [Entorno y deploy](claude/general/entorno-y-deploy.md) | Qué variable va a Vercel y cuál es sólo local (`DATABASE_URL`, secret key) · Root Directory `web` · las migraciones NO las aplica el build: `db push` antes del deploy · un solo proyecto Supabase con datos de demo |
+| [Entorno y deploy](claude/general/entorno-y-deploy.md) | Qué variable va a Vercel y cuál es sólo local (`DATABASE_URL`, secret key) · Root Directory `web` · las migraciones NO las aplica el build: `db push` antes del deploy · un solo proyecto Supabase, el de producción |
 
 ## Features que cruzan áreas
 
@@ -87,19 +86,26 @@ grep -rn "updateTag" web/             # después, el código
   `<input>`, `<select>`, `<textarea>`, `<dialog>` crudos. Tabla de equivalencias y
   excepciones en [heroui](claude/web/heroui.md).
 - Botones con `onPress`, no `onClick` (React Aria).
-- **Estructura tipo compragamer.com en blanco y negro**: encabezado oscuro de dos filas,
-  página gris, contenido en superficies blancas `rounded-tarjeta`. El **único color es el
-  verde del ahorro**; rojo sólo para errores. De la referencia se toma la estructura,
-  nunca su marca. Nombre y logo genéricos desde `lib/sitio.ts` y `components/logo.tsx`.
-  Detalle en [tema-y-marca](claude/web/tema-y-marca.md).
-- Imágenes siempre con `next/image` y `sizes` explícito. Relación fija por uso (4:5,
-  3:1) con recorte obligatorio al subir.
+- **Identidad de El Precioso** (en implementación, fase 1 del plan): azul noche
+  `#0E1B2C`, celeste bandera `#74ACDF` como acento puntual, dorado sol `#FCBF49` para
+  botón principal y precio, fondo marfil `#F7F5F0`; Fraunces + Inter; acuarelas y trazos
+  sólo como detalle. Rojo sólo para errores. Reemplaza la estética blanco y negro
+  heredada que todavía describe [tema-y-marca](claude/web/tema-y-marca.md). Nombre y
+  datos de contacto sólo desde `lib/sitio.ts`; logo en `components/logo.tsx`.
+- HeroUI para todo lo interactivo; Aceternity UI sólo decorativo en la tienda, cargado
+  en componentes hoja y respetando `prefers-reduced-motion`.
+- Imágenes siempre con `next/image` y `sizes` explícito. Relación fija por uso con
+  recorte obligatorio al subir: producto **9:16** (1080×1920, como las fotos del
+  celular; en migración desde 4:5), banners 3:1.
 - UI en español rioplatense. Precios en ARS sin decimales, siempre con `formatearPrecio`
   (`lib/formato.ts`). El cliente nunca calcula totales: los muestra.
-- Mobile first: el catálogo se navega mayormente desde el celular. Los filtros en
-  mobile van en un `Drawer`, en desktop en una columna lateral.
+- Mobile first: la tienda se navega y el panel se usa mayormente desde el celular. Los
+  filtros en mobile van en un `Drawer`, en desktop en una columna lateral. La dueña no es
+  técnica: el panel tiene que ser obvio.
 - Código: TypeScript estricto. Identificadores de dominio en español (`producto`,
   `etiqueta`, `grupoEtiqueta`), APIs de librerías como vienen.
+- Antes de commitear: `npx tsc --noEmit` y `npx eslint .` en `web/` sin errores. En un
+  clon recién instalado, `npx next typegen` primero (genera `PageProps`/`LayoutProps`).
 - Tablas y columnas SQL en español, `snake_case`, plural (`productos`, `producto_imagenes`).
 
 ## Qué NO va en el grafo
@@ -107,5 +113,4 @@ grep -rn "updateTag" web/             # después, el código
 `claude/` es contexto permanente. Planes, investigaciones, auditorías y borradores van
 en `docs/` y se leen a demanda:
 
-- [docs/plan-implementacion.md](docs/plan-implementacion.md) — estado por fase y diseño de lo que falta (SEO, rendimiento, producción).
-- [docs/plan-punto-de-venta.md](docs/plan-punto-de-venta.md) — punto de venta de escritorio en Python (`.exe`, varias cajas, caja, facturación ARCA) y clientes unificados con login en la web.
+- [docs/plan-el-precioso.md](docs/plan-el-precioso.md) — estado por fase y diseño de lo que falta: marca, catálogo para prendedores (9:16, a pedido, importación de fotos), editor de fotos, panel simplificado, finanzas y producción.

@@ -60,13 +60,12 @@ Sección "Variantes" en la edición del producto:
    etiquetas (`Autocomplete` con "Crear «…»").
 2. Las combinaciones se generan solas (producto cartesiano, `editor-variantes.tsx`) en
    una grilla editable (no `Table`: ver [heroui](heroui.md#rsc)) y conservan los valores ya
-   cargados de cada combinación: SKU, código de barras (opcional: con el cursor en el
-   campo, el lector lo "tipea"), precio (vacío = precio base), stock (`NumberField`),
+   cargados de cada combinación: SKU, precio (vacío = precio base), stock (`NumberField`),
    activa (`Switch`). Tope de 100 combinaciones.
 3. "Aplicar stock a todas" para cargas masivas.
 4. Guardar manda la lista completa a `guardar_variantes` (un solo RPC, nunca updates
    sueltos), **con el `stock_original` de cada combinación** (el que se leyó al abrir).
-   Si el local vendió mientras tanto, la base no pisa la venta, o rechaza el guardado con
+   Si se confirmó un pedido mientras tanto, la base no pisa ese descuento, o rechaza el guardado con
    un mensaje que la acción pasa tal cual (ver
    [supabase](../supabase/variantes-y-stock.md#guardado-un-solo-rpc)). La página remonta
    el editor (`key` con `clave:stock`) después de cada guardado: el `stock_original`

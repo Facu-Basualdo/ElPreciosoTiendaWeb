@@ -6,8 +6,8 @@ se documenta en `claude/`; acá queda el orden del trabajo y el diseño de lo qu
 ## Objetivo
 
 Tienda de **El Precioso** (escarapelas y prendedores patrios artesanales, Resistencia,
-Chaco) construida sobre [CatalogoTienda](https://github.com/Facu-Basualdo/CatalogoTienda)
-(remoto `upstream`). Reemplaza a la landing estática
+Chaco) construida a partir de [CatalogoTienda](https://github.com/Facu-Basualdo/CatalogoTienda),
+que sólo fue la base: este repo sigue por su cuenta y no se sincroniza con él. Reemplaza a la landing estática
 [ElPrecioso](https://github.com/Facu-Basualdo/ElPrecioso) en el mismo proyecto de Vercel.
 
 - Catálogo responsive (mobile first) con la identidad de la landing actual.
@@ -20,7 +20,7 @@ Chaco) construida sobre [CatalogoTienda](https://github.com/Facu-Basualdo/Catalo
 
 | Tema | Decisión |
 |---|---|
-| Repo | `ElPreciosoTienda`, público, `upstream` = CatalogoTienda |
+| Repo | `ElPreciosoTienda`, público, sólo la tienda web (sin el punto de venta de CatalogoTienda) |
 | Fotos | Verticales 9:16 como las del celular (1080×1920), no 4:5. Las 99 actuales ya tienen la plantilla aplicada: se importan sin recorte |
 | Stock | **A pedido**: no se controla stock. Flag por producto `a_pedido` (default true) por si alguno vuelve a tener stock |
 | Precio por base | **Sí cambia**: la base es una variante con su propio precio |
@@ -60,15 +60,19 @@ del upstream: hay que reescribir `CLAUDE.md` y `claude/web/tema-y-marca.md`.
 ## Fases
 
 ### 0 — Fork y entorno
-- [x] Repo local con `upstream`, plantilla copiada a `web/public/marca/`.
+- [x] Repo local, plantilla copiada a `web/public/marca/`.
 - [ ] Repo en GitHub y primer push.
-- [ ] Proyecto Supabase nuevo (lo crea el usuario), `web/.env`, `db push`, `crear-admin.mjs`.
-- [ ] `seed.sql` sin datos de demo; categorías y grupos de El Precioso.
-- [ ] Quitar `pos/` y su documentación. Las tablas `staff`/`cajas` quedan; el menú
-      Cajas se oculta.
-- [ ] `lib/sitio.ts`: nombre, WhatsApp `5493625190286`, Instagram `@elprecioso.ok`,
-      horario Lun a Sáb 9–19 h, demora estimada de pedidos.
-- [ ] Reescribir `CLAUDE.md` del fork.
+- [x] Proyecto Supabase nuevo, `web/.env`, `db push` (advisors sin problemas), tipos.
+- [ ] Primer admin con `crear-admin.mjs` (necesita `SUPABASE_SECRET_KEY` en `web/.env`).
+- [x] `seed.sql` sin datos de demo: categorías, grupos (Base como variante, Fecha patria,
+      Dije, Colores) y sus etiquetas. Aplicado.
+- [x] Poda: fuera `pos/`, su plan, sus notas, los scripts de demo y
+      `plan-implementacion.md`. En la base, fuera `cajas`, los roles de staff y el código
+      de barras: la migración `staff_y_stock` se reescribió antes del primer push (el
+      proyecto estaba vacío). Todo el staff activo es admin; el historial de stock queda.
+- [x] `lib/sitio.ts`: nombre, WhatsApp, Instagram, ciudad, horario. Falta la demora.
+- [x] `CLAUDE.md` del repo reescrito.
+- [x] Next 16.4.6 y Zod 4.6.7 (vulnerabilidades de `use cache` e imágenes en 16.3.7).
 
 ### 1 — Marca
 - Paleta y tipografías en `globals.css` (variables de HeroUI incluidas).
@@ -143,11 +147,27 @@ Migración nueva con grants, RLS y policies sólo admin en la misma migración.
   Mayo), modelos más vendidos, alta rápida de gasto, exportar CSV.
 
 ### 7 — Producción
-- Repuntar el proyecto de Vercel de la landing al repo nuevo (Root Directory `web`,
-  variables de entorno). La landing queda en su repo como respaldo.
-- Open Graph con la plantilla/poster, sitemap, JSON-LD de producto, analytics.
+- Repuntar el proyecto de Vercel de la landing al repo nuevo. La landing queda en su
+  repo como respaldo.
+  1. **Root Directory `web`**.
+  2. Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+     `NEXT_PUBLIC_SITIO_URL` (el dominio final) y `NEXT_PUBLIC_WHATSAPP`. Nada más (ver
+     [entorno-y-deploy](../claude/general/entorno-y-deploy.md)).
+  3. Supabase → Auth → URL Configuration: el dominio y el patrón de los previews.
+  4. Supabase → Auth: deshabilitar sign-ups. Rotar la contraseña de la base.
+- Open Graph con la plantilla/poster (sitemap y JSON-LD ya existen), analytics.
 - Prueba de punta a punta desde el celular: catálogo → carrito → WhatsApp → pedido en
   el panel → entregado → finanzas.
+
+## Riesgos
+
+| Riesgo | Mitigación |
+|---|---|
+| Cupo de optimización de imágenes de Vercel Hobby | Imágenes en tamaño final, pocas variantes de `sizes` |
+| Supabase gratuito pausa el proyecto tras una semana sin uso | Con la tienda en uso no pasa; si no, plan pago |
+| Spam de pedidos anónimos | Límites en `crear_pedido`; Turnstile si hace falta |
+| Precio mostrado ≠ precio cobrado | Motor único en Postgres (`cotizar`); el cliente sólo muestra |
+| Modelo de fondo pesado en el editor de fotos | Se descarga una vez, sólo en el panel, con fallback sin quitar fondo |
 
 ## Pendiente de definir
 

@@ -20,8 +20,7 @@ categorias ─< categoria_grupos >─ grupos_etiqueta (qué pide cada categoría
 categorias ─< categoria_plantillas >─ plantillas ─< plantilla_grupos >─ grupos_etiqueta
 promociones ─< promocion_alcance ··> productos | categorias | etiquetas (uno por fila)
 banners
-staff ── auth.users (rol admin · encargado · vendedor)
-cajas
+staff ── auth.users (fila activa = admin del panel)
 producto_variantes ─< movimientos_stock (set null: el historial queda)
 ```
 
@@ -113,13 +112,12 @@ un banner que vence a las 00:00 sigue visible hasta la próxima revalidación �
 | `fusionar_etiquetas(p_origen, p_destino)` | authenticated (+RLS admin) | Junta dos valores del mismo grupo (ver [etiquetas](etiquetas.md#clave-de-las-variantes)) |
 | `reordenar_grupos` · `reordenar_etiquetas` · `reordenar_categorias` · `reordenar_banners` | authenticated (+RLS admin) | Reescriben `orden` según la posición en el array |
 | `es_admin()` | authenticated | ¿El usuario actual es admin? |
-| `mi_rol()` | authenticated | Rol de staff del usuario (`admin` · `encargado` · `vendedor`) o null |
-| `asignar_staff(p_email, p_nombre, p_rol, p_activo)` | authenticated (+ admin) | Alta o cambio de personal por email; la cuenta tiene que existir |
+| `asignar_staff(p_email, p_nombre, p_activo)` | authenticated (+ admin) | Alta o cambio de personal por email; la cuenta tiene que existir |
 
 Helpers en el schema `private` (no expuesto): `productos_filtrados`, `filtros_validos`,
 `variante_cumple`, `cotizar`, `promociones_aplicables`, `promo_unitaria`,
-`promo_cantidad_texto`, `combo_disponible`, `linea_combo`, `evaluar_cupon` (definer), `cotizar_con_cupon`, `es_admin`, `rol_staff`,
-`es_staff`, `usuario_por_email` (definers) y los triggers (entre ellos `registrar_movimiento_stock` y
+`promo_cantidad_texto`, `combo_disponible`, `linea_combo`, `evaluar_cupon` (definer), `cotizar_con_cupon`, `es_admin`,
+`usuario_por_email` (definers) y los triggers (entre ellos `registrar_movimiento_stock` y
 `validar_ultimo_admin`).
 
 ## pedidos · pedido_items
@@ -148,20 +146,13 @@ producto, categoría o etiqueta, o `alcance_todo`. Anon lee sólo las activas. V
 ## staff
 
 Personal: `user_id` (pk → `auth.users`, cascade), `email` (copia para listar),
-`nombre` (el que muestran la caja y los tickets), `rol` (enum `rol_staff`), `activo`.
-Reemplazó a `admins`. Un trigger impide quedarse sin admin activo. Ver
-[seguridad-rls](seguridad-rls.md#staff-y-roles).
-
-## cajas
-
-Computadoras del local que cobran: `nombre` y `punto_venta` (de ARCA) únicos, `activa`.
-Cada caja factura con su propio punto de venta, así dos cajas nunca piden el mismo número.
-Las lee todo el staff; las escribe el admin.
+`nombre` (el que muestra el historial de stock), `activo`. **Sin roles**: toda fila
+activa es admin. Reemplazó a `admins`. Un trigger impide quedarse sin admin activo. Ver
+[seguridad-rls](seguridad-rls.md#staff).
 
 ## movimientos_stock
 
-Historial de cada cambio de stock, escrito por trigger. Sólo lectura por la API (admin y
-encargado). Ver [variantes-y-stock](variantes-y-stock.md#historial-de-stock).
+Historial de cada cambio de stock, escrito por trigger. Sólo lectura por la API (admin). Ver [variantes-y-stock](variantes-y-stock.md#historial-de-stock).
 
 ## Ver también
 

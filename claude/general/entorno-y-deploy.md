@@ -11,11 +11,11 @@ Todas en `web/.env` (ignorado por git; el molde es `web/.env.example`).
 | `NEXT_PUBLIC_SUPABASE_URL` | Sí | URL del proyecto. También arma `images.remotePatterns` en `next.config.ts` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí | Key pública (`sb_publishable_…`). Viaja al navegador por diseño: la protección son grants + RLS |
 | `NEXT_PUBLIC_SITIO_URL` | Sí (Production) | URL canónica: metadata, Open Graph, sitemap, robots, JSON-LD, links de WhatsApp. Sin ella todo apunta a `localhost:3000` |
-| `NEXT_PUBLIC_WHATSAPP` | Sí | Número para los pedidos, internacional sin `+` (`5491100000000`). Sin él no aparece el botón |
-| `DATABASE_URL` | **No** | Sólo la CLI de Supabase en local (migraciones, tipos, advisors). Session pooler, puerto 5432 |
-| `SUPABASE_SECRET_KEY` | **No** | Sólo los scripts locales (`sembrar-imagenes.mjs`, `crear-admin.mjs`). **La app no la importa** |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | **No** | Credenciales del admin de prueba que escribe `crear-admin.mjs`. Sólo referencia local |
-| `VENDEDOR_EMAIL`, `VENDEDOR_PASSWORD` | **No** | Usuario de prueba con rol vendedor (`crear-admin.mjs … --rol vendedor`). Lo usan `auditar-permisos.mjs` y las pruebas del POS |
+| `NEXT_PUBLIC_WHATSAPP` | Opcional | Número para los pedidos, internacional sin `+`. Sin ella se usa el de El Precioso de `lib/sitio.ts`: sirve para probar con otro número |
+| `DATABASE_URL` | **No** | Sólo la CLI de Supabase en local (migraciones, tipos, advisors). Session pooler, **puerto 5432**: la que copia el dashboard por defecto suele ser la de 6543 (transaction), que la CLI no soporta |
+| `SUPABASE_SECRET_KEY` | **No** | Sólo el script local `crear-admin.mjs`. **La app no la importa** |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | **No** | Credenciales del admin que escribe `crear-admin.mjs`. Sólo referencia local |
+| `PRUEBA_EMAIL`, `PRUEBA_PASSWORD` | **No** | Usuario logueado sin permisos (`crear-admin.mjs … --sin-permisos`). Lo usa `auditar-permisos.mjs` |
 
 **Si alguien necesita `SUPABASE_SECRET_KEY` en código de la app "para que funcione",
 está tapando un grant o una policy faltante** — ver
@@ -35,18 +35,17 @@ está tapando un grant o una policy faltante** — ver
 
 ## Supabase
 
-- **Un solo proyecto**, con datos de demo (es un portfolio). El seed y las imágenes de
-  demo se aplicaron sobre él (ver [migraciones](../supabase/migraciones.md#seed)). Si
-  el proyecto pasa a tener datos reales, crear otro proyecto para desarrollo y apuntar
-  los previews de Vercel ahí: si no, **un admin probando en un preview escribe en prod**.
+- **Un solo proyecto, que es el de producción** (datos reales de la tienda). Tiene
+  aplicado el seed de taxonomía (ver [migraciones](../supabase/migraciones.md#seed)).
+  **Un admin probando en un preview o en local escribe en prod**: para pruebas que
+  ensucian, crear otro proyecto de desarrollo y apuntar ahí los previews.
 - **Auth → URL Configuration**: agregar el dominio de producción y el patrón de los
   previews en Redirect URLs, si no el login desde un preview redirige mal.
-- **Auth → Sign-ups deshabilitados** hasta la fase 2 del POS (registro de clientes), y
-  recién después de correr `auditar-permisos.mjs`. Mientras tanto las cuentas del
-  personal se crean con el script (ver
+- **Auth → Sign-ups deshabilitados**: la tienda no tiene cuentas de clientes. Las cuentas
+  del personal se crean con el script (ver
   [seguridad-rls](../supabase/seguridad-rls.md#alta-de-personal)).
-- Plan gratuito: el proyecto se pausa tras una semana sin actividad. Para una demo
-  pública, entrar al dashboard de vez en cuando o usar un plan pago.
+- Plan gratuito: el proyecto se pausa tras una semana sin actividad. Con la tienda en
+  uso no pasa; en temporada baja, entrar al dashboard de vez en cuando o usar un plan pago.
 
 ## Orden de un deploy con cambio de esquema
 

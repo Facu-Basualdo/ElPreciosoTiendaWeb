@@ -186,15 +186,10 @@ const esquemaVariantes = z
     z.object({
       etiquetas: z.array(uuid).max(3),
       sku: z.string().trim().max(60).nullable(),
-      codigo_barras: z
-        .string()
-        .trim()
-        .regex(/^[0-9A-Za-z-]{4,32}$/, "El código de barras lleva de 4 a 32 letras, números o guiones.")
-        .nullable(),
       precio: z.number().int().min(0).nullable(),
       stock: z.number().int().min(0).max(100000),
       // El stock que leyó el editor (null en combinaciones nuevas): guardar_variantes no
-      // pisa una venta hecha mientras tanto. Ver claude/supabase/variantes-y-stock.md
+      // pisa un pedido confirmado mientras tanto. Ver claude/supabase/variantes-y-stock.md
       stock_original: z.number().int().nullable(),
       activa: z.boolean(),
     }),
@@ -215,14 +210,9 @@ export async function guardarVariantes(id: string, filas: FilaVariante[]): Promi
   // Un solo RPC: reemplaza todas en una transacción. Nunca updates sueltos.
   const { error: e } = await supabase.rpc("guardar_variantes", {
     p_producto_id: id,
-    p_variantes: datos.data.map((f) => ({ ...f, sku: f.sku || null, codigo_barras: f.codigo_barras || null })),
+    p_variantes: datos.data.map((f) => ({ ...f, sku: f.sku || null })),
   });
-  if (e?.code === "23505")
-    return fallo(
-      e.message.includes("codigo_barras")
-        ? "Hay un código de barras repetido (puede estar en otro producto)."
-        : "Hay un SKU repetido (puede estar en otro producto).",
-    );
+  if (e?.code === "23505") return fallo("Hay un SKU repetido (puede estar en otro producto).");
   if (e) return fallo(MENSAJES_VARIANTES.some((m) => e.message.startsWith(m)) ? e.message : "No se pudieron guardar las variantes.");
 
   const { data: p } = await supabase.from("productos").select("slug").eq("id", id).maybeSingle();

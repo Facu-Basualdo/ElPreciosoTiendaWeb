@@ -3,7 +3,6 @@
 import {
   Bars,
   Box,
-  CreditCard,
   Folder,
   House,
   LayoutHeaderCells,
@@ -20,7 +19,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 
 // Secciones del panel. `listo: false` se muestra deshabilitada con "Pronto": el orden
-// de construcción está en docs/plan-implementacion.md.
+// de construcción está en docs/plan-el-precioso.md.
 const SECCIONES = [
   { href: "/admin", titulo: "Inicio", icono: House, listo: true },
   { href: "/admin/productos", titulo: "Productos", icono: Box, listo: true },
@@ -32,7 +31,6 @@ const SECCIONES = [
   { href: "/admin/etiquetas", titulo: "Etiquetas", icono: Tags, listo: true },
   { href: "/admin/categorias", titulo: "Categorías", icono: Folder, listo: true },
   { href: "/admin/usuarios", titulo: "Usuarios", icono: Persons, listo: true },
-  { href: "/admin/cajas", titulo: "Cajas", icono: CreditCard, listo: true },
 ] as const;
 
 // usePathname es dato de la URL: en rutas dinámicas (/admin/productos/[id]) tiene que

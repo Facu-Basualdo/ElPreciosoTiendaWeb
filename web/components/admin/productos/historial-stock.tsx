@@ -10,9 +10,7 @@ const MOTIVOS: Record<Database["public"]["Enums"]["motivo_stock"], string> = {
   alta: "Alta",
   ajuste: "Ajuste",
   ingreso: "Ingreso de mercadería",
-  pedido_web: "Pedido web",
-  venta_local: "Venta en el local",
-  devolucion: "Devolución",
+  pedido: "Pedido",
 };
 const fecha = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short", timeZone: ZONA });
 const LIMITE = 30;
@@ -46,7 +44,7 @@ export async function HistorialStock({
     <Seccion
       id="historial-stock"
       titulo="Historial de stock"
-      descripcion={`Cada cambio de stock queda registrado: ventas, pedidos web y ajustes. Últimos ${LIMITE}.`}
+      descripcion={`Cada cambio de stock queda registrado: pedidos y ajustes. Últimos ${LIMITE}.`}
     >
       {error ? (
         <p className="text-danger">No se pudo leer el historial.</p>

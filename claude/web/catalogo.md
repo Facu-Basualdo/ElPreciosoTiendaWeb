@@ -11,7 +11,7 @@ Rutas bajo `web/app/(tienda)/`. Todas leen con funciones de `lib/catalogo/lectur
 | `/` | `obtenerBanners` · `obtenerDestacados` (por categoría raíz) · `obtenerMosaicoCategorias` · `obtenerOfertas` | Estática, revalida cada 1 min (por los banners) |
 | `/catalogo` | `buscarProductos` · `obtenerFacetas` · `obtenerCategorias` | Shell estático + contenido por `searchParams` en streaming |
 | `/ofertas` | `obtenerOfertas` (`p_ofertas`) | Estática |
-| `/p/[slug]` | `obtenerProducto` | `generateStaticParams` con todos los publicados; los nuevos se generan al primer pedido |
+| `/p/[slug]` | `obtenerProducto` | `generateStaticParams` con todos los publicados; los nuevos se generan al primer pedido. **Nunca devuelve vacío** (con Cache Components el build falla): sin productos, `paramsDeSlugs` manda un slug imposible que da 404. Igual en `/combo/[slug]` |
 | `/carrito` | — (cotiza en el cliente) | Estática, `noindex`. Ver [carrito](carrito.md) |
 
 **Ofertas es una ruta y no un filtro de `/catalogo`**: `?ofertas=1` sería otra clave

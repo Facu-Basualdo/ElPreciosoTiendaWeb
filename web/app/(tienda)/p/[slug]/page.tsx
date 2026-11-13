@@ -9,14 +9,13 @@ import { EsqueletoFicha } from "@/components/tienda/esqueletos";
 import { Galeria } from "@/components/tienda/galeria";
 import { PestanasFicha } from "@/components/tienda/pestanas-ficha";
 import { SelectorVariantes } from "@/components/tienda/selector-variantes";
-import { obtenerProducto, obtenerSlugsPublicados, type Caracteristica } from "@/lib/catalogo/lecturas";
+import { obtenerProducto, obtenerSlugsPublicados, paramsDeSlugs, type Caracteristica } from "@/lib/catalogo/lecturas";
 import { IconoGrupo } from "@/lib/iconos";
 import { SITIO } from "@/lib/sitio";
 import { urlPublica } from "@/lib/supabase/storage";
 
 export async function generateStaticParams() {
-  const slugs = await obtenerSlugsPublicados();
-  return slugs.map((slug) => ({ slug }));
+  return paramsDeSlugs(await obtenerSlugsPublicados());
 }
 
 export async function generateMetadata(props: PageProps<"/p/[slug]">): Promise<Metadata> {

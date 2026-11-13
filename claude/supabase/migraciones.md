@@ -38,6 +38,9 @@ npx supabase db advisors --db-url "$URL"         # tiene que dar "No issues foun
   otra vez con la firma nueva.
 - `db push` es manual y va **antes** del deploy de la web (ver
   [entorno-y-deploy](../general/entorno-y-deploy.md#orden-de-un-deploy-con-cambio-de-esquema)).
+- **Contra el proyecto, `db query` que escribe exige `--yes`** (la CLI no pregunta en
+  modo agente y no cambia nada sin él); para leer, `--read-only`. En Windows pasá el SQL
+  con `-f archivo.sql`: como argumento suelto la shell lo parte en palabras.
 - `supabase db query` acepta **una sola sentencia**; para varias, envolvelas en un
   bloque `do $$ … $$` o usá `-f archivo.sql` con un único bloque.
 
@@ -55,17 +58,14 @@ columnas viejas y el error aparece en runtime. Las **columnas generadas** (por e
 ## Seed
 
 `supabase/seed.sql` es un único bloque `do $seed$ … $seed$` idempotente (no hace nada
-si ya hay productos). Lo corre `supabase db reset` en local; en este proyecto de demo
-se aplicó una vez con `db query -f supabase/seed.sql`. Cubre a propósito los casos
-difíciles: combinaciones agotadas, variantes con precio distinto, un producto sin
-stock, un borrador y las tres promociones de demo.
+si ya hay categorías) con **sólo la taxonomía inicial**: las cuatro categorías, los
+grupos Base (el único de variante), Fecha patria, Dije y Colores, sus etiquetas y
+`categoria_grupos`. No hay productos ni datos de demo: los carga la dueña desde el
+panel. Lo corre `supabase db reset` en local; en el proyecto se aplicó una vez con
+`db query -f supabase/seed.sql --yes`. Se escribe a mano.
 
-**No se edita a mano: se genera** con `node supabase/generar-seed.mjs supabase/seed.sql`.
-Como es idempotente, regenerarlo no cambia una base que ya tiene productos: lo que se
-agrega después (una promo nueva de demo) va también por SQL aparte o por el dashboard.
-
-Las imágenes de demo no están en el SQL: las genera y sube
-`web/scripts/sembrar-imagenes.mjs` (ver [imagenes](imagenes.md#imágenes-de-demo)).
+Como es idempotente, editarlo no cambia una base que ya tiene categorías: lo que se
+agregue después va por el panel.
 
 ## Stack local
 

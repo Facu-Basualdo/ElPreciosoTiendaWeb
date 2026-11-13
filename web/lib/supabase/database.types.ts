@@ -58,31 +58,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      cajas: {
-        Row: {
-          activa: boolean;
-          creado_en: string;
-          id: string;
-          nombre: string;
-          punto_venta: number;
-        };
-        ComputedFields: never;
-        Insert: {
-          activa?: boolean;
-          creado_en?: string;
-          id?: string;
-          nombre: string;
-          punto_venta: number;
-        };
-        Update: {
-          activa?: boolean;
-          creado_en?: string;
-          id?: string;
-          nombre?: string;
-          punto_venta?: number;
-        };
-        Relationships: [];
-      };
       categoria_grupos: {
         Row: {
           categoria_id: string;
@@ -758,7 +733,6 @@ export type Database = {
         Row: {
           activa: boolean;
           clave: string;
-          codigo_barras: string | null;
           id: string;
           orden: number;
           precio: number | null;
@@ -770,7 +744,6 @@ export type Database = {
         Insert: {
           activa?: boolean;
           clave: string;
-          codigo_barras?: string | null;
           id?: string;
           orden?: number;
           precio?: number | null;
@@ -781,7 +754,6 @@ export type Database = {
         Update: {
           activa?: boolean;
           clave?: string;
-          codigo_barras?: string | null;
           id?: string;
           orden?: number;
           precio?: number | null;
@@ -959,7 +931,6 @@ export type Database = {
           creado_en: string;
           email: string;
           nombre: string;
-          rol: Database["public"]["Enums"]["rol_staff"];
           user_id: string;
         };
         ComputedFields: never;
@@ -968,7 +939,6 @@ export type Database = {
           creado_en?: string;
           email: string;
           nombre: string;
-          rol: Database["public"]["Enums"]["rol_staff"];
           user_id: string;
         };
         Update: {
@@ -976,7 +946,6 @@ export type Database = {
           creado_en?: string;
           email?: string;
           nombre?: string;
-          rol?: Database["public"]["Enums"]["rol_staff"];
           user_id?: string;
         };
         Relationships: [];
@@ -1021,12 +990,7 @@ export type Database = {
     };
     Functions: {
       asignar_staff: {
-        Args: {
-          p_activo?: boolean;
-          p_email: string;
-          p_nombre: string;
-          p_rol: Database["public"]["Enums"]["rol_staff"];
-        };
+        Args: { p_activo?: boolean; p_email: string; p_nombre: string };
         Returns: string;
       };
       banners_vigentes: {
@@ -1160,7 +1124,6 @@ export type Database = {
         Args: { p_producto_id: string; p_variantes: Json };
         Returns: undefined;
       };
-      mi_rol: { Args: Record<PropertyKey, never>; Returns: string };
       precios_producto: {
         Args: { p_producto_id: string };
         Returns: {
@@ -1190,14 +1153,7 @@ export type Database = {
     };
     Enums: {
       estado_pedido: "pendiente" | "confirmado" | "entregado" | "cancelado";
-      motivo_stock:
-        | "alta"
-        | "ajuste"
-        | "ingreso"
-        | "pedido_web"
-        | "venta_local"
-        | "devolucion";
-      rol_staff: "admin" | "encargado" | "vendedor";
+      motivo_stock: "alta" | "ajuste" | "ingreso" | "pedido";
       tipo_cupon: "porcentaje" | "monto_fijo";
       tipo_promocion: "porcentaje" | "monto_fijo" | "nxm" | "segunda_unidad";
     };
@@ -1328,15 +1284,7 @@ export const Constants = {
   public: {
     Enums: {
       estado_pedido: ["pendiente", "confirmado", "entregado", "cancelado"],
-      motivo_stock: [
-        "alta",
-        "ajuste",
-        "ingreso",
-        "pedido_web",
-        "venta_local",
-        "devolucion",
-      ],
-      rol_staff: ["admin", "encargado", "vendedor"],
+      motivo_stock: ["alta", "ajuste", "ingreso", "pedido"],
       tipo_cupon: ["porcentaje", "monto_fijo"],
       tipo_promocion: ["porcentaje", "monto_fijo", "nxm", "segunda_unidad"],
     },

@@ -45,13 +45,12 @@ a Storage; el servidor sólo registra la fila en `producto_imagenes`. Ver
 ## Lo que deliberadamente no hay
 
 - **Service key / secret key en la app**: no está en Vercel ni la importa ningún archivo de
-  `app/` o `lib/`. Todo lo que un admin puede hacer lo habilita una policy. (La usan sólo
-  los scripts locales de imágenes de demo y de alta de admin.)
+  `app/` o `lib/`. Todo lo que un admin puede hacer lo habilita una policy. (La usa sólo
+  el script local de alta de admin, `crear-admin.mjs`.)
 - **Route handlers (`app/api/`)** para CRUD: Server Actions + RPC alcanzan. Un route
   handler se justifica sólo para algo que llame un tercero (webhook).
-- **Pago online**: el carrito termina en un pedido por WhatsApp, no en un checkout. El
-  diseño del carrito, pedidos, promociones, combos y cupones está en el
-  [plan](../../docs/plan-implementacion.md#fase-5--carrito-y-pedidos) hasta que exista el código.
+- **Pago online**: el carrito termina en un pedido por WhatsApp, no en un checkout (ver
+  [carrito](../web/carrito.md)).
 
 ## Ver también
 

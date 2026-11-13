@@ -28,20 +28,17 @@ Regla para tablas nuevas: `grant select … to anon, authenticated` y
 Funciones: Postgres le da `execute` a `PUBLIC` por defecto. Cada función se crea con
 `revoke execute … from public` y `grant execute` explícito al rol que corresponde.
 
-## Staff y roles
+## Staff
 
-**Estar logueado no da ningún permiso**: desde la fase 2 los clientes de la tienda también
-son usuarios de Auth. Lo que da permisos es una fila **activa** en `public.staff`
-(`user_id`, `email`, `nombre`, `rol`, `activo`), con `rol` = `admin` · `encargado` ·
-`vendedor`. Reemplazó a la vieja tabla `admins` (migración `staff_cajas_y_stock`).
+**Estar logueado no da ningún permiso**: cualquier cuenta de Auth es `authenticated`. Lo
+que da permisos es una fila **activa** en `public.staff` (`user_id`, `email`, `nombre`,
+`activo`). **No hay roles: todo el staff activo es admin del panel.** Reemplazó a la
+vieja tabla `admins` (migración `staff_y_stock`).
 
 | Función | Devuelve | Para |
 |---|---|---|
-| `private.es_admin()` | rol `admin` y activo | Las ~70 policies del panel (mantuvo el nombre) |
-| `private.rol_staff()` | el rol, o `null` si no es staff activo | Policies que distinguen roles (`movimientos_stock`) |
-| `private.es_staff()` | cualquier rol activo | Lo que ve todo el personal (`cajas`) |
-| `public.mi_rol()` | el rol como texto | Preguntar desde la web o el POS |
-| `public.asignar_staff(email, nombre, rol, activo)` | el `user_id` | Alta y cambios desde el panel (Usuarios) |
+| `private.es_admin()` | fila activa en `staff` | Las ~70 policies del panel |
+| `public.asignar_staff(email, nombre, activo)` | el `user_id` | Alta y cambios desde el panel (Usuarios) |
 
 - **Las `private.*` son `security definer`**: si corrieran como el usuario, chocarían con el
   RLS de `staff`. Viven en `private`, que la Data API no expone: una definer en `public`
@@ -73,8 +70,7 @@ son usuarios de Auth. Lo que da permisos es una fila **activa** en `public.staff
 | `banners` | `activo` | `activo or es_admin` | admin |
 | `pedidos`, `pedido_items` | — (sin grants) | admin | sólo `crear_pedido` (definer) crea; admin actualiza y borra |
 | `staff` | — | la propia fila, o todas si es admin | admin (+ trigger del último admin) |
-| `cajas` | — | staff activo | admin |
-| `movimientos_stock` | — | admin y encargado | nadie por la API: sólo el trigger (ver [variantes-y-stock](variantes-y-stock.md#historial-de-stock)) |
+| `movimientos_stock` | — | admin | nadie por la API: sólo el trigger (ver [variantes-y-stock](variantes-y-stock.md#historial-de-stock)) |
 | `storage.objects` bucket `catalogo` | URL pública, sin policy | admin (listar/borrar) | admin |
 
 - **Las tablas hijas miran al padre.** Si `producto_imagenes` tuviera select libre, un
@@ -106,15 +102,17 @@ GET  /rest/v1/productos?slug=eq.<borrador> → []
 
 ## Auditoría
 
-`cd web && node scripts/auditar-permisos.mjs` entra como **vendedor** (logueado, sin ser
-admin) y como **visitante**, e intenta lo que no deberían poder: escribir productos,
-stock, cupones, promociones, banners y cajas; confirmar pedidos; subir al bucket; leer
-cupones, pedidos e historial; darse rol admin. Cada intento tiene que fallar; si alguno
-pasa, termina con código 1. Usa sólo la publishable key y las credenciales `VENDEDOR_*`
-de `web/.env` (las crea `crear-admin.mjs … --rol vendedor`).
+`cd web && node scripts/auditar-permisos.mjs` entra como un usuario **logueado sin fila
+en `staff`** y como **visitante**, e intenta lo que no deberían poder: escribir productos,
+stock, categorías, cupones, promociones y banners; confirmar pedidos; subir al bucket;
+leer cupones, pedidos, historial y staff; agregarse al staff. Cada intento tiene que
+fallar; si alguno pasa, termina con código 1. Usa sólo la publishable key y las
+credenciales `PRUEBA_*` de `web/.env` (las crea `crear-admin.mjs … --sin-permisos`). Sin
+productos publicados saltea los intentos sobre productos y variantes: corrida en una base
+vacía, prueba menos.
 
 **Correrla después de toda migración que toque grants o policies, y antes de habilitar
-los registros de clientes** (fase 2 del POS).
+los sign-ups.**
 
 ## Auth
 
@@ -126,11 +124,10 @@ los registros de clientes** (fase 2 del POS).
 
 ### Alta de personal
 
-- **Desde el panel** (Usuarios): email de una cuenta que ya existe, nombre y rol
-  (`asignar_staff`). Hasta que la tienda tenga registro de clientes (fase 2), las cuentas
-  se crean con el script.
-- **Con script** (el primer admin, usuarios de prueba): `cd web && node
-  scripts/crear-admin.mjs email@dominio.com [--rol vendedor]` (ver
+- **Desde el panel** (Usuarios): email de una cuenta que ya existe y nombre
+  (`asignar_staff`). Con los sign-ups cerrados, las cuentas se crean con el script.
+- **Con script** (el primer admin, el usuario de prueba): `cd web && node
+  scripts/crear-admin.mjs email@dominio.com [--sin-permisos]` (ver
   [dashboard](../web/dashboard.md#crear-un-admin)).
 
 ## Ver también
