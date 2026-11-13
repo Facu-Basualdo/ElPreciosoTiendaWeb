@@ -8,7 +8,6 @@ import { SelectorOrden } from "@/components/tienda/filtros/selector-orden";
 import { Paginacion } from "@/components/tienda/paginacion";
 import { GrillaProductos } from "@/components/tienda/tarjeta-producto";
 import { EsqueletoCatalogo } from "@/components/tienda/esqueletos";
-import { SelectorVista } from "@/components/tienda/vista-listado";
 import { cantidadDeFiltros, conCambios, conGrupo, leerFiltros, urlDeFiltros, type Filtros } from "@/lib/catalogo/filtros";
 import { IconoWhatsapp } from "@/components/icono-whatsapp";
 import { buscarProductos, obtenerCategorias, obtenerFacetas, type Categoria } from "@/lib/catalogo/lecturas";
@@ -91,7 +90,6 @@ async function Catalogo({ searchParams, banners }: { searchParams: ParametrosBus
             <BotonFiltrosMovil facetas={facetas} filtros={filtros} categorias={categorias} />
             <div className="ml-auto flex items-center gap-2">
               <SelectorOrden filtros={filtros} />
-              <SelectorVista />
             </div>
           </div>
         </div>

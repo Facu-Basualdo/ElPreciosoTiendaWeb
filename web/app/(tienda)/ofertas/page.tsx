@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EsqueletoGrilla } from "@/components/tienda/esqueletos";
 import { GrillaProductos } from "@/components/tienda/tarjeta-producto";
-import { SelectorVista } from "@/components/tienda/vista-listado";
 import { obtenerOfertas } from "@/lib/catalogo/lecturas";
 import { notFound } from "next/navigation";
 import { SITIO } from "@/lib/sitio";
@@ -24,7 +23,6 @@ export default function PaginaOfertas() {
           <h1 className="font-serif text-3xl font-normal tracking-tight">Ofertas</h1>
           <p className="text-sm text-muted">Productos con precio rebajado.</p>
         </div>
-        <SelectorVista />
       </header>
       <Suspense fallback={<EsqueletoGrilla />}>
         <Listado />

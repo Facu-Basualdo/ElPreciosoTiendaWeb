@@ -22,16 +22,11 @@ reservada que ningún grupo de etiquetas podría usar como slug.
 
 `components/tienda/tarjeta-producto.tsx`: marca arriba (del grupo `es_marca`), nombre en
 dos líneas, precio con ahorro, y una acción que depende de la variante única (ver
-[carrito](carrito.md#pantallas)). `horizontal` la pone con la imagen a la izquierda
-(destacados de la home).
+[carrito](carrito.md#pantallas)).
 
-## Vista grilla / lista
-
-`components/tienda/vista-listado.tsx`. **La preferencia vive en `localStorage`, no en la
-URL**: en la URL sería otra clave reservada y duplicaría las entradas de caché del
-listado. Las tarjetas siguen siendo server components: el contenedor client pone
-`data-vista` y las tarjetas se adaptan con `sm:group-data-[vista=lista]/vista:flex-row`.
-En mobile la vista lista no aplica (la grilla de 2 columnas ya es compacta).
+**Siempre en grilla** (`GrillaProductos`, server component): no hay vista en lista. Con
+fotos 9:16 no tenía sentido y se sacó entera, no sólo el botón (la preferencia vieja
+quedaba en `localStorage` y seguía mostrando la lista a quien la había elegido).
 
 ## Ficha
 
